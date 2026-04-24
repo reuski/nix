@@ -1,0 +1,65 @@
+name: flake-lock
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *"
+  push:
+    branches:
+      - main
+    paths:
+      - flake.nix
+      - .github/workflows/flake-lock.yml
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  NIX_CONFIG: |
+    experimental-features = nix-command flakes
+    accept-flake-config = true
+    download-buffer-size = 536870912
+
+jobs:
+  update-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check installer
+        run: bash -n install.sh
+
+      - uses: DeterminateSystems/nix-installer-action@v22
+      - name: Update flake inputs
+        run: nix flake update
+
+      - name: Format
+        run: |
+          nix shell --no-write-lock-file .#formatter.x86_64-linux -c bash -euo pipefail -c \
+            'find . -name "*.nix" -print0 | xargs -0 nixfmt --check'
+
+      - name: Evaluate NixOS config
+        run: |
+          nix eval --no-write-lock-file --raw \
+            .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
+
+      - name: Evaluate overlay packages
+        run: |
+          nix eval --no-write-lock-file --raw \
+            .#packages.x86_64-linux.helium-browser.drvPath
+
+      - uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.FLAKE_LOCK_TOKEN || github.token }}
+          commit-message: "chore: flake.lock update"
+          title: "chore: flake.lock update"
+          body: "Automated flake input refresh."
+          branch: chore/flake-lock
+          delete-branch: true
+          add-paths: flake.lock
