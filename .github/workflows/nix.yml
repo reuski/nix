@@ -1,0 +1,56 @@
+name: nix
+
+on:
+  pull_request:
+    paths:
+      - "**/*.nix"
+      - "flake.lock"
+      - "install.sh"
+      - ".github/workflows/nix.yml"
+  push:
+    paths:
+      - "**/*.nix"
+      - "flake.lock"
+      - "install.sh"
+      - ".github/workflows/nix.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NIX_CONFIG: |
+    experimental-features = nix-command flakes
+    accept-flake-config = true
+    download-buffer-size = 536870912
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Check installer
+        run: bash -n install.sh
+
+      - uses: DeterminateSystems/nix-installer-action@v22
+
+      - name: Format
+        run: |
+          nix shell --no-write-lock-file .#formatter.x86_64-linux -c bash -euo pipefail -c \
+            'find . -name "*.nix" -print0 | xargs -0 nixfmt --check'
+
+      - name: Evaluate NixOS config
+        run: |
+          nix eval --no-write-lock-file --raw \
+            .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
+
+      - name: Evaluate overlay packages
+        run: |
+          nix eval --no-write-lock-file --raw \
+            .#packages.x86_64-linux.helium-browser.drvPath
