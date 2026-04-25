@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 {
-  environment.systemPackages = [ pkgs.fprintd ];
+  environment.systemPackages = [ pkgs.fprintd pkgs.python-validity ];
 
   services.dbus.packages = [ pkgs.fprintd pkgs.python-validity ];
 

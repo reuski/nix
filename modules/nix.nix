@@ -48,9 +48,14 @@
   system.autoUpgrade = {
     enable = true;
     flake = "github:reuski/nix/main#hiisi";
-    flags = [ "--refresh" ];
+    flags = [ "--refresh" "--option" "tarball-ttl" "0" ];
     dates = "daily";
     randomizedDelaySec = "45min";
     persistent = true;
+  };
+
+  systemd.services.nixos-upgrade.serviceConfig = {
+    Restart = "on-failure";
+    RestartSec = "5min";
   };
 }

@@ -55,7 +55,7 @@
         lockOnSuspend = false;
         autoStartAuth = true;
         allowPasswordWithFprintd = true;
-        showShortcutsOnStartup = false;
+        showChangelogOnStartup = false;
       };
 
       idle = {
@@ -64,6 +64,21 @@
         screenOffTimeout = 180;
         suspendTimeout = 900;
         fadeDuration = 1;
+      };
+
+      location = {
+        weatherEnabled = false;
+      };
+
+      controlCenter = {
+        cards = [
+          { enabled = false; id = "profile-card"; }
+          { enabled = true; id = "shortcuts-card"; }
+          { enabled = true; id = "audio-card"; }
+          { enabled = false; id = "brightness-card"; }
+          { enabled = false; id = "weather-card"; }
+          { enabled = true; id = "media-sysmon-card"; }
+        ];
       };
 
       ui.fontDefault = "Hack Nerd Font Propo";
