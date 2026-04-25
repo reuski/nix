@@ -40,6 +40,7 @@ in
     playerctl
     grim
     slurp
+    imv
   ];
 
   programs.home-manager.enable = true;
@@ -53,43 +54,33 @@ in
     ];
     interactiveShellInit = ''
       set -g fish_greeting
-
       set -g pure_check_for_new_release false
+      set -g pure_begin_prompt_with_current_directory true
+      set -g pure_threshold_command_duration 5
+
       set -g pure_color_primary ${fishHex gruvbox.yellow}
       set -g pure_color_success ${fishHex gruvbox.green}
       set -g pure_color_info ${fishHex gruvbox.blue}
-      set -g pure_color_warning ${fishHex gruvbox.orange}
-      set -g pure_color_danger ${fishHex gruvbox.red}
       set -g pure_color_mute ${fishHex gruvbox.gray}
-      set -g pure_color_light ${fishHex gruvbox.fg1}
-      set -g pure_color_dark ${fishHex gruvbox.bg1}
+      set -g pure_color_danger ${fishHex gruvbox.red}
 
-      set -g fish_color_normal ${fishHex gruvbox.fg1}
       set -g fish_color_command ${fishHex gruvbox.green}
       set -g fish_color_keyword ${fishHex gruvbox.red}
       set -g fish_color_quote ${fishHex gruvbox.green}
-      set -g fish_color_redirection ${fishHex gruvbox.purple}
-      set -g fish_color_end ${fishHex gruvbox.orange}
       set -g fish_color_error ${fishHex gruvbox.red}
       set -g fish_color_param ${fishHex gruvbox.fg1}
       set -g fish_color_comment ${fishHex gruvbox.gray}
-      set -g fish_color_selection --background=${fishHex gruvbox.bg2}
-      set -g fish_color_search_match --background=${fishHex gruvbox.bg2}
-      set -g fish_color_operator ${fishHex gruvbox.aqua}
-      set -g fish_color_escape ${fishHex gruvbox.aqua}
       set -g fish_color_autosuggestion ${fishHex gruvbox.gray}
-      set -g fish_color_valid_path --underline
-      set -g fish_color_cwd ${fishHex gruvbox.yellow}
-      set -g fish_color_user ${fishHex gruvbox.green}
-      set -g fish_color_host ${fishHex gruvbox.blue}
-      set -g fish_color_cancel ${fishHex gruvbox.red}
-      set -g fish_color_status ${fishHex gruvbox.red}
-      set -g fish_pager_color_progress ${fishHex gruvbox.gray}
+      set -g fish_color_selection --background=${fishHex gruvbox.bg2}
       set -g fish_pager_color_prefix ${fishHex gruvbox.yellow} --bold
-      set -g fish_pager_color_completion ${fishHex gruvbox.fg1}
       set -g fish_pager_color_description ${fishHex gruvbox.gray}
-      set -g fish_pager_color_selected_background --background=${fishHex gruvbox.bg2}
     '';
+    shellAbbrs = {
+      g = "git";
+      vi = "vim";
+      dl = "cd ~/Downloads";
+      p = "cd ~/Projects";
+    };
   };
   programs.bat = {
     enable = true;

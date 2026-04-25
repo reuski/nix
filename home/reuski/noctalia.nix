@@ -23,24 +23,18 @@
           center = [
             {
               id = "Workspace";
-              hideUnoccupied = false;
+              hideUnoccupied = true;
               labelMode = "index";
             }
           ];
           right = [
             { id = "Tray"; }
             { id = "WiFi"; }
-            { id = "Bluetooth"; }
             { id = "Volume"; }
             {
               id = "Battery";
               alwaysShowPercentage = true;
               warningThreshold = 20;
-            }
-            {
-              id = "Clock";
-              formatHorizontal = "HH:mm";
-              useMonospacedFont = true;
             }
             {
               id = "ControlCenter";
@@ -68,12 +62,7 @@
         lockTimeout = 0;
         screenOffTimeout = 180;
         suspendTimeout = 900;
-        fadeDuration = 3;
-      };
-
-      location = {
-        name = "Helsinki";
-        monthBeforeDay = false;
+        fadeDuration = 1;
       };
 
       ui.fontDefault = "Hack Nerd Font Propo";

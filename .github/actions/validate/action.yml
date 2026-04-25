@@ -1,0 +1,19 @@
+name: validate
+description: Check formatting and evaluate Nix expressions
+
+runs:
+  using: composite
+  steps:
+    - run: bash -n install.sh
+      shell: bash
+
+    - run: |
+        nix shell --no-write-lock-file .#formatter.x86_64-linux -c bash -euo pipefail -c \
+          'find . -name "*.nix" -print0 | xargs -0 nixfmt'
+      shell: bash
+
+    - run: nix eval --no-write-lock-file --raw .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
+      shell: bash
+
+    - run: nix eval --no-write-lock-file --raw .#packages.x86_64-linux.helium-browser.drvPath
+      shell: bash

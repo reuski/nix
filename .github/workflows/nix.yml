@@ -6,13 +6,16 @@ on:
       - "**/*.nix"
       - "flake.lock"
       - "install.sh"
-      - ".github/workflows/nix.yml"
+      - ".github/workflows/**"
+      - ".github/actions/**"
   push:
+    branches: [main]
     paths:
       - "**/*.nix"
       - "flake.lock"
       - "install.sh"
-      - ".github/workflows/nix.yml"
+      - ".github/workflows/**"
+      - ".github/actions/**"
   workflow_dispatch:
 
 concurrency:
@@ -34,23 +37,5 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
-
-      - name: Check installer
-        run: bash -n install.sh
-
       - uses: DeterminateSystems/nix-installer-action@v22
-
-      - name: Format
-        run: |
-          nix shell --no-write-lock-file .#formatter.x86_64-linux -c bash -euo pipefail -c \
-            'find . -name "*.nix" -print0 | xargs -0 nixfmt --check'
-
-      - name: Evaluate NixOS config
-        run: |
-          nix eval --no-write-lock-file --raw \
-            .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
-
-      - name: Evaluate overlay packages
-        run: |
-          nix eval --no-write-lock-file --raw \
-            .#packages.x86_64-linux.helium-browser.drvPath
+      - uses: ./.github/actions/validate
