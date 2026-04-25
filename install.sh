@@ -1,24 +1,13 @@
 #!/bin/sh
 set -eu
+[ "$(id -u)" -eq 0 ] || { echo "Root required"; exit 1; }
 
-if [ "$(id -u)" -ne 0 ]; then
-  printf '%s\n' 'Run as root.' >&2
-  exit 1
-fi
-
-NIX_CONFIG='experimental-features = nix-command flakes
+export NIX_CONFIG="experimental-features = nix-command flakes
 accept-flake-config = true
-download-buffer-size = 536870912'
-export NIX_CONFIG
+download-buffer-size = 536870912"
 
-nix run github:nix-community/disko/latest -- \
-  --mode destroy,format,mount \
-  --yes-wipe-all-disks \
-  --no-deps \
-  --flake github:reuski/nix#hiisi
+URI="github:reuski/nix#hiisi"
 
-nixos-install \
-  --flake github:reuski/nix#hiisi \
-  --no-root-passwd
-
-printf '%s\n' 'Install complete. Reboot when ready.' >&2
+nix run github:nix-community/disko -- --mode destroy,format,mount --yes-wipe-all-disks --flake "$URI" && \
+nixos-install --flake "$URI" --no-root-passwd && \
+echo "Reboot."

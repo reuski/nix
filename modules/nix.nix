@@ -7,6 +7,11 @@
   nix.nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
 
   nix.settings = {
+    max-jobs = "auto";
+    cores = 0;
+    builders-use-substitutes = true;
+    connect-timeout = 5;
+    fallback = true;
     experimental-features = [
       "nix-command"
       "flakes"

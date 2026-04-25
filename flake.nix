@@ -125,5 +125,59 @@
 
       packages.${system}.helium-browser = pkgs.helium-browser;
       formatter.${system} = pkgs.nixfmt-rfc-style;
+
+      apps.${system}.update-custom = {
+        type = "app";
+        program = "${pkgs.writeShellScriptBin "update-custom" ''
+          PATH=${pkgs.lib.makeBinPath (with pkgs; [ curl jq ])}:$PATH
+          set -euo pipefail
+
+          update_release() {
+            local repo="$1" file="$2" url_template="$3"
+            local latest current url hash sri
+
+            latest=$(curl -fsSL "https://api.github.com/repos/$repo/releases/latest" | jq -r '.tag_name')
+            current=$(sed -n 's/.*version = "\([^"]*\)".*/\1/p' "$file" | head -1)
+
+            [ "$latest" = "$current" ] && { echo "$repo: up to date ($current)"; return 0; }
+
+            url=$(echo "$url_template" | sed "s/{version}/$latest/g")
+            hash=$(nix-prefetch-url --type sha256 "$url")
+            sri=$(nix hash to-sri --type sha256 "$hash")
+
+            sed -i 's/^  version = ".*";/  version = "'"$latest"'";/' "$file"
+            sed -i 's|^    hash = ".*";|    hash = "'"$sri"'";|' "$file"
+
+            echo "$repo: $current -> $latest"
+          }
+
+          update_tag() {
+            local repo="$1" file="$2" url_template="$3"
+            local latest current url hash sri
+
+            latest=$(curl -fsSL "https://api.github.com/repos/$repo/tags?per_page=1" | jq -r '.[0].name')
+            current=$(sed -n 's/.*version = "\([^"]*\)".*/\1/p' "$file" | head -1)
+
+            [ "$latest" = "$current" ] && { echo "$repo: up to date ($current)"; return 0; }
+
+            url=$(echo "$url_template" | sed "s/{version}/$latest/g")
+            hash=$(nix-prefetch-url --type sha256 "$url")
+            sri=$(nix hash to-sri --type sha256 "$hash")
+
+            sed -i 's/^  version = ".*";/  version = "'"$latest"'";/' "$file"
+            sed -i 's|^    hash = ".*";|    hash = "'"$sri"'";|' "$file"
+
+            echo "$repo: $current -> $latest"
+          }
+
+          update_release "imputnet/helium-linux" \
+            "pkgs/helium-browser/default.nix" \
+            "https://github.com/imputnet/helium-linux/releases/download/{version}/helium-{version}-x86_64_linux.tar.xz"
+
+          update_tag "uunicorn/python-validity" \
+            "pkgs/python-validity/default.nix" \
+            "https://github.com/uunicorn/python-validity/archive/refs/tags/{version}.tar.gz"
+        ''}/bin/update-custom";
+      };
     };
 }

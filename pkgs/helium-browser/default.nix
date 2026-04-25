@@ -5,11 +5,6 @@
   fetchurl,
   autoPatchelfHook,
   makeWrapper,
-  writeShellScript,
-  curl,
-  jq,
-  common-updater-scripts,
-
   alsa-lib,
   at-spi2-atk,
   at-spi2-core,
@@ -133,14 +128,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --add-flags "--password-store=gnome-libsecret"
 
     runHook postInstall
-  '';
-
-  passthru.updateScript = writeShellScript "update-helium-browser" ''
-    set -euo pipefail
-    latest=$(${lib.getExe curl} -fsSL \
-      https://api.github.com/repos/imputnet/helium-linux/releases/latest \
-      | ${lib.getExe jq} -r '.tag_name')
-    ${common-updater-scripts}/bin/update-source-version helium-browser "$latest"
   '';
 
   meta = {

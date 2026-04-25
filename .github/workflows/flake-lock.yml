@@ -27,6 +27,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: DeterminateSystems/nix-installer-action@v22
       - run: nix flake update
+      - run: nix run .#update-custom
       - uses: ./.github/actions/validate
 
       - id: pr
@@ -39,7 +40,10 @@ jobs:
           branch: chore/flake-lock
           delete-branch: true
           labels: automated, flake-lock
-          add-paths: flake.lock
+          add-paths: |
+            flake.lock
+            pkgs/helium-browser/default.nix
+            pkgs/python-validity/default.nix
 
       - if: steps.pr.outputs.pull-request-number != ''
         env:
