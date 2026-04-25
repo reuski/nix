@@ -16,6 +16,13 @@
     "fi_FI.UTF-8/UTF-8"
   ];
 
+  services.xserver.xkb = {
+    model = "pc105";
+    layout = "fi";
+    variant = "nodeadkeys";
+    options = "";
+  };
+
   console = {
     keyMap = "fi";
     packages = [ pkgs.terminus_font ];

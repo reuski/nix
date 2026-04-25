@@ -20,11 +20,6 @@
       shell-integration = "fish";
       clipboard-read = "allow";
       clipboard-write = "allow";
-      keybind = [
-        "performable:ctrl+c=copy_to_clipboard"
-        "ctrl+v=paste_from_clipboard"
-        "ctrl+shift+c=text:\\x03"
-      ];
     };
   };
 }
