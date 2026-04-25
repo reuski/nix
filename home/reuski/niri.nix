@@ -22,16 +22,11 @@ in
   programs.niri.settings = {
     prefer-no-csd = true;
 
-    environment = {
-      DISPLAY = ":0";
-      QT_QPA_PLATFORM = "wayland;xcb";
-    };
-
     input = {
       keyboard.xkb = {
+        model = "pc105";
         layout = "fi";
         variant = "nodeadkeys";
-        options = "ctrl:nocaps";
       };
       touchpad = {
         tap = true;
@@ -83,6 +78,8 @@ in
       border.enable = false;
     };
 
+    hotkey-overlay.skip-at-startup = true;
+
     spawn-at-startup = [
       {
         command = [
@@ -93,7 +90,6 @@ in
           "fill"
         ];
       }
-      { command = [ (lib.getExe' pkgs.xwayland-satellite-unstable "xwayland-satellite") ]; }
       { command = [ "${noctaliaPackage}/bin/noctalia-shell" ]; }
     ];
 

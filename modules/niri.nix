@@ -25,13 +25,12 @@ in
   programs.dconf.enable = true;
   services.gnome.gnome-keyring.enable = true;
 
-  environment.systemPackages = [ pkgs.xwayland-satellite-unstable ];
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
     MOZ_ENABLE_WAYLAND = "1";
-    QT_QPA_PLATFORM = "wayland;xcb";
+    QT_QPA_PLATFORM = "wayland";
     QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
-    GDK_BACKEND = "wayland,x11";
+    GDK_BACKEND = "wayland";
     XDG_SESSION_TYPE = "wayland";
   };
 
