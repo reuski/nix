@@ -55,6 +55,7 @@
         lockOnSuspend = false;
         autoStartAuth = true;
         allowPasswordWithFprintd = true;
+        showShortcutsOnStartup = false;
       };
 
       idle = {

@@ -17,10 +17,6 @@
 
   programs.fish.enable = true;
 
-  services.fprintd.enable = true;
-  security.pam.services.greetd.fprintAuth = true;
-  security.pam.services.login.fprintAuth = true;
-
   security.sudo.enable = false;
   security.sudo-rs = {
     enable = true;

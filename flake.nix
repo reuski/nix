@@ -119,6 +119,7 @@
           ./modules/power.nix
           ./modules/niri.nix
           ./modules/nix.nix
+          ./modules/fingerprint.nix
         ];
       };
 
