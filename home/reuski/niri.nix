@@ -23,11 +23,15 @@ in
     prefer-no-csd = true;
 
     input = {
-      keyboard.xkb = {
-        model = "pc105";
-        layout = "fi";
-        variant = "nodeadkeys";
-        options = "";
+      keyboard = {
+        xkb = {
+          model = "pc105";
+          layout = "fi";
+          variant = "nodeadkeys";
+          options = "";
+        };
+        repeat-delay = 200;
+        repeat-rate = 50;
       };
       mod-key = "Super";
       touchpad = {
