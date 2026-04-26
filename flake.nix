@@ -112,6 +112,7 @@
           ./hosts/hiisi
           ./modules/boot.nix
           ./modules/networking.nix
+          ./modules/dbus.nix
           ./modules/users.nix
           ./modules/locale.nix
           ./modules/audio.nix
