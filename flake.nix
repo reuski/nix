@@ -181,7 +181,7 @@
 
           update_release "dj95/zjstatus" \
             "pkgs/zjstatus/default.nix" \
-            "https://github.com/dj95/zjstatus/releases/download/v{version}/zjstatus.wasm"
+            "https://github.com/dj95/zjstatus/releases/download/{version}/zjstatus.wasm"
         ''}/bin/update-custom";
       };
     };
