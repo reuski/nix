@@ -8,12 +8,12 @@ runs:
       shell: bash
 
     - run: |
-        nix shell --no-write-lock-file .#formatter.x86_64-linux -c bash -euo pipefail -c \
-          'find . -name "*.nix" -print0 | xargs -0 nixfmt'
+        nix shell .#formatter.x86_64-linux -c bash -euo pipefail -c \
+          'find . -name "*.nix" -print0 | xargs -0 -r nixfmt'
       shell: bash
 
-    - run: nix eval --no-write-lock-file --raw .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
+    - run: nix eval --raw .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
       shell: bash
 
-    - run: nix eval --no-write-lock-file --raw .#packages.x86_64-linux.helium-browser.drvPath
+    - run: nix eval --raw .#packages.x86_64-linux.helium-browser.drvPath
       shell: bash
