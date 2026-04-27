@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 6 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "flake.nix"
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -24,14 +28,38 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
-      - uses: DeterminateSystems/nix-installer-action@v22
-      - run: nix flake update
-      - run: nix run .#update-custom
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          token: ${{ secrets.FLAKE_LOCK_TOKEN || github.token }}
+
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+
+      - uses: DeterminateSystems/magic-nix-cache-action@6221693898146dc97e38ad0e013488a16477a4c4 # v9
+
+      - if: github.event_name == 'push'
+        run: nix flake lock
+
+      - if: github.event_name != 'push'
+        run: nix flake update
+
+      - if: github.event_name != 'push'
+        run: nix run .#update-custom
+
       - uses: ./.github/actions/validate
 
+      - if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet; then
+            git add -A
+            git commit -m "chore: lockfile update"
+            git push
+          fi
+
       - id: pr
-        uses: peter-evans/create-pull-request@v8
+        if: github.event_name != 'push'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
           token: ${{ secrets.FLAKE_LOCK_TOKEN || github.token }}
           commit-message: "chore: flake.lock update"
@@ -40,12 +68,8 @@ jobs:
           branch: chore/flake-lock
           delete-branch: true
           labels: automated, flake-lock
-          add-paths: |
-            flake.lock
-            pkgs/helium-browser/default.nix
-            pkgs/python-validity/default.nix
 
-      - if: steps.pr.outputs.pull-request-number != ''
+      - if: github.event_name != 'push' && steps.pr.outputs.pull-request-number != ''
         env:
           GH_TOKEN: ${{ secrets.FLAKE_LOCK_TOKEN || github.token }}
         run: |

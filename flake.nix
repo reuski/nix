@@ -178,6 +178,10 @@
           update_tag "uunicorn/python-validity" \
             "pkgs/python-validity/default.nix" \
             "https://github.com/uunicorn/python-validity/archive/refs/tags/{version}.tar.gz"
+
+          update_release "dj95/zjstatus" \
+            "pkgs/zjstatus/default.nix" \
+            "https://github.com/dj95/zjstatus/releases/download/v{version}/zjstatus.wasm"
         ''}/bin/update-custom";
       };
     };

@@ -27,6 +27,7 @@ in
     ./noctalia.nix
     ./vicinae.nix
     ./ghostty.nix
+    ./zellij.nix
   ];
 
   home.username = "reuski";
@@ -41,6 +42,7 @@ in
     grim
     slurp
     imv
+    zellij
   ];
 
   programs.home-manager.enable = true;
@@ -74,6 +76,11 @@ in
       set -g fish_color_selection --background=${fishHex gruvbox.bg2}
       set -g fish_pager_color_prefix ${fishHex gruvbox.yellow} --bold
       set -g fish_pager_color_description ${fishHex gruvbox.gray}
+
+      if status is-interactive; and not set -q ZELLIJ; and test -z "$ZELLIJ_AUTO_ATTACHED"
+        set -gx ZELLIJ_AUTO_ATTACHED 1
+        zellij attach main --create
+      end
     '';
     shellAbbrs = {
       g = "git";
