@@ -7,6 +7,9 @@ runs:
     - run: bash -n install.sh
       shell: bash
 
+    - run: nix flake lock
+      shell: bash
+
     - run: |
         nix shell .#formatter.x86_64-linux -c bash -euo pipefail -c \
           'find . -name "*.nix" -print0 | xargs -0 -r nixfmt'

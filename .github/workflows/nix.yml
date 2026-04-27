@@ -5,6 +5,7 @@ on:
     paths:
       - "**/*.nix"
       - "flake.lock"
+      - "flake.nix"
       - "install.sh"
       - ".github/workflows/**"
       - ".github/actions/**"
@@ -13,6 +14,7 @@ on:
     paths:
       - "**/*.nix"
       - "flake.lock"
+      - "flake.nix"
       - "install.sh"
       - ".github/workflows/**"
       - ".github/actions/**"
@@ -24,6 +26,7 @@ concurrency:
 
 permissions:
   contents: write
+  pull-requests: write
 
 env:
   NIX_CONFIG: |
@@ -38,7 +41,6 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.head_ref || github.ref }}
 
       - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
@@ -47,11 +49,31 @@ jobs:
 
       - uses: ./.github/actions/validate
 
-      - run: |
+      - if: github.event_name == 'pull_request'
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if ! git diff --quiet; then
             git add -A
-            git commit -m "style: auto-format nix files"
+            git commit -m "style: auto-format"
             git push
+          fi
+
+      - id: pr
+        if: github.event_name == 'push'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          commit-message: "chore: apply formatting and lockfile sync"
+          title: "chore: apply formatting and lockfile sync"
+          body: "Automated fixes."
+          branch: chore/auto-fix
+          delete-branch: true
+
+      - if: github.event_name == 'push' && steps.pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR="${{ steps.pr.outputs.pull-request-number }}"
+          if [ "$(gh pr view "$PR" --json autoMergeRequest --jq '.autoMergeRequest != null')" = "false" ]; then
+            gh pr merge --auto --squash --delete-branch "$PR"
           fi
