@@ -33,18 +33,19 @@ in
       search_files_in_root = true;
       favorites = [ ];
       fallbacks = [ "files:search" ];
-      providers =
-        {
-          applications.enabled = true;
-          files = {
-            enabled = true;
-            entrypoints.rebuild-index.enabled = false;
-          };
-        }
-        // builtins.listToAttrs (map (name: {
+      providers = {
+        applications.enabled = true;
+        files = {
+          enabled = true;
+          entrypoints.rebuild-index.enabled = false;
+        };
+      }
+      // builtins.listToAttrs (
+        map (name: {
           inherit name;
           value.enabled = false;
-        }) disabledProviders);
+        }) disabledProviders
+      );
     };
   };
 }

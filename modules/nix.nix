@@ -48,7 +48,12 @@
   system.autoUpgrade = {
     enable = true;
     flake = "github:reuski/nix/main#hiisi";
-    flags = [ "--refresh" "--option" "tarball-ttl" "0" ];
+    flags = [
+      "--refresh"
+      "--option"
+      "tarball-ttl"
+      "0"
+    ];
     dates = "daily";
     randomizedDelaySec = "45min";
     persistent = true;
