@@ -130,7 +130,15 @@
       apps.${system}.update-custom = {
         type = "app";
         program = "${pkgs.writeShellScriptBin "update-custom" ''
-          PATH=${pkgs.lib.makeBinPath (with pkgs; [ curl jq ])}:$PATH
+          PATH=${
+            pkgs.lib.makeBinPath (
+              with pkgs;
+              [
+                curl
+                jq
+              ]
+            )
+          }:$PATH
           set -euo pipefail
 
           update_release() {

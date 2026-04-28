@@ -72,12 +72,30 @@
 
       controlCenter = {
         cards = [
-          { enabled = false; id = "profile-card"; }
-          { enabled = true; id = "shortcuts-card"; }
-          { enabled = true; id = "audio-card"; }
-          { enabled = false; id = "brightness-card"; }
-          { enabled = false; id = "weather-card"; }
-          { enabled = true; id = "media-sysmon-card"; }
+          {
+            enabled = false;
+            id = "profile-card";
+          }
+          {
+            enabled = true;
+            id = "shortcuts-card";
+          }
+          {
+            enabled = true;
+            id = "audio-card";
+          }
+          {
+            enabled = false;
+            id = "brightness-card";
+          }
+          {
+            enabled = false;
+            id = "weather-card";
+          }
+          {
+            enabled = true;
+            id = "media-sysmon-card";
+          }
         ];
       };
 

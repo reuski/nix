@@ -1,7 +1,10 @@
 { config, pkgs, ... }:
 
 {
-  environment.systemPackages = [ pkgs.open-fprintd pkgs.python-validity ];
+  environment.systemPackages = [
+    pkgs.open-fprintd
+    pkgs.python-validity
+  ];
 
   systemd.packages = [ pkgs.open-fprintd ];
 
