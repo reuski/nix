@@ -125,7 +125,7 @@
       };
 
       packages.${system}.helium-browser = pkgs.helium-browser;
-      formatter.${system} = pkgs.nixfmt-rfc-style;
+      formatter.${system} = pkgs.nixfmt;
 
       apps.${system}.update-custom = {
         type = "app";
@@ -152,7 +152,7 @@
 
             url=$(echo "$url_template" | sed "s/{version}/$latest/g")
             hash=$(nix-prefetch-url --type sha256 "$url")
-            sri=$(nix hash to-sri --type sha256 "$hash")
+            sri=$(nix hash convert --hash-algo sha256 "$hash")
 
             sed -i 's/^  version = ".*";/  version = "'"$latest"'";/' "$file"
             sed -i 's|^    hash = ".*";|    hash = "'"$sri"'";|' "$file"
@@ -171,7 +171,7 @@
 
             url=$(echo "$url_template" | sed "s/{version}/$latest/g")
             hash=$(nix-prefetch-url --type sha256 "$url")
-            sri=$(nix hash to-sri --type sha256 "$hash")
+            sri=$(nix hash convert --hash-algo sha256 "$hash")
 
             sed -i 's/^  version = ".*";/  version = "'"$latest"'";/' "$file"
             sed -i 's|^    hash = ".*";|    hash = "'"$sri"'";|' "$file"
