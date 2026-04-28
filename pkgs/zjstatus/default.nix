@@ -6,7 +6,7 @@
 
 stdenvNoCC.mkDerivation rec {
   pname = "zjstatus";
-  version = "0.23.0";
+  version = "v0.23.0";
 
   src = fetchurl {
     url = "https://github.com/dj95/zjstatus/releases/download/v${version}/zjstatus.wasm";
