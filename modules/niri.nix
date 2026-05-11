@@ -1,6 +1,8 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 let
   niriPackage = pkgs.niri-unstable;
+  niriSession = lib.getExe' niriPackage "niri-session";
+  tuigreet = lib.getExe pkgs.tuigreet;
 in
 {
   programs.niri = {
@@ -11,7 +13,7 @@ in
   services.greetd = {
     enable = true;
     settings.default_session = {
-      command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-user-session --cmd ${niriPackage}/bin/niri-session";
+      command = "${tuigreet} --time --remember --remember-user-session --cmd ${niriSession}";
       user = "greeter";
     };
   };
@@ -24,6 +26,7 @@ in
   security.polkit.enable = true;
   programs.dconf.enable = true;
   services.gnome.gnome-keyring.enable = true;
+  security.pam.services.greetd.enableGnomeKeyring = true;
 
   environment.sessionVariables = {
     QT_QPA_PLATFORM = "wayland";

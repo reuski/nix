@@ -25,7 +25,7 @@ in
     systemd = {
       enable = true;
       environment = {
-        USE_LAYER_SHELL = true;
+        USE_LAYER_SHELL = "1";
         QT_QPA_PLATFORM = "wayland";
       };
     };

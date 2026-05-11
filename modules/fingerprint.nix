@@ -1,5 +1,7 @@
-{ config, pkgs, ... }:
-
+{ config, lib, pkgs, ... }:
+let
+  systemctl = lib.getExe' config.systemd.package "systemctl";
+in
 {
   environment.systemPackages = [
     pkgs.open-fprintd
@@ -7,6 +9,10 @@
   ];
 
   systemd.packages = [ pkgs.open-fprintd ];
+  services.dbus.packages = [
+    pkgs.open-fprintd
+    pkgs.python-validity
+  ];
 
   systemd.tmpfiles.rules = [ "d /var/lib/python-validity 0755 root root -" ];
 
@@ -29,8 +35,8 @@
 
     LABEL="python_validity_match"
 
-    ACTION=="add|change", ATTR{power/control}="auto", RUN+="${config.systemd.package}/bin/systemctl --no-block start python3-validity.service"
-    ACTION=="remove", RUN+="${config.systemd.package}/bin/systemctl --no-block stop python3-validity.service"
+    ACTION=="add|change", ATTR{power/control}="auto", RUN+="${systemctl} --no-block start python3-validity.service"
+    ACTION=="remove", RUN+="${systemctl} --no-block stop python3-validity.service"
 
     LABEL="python_validity_end"
   '';
@@ -40,7 +46,7 @@
     after = [ "open-fprintd.service" ];
     serviceConfig = {
       Type = "simple";
-      ExecStart = "${pkgs.python-validity}/lib/python-validity/dbus-service --debug";
+      ExecStart = "${pkgs.python-validity}/lib/python-validity/dbus-service";
       Restart = "no";
     };
   };

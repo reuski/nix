@@ -6,7 +6,7 @@ export NIX_CONFIG="experimental-features = nix-command flakes
 accept-flake-config = true
 download-buffer-size = 536870912"
 
-URI="github:reuski/nix#hiisi"
+URI="github:reuski/nix/main#hiisi"
 
 nix run github:nix-community/disko -- --mode destroy,format,mount --yes-wipe-all-disks --flake "$URI" && \
 nixos-install --flake "$URI" --no-root-passwd && \

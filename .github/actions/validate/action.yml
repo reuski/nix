@@ -1,5 +1,5 @@
 name: validate
-description: Check formatting and evaluate Nix expressions
+description: Check formatting, evaluate Nix expressions, and build smoke tests
 
 runs:
   using: composite
@@ -18,5 +18,14 @@ runs:
     - run: nix eval --raw .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
       shell: bash
 
-    - run: nix eval --raw .#packages.x86_64-linux.helium-browser.drvPath
+    - run: |
+        for package in helium-browser python-validity zjstatus; do
+          nix eval --raw ".#packages.x86_64-linux.$package.drvPath" >/dev/null
+        done
+      shell: bash
+
+    - run: |
+        for package in python-validity zjstatus; do
+          nix build --no-link ".#packages.x86_64-linux.$package"
+        done
       shell: bash

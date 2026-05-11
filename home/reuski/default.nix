@@ -84,7 +84,7 @@ in
     '';
     shellAbbrs = {
       g = "git";
-      vi = "vim";
+      vi = "hx";
       dl = "cd ~/Downloads";
       p = "cd ~/Projects";
     };
@@ -184,7 +184,6 @@ in
     enable = true;
     colorScheme = "dark";
     theme = gruvboxDarkGtkTheme;
-    gtk4.theme = gruvboxDarkGtkTheme;
     iconTheme = {
       package = pkgs.gruvbox-plus-icons;
       name = "Gruvbox-Plus-Dark";
