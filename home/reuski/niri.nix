@@ -9,10 +9,11 @@ let
   vicinaePackage = inputs.vicinae.packages.${pkgs.stdenv.hostPlatform.system}.default;
   wallpaper = ./assets/wallpaper.png;
   wpctl = lib.getExe' pkgs.wireplumber "wpctl";
+  noctaliaShell = lib.getExe' noctaliaPackage "noctalia-shell";
   noctalia =
     cmd:
     [
-      "${noctaliaPackage}/bin/noctalia-shell"
+      noctaliaShell
       "ipc"
       "call"
     ]
@@ -96,7 +97,7 @@ in
           "fill"
         ];
       }
-      { command = [ "${noctaliaPackage}/bin/noctalia-shell" ]; }
+      { command = [ noctaliaShell ]; }
     ];
 
     binds = {

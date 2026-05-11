@@ -32,7 +32,7 @@ python3Packages.buildPythonPackage rec {
 
   postPatch = ''
     substituteInPlace validitysensor/init_data_dir.py \
-      --replace '/var/run/python-validity/' '/var/lib/python-validity/'
+      --replace-fail '/var/run/python-validity/' '/var/lib/python-validity/'
   '';
 
   postInstall = ''

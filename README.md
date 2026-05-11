@@ -12,7 +12,7 @@ curl -L https://github.com/reuski/nix/raw/main/install.sh | sh
 ## Password hash
 
 ```sh
-set tmp $(mktemp -d)
+tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 systemd-firstboot --root="$tmp" --prompt-root-password --force --welcome=no
 chmod u+r "$tmp/etc/shadow"

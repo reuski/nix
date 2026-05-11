@@ -16,4 +16,6 @@
     algorithm = "zstd";
     memoryPercent = 50;
   };
+
+  systemd.oomd.enable = true;
 }

@@ -116,7 +116,9 @@ in
           plugin location="zjstatus"
         }
       }
-      tab
+      tab {
+        pane
+      }
     }
   '';
 }

@@ -112,7 +112,6 @@
           ./hosts/hiisi
           ./modules/boot.nix
           ./modules/networking.nix
-          ./modules/dbus.nix
           ./modules/users.nix
           ./modules/locale.nix
           ./modules/audio.nix
@@ -124,8 +123,12 @@
         ];
       };
 
-      packages.${system}.helium-browser = pkgs.helium-browser;
-      formatter.${system} = pkgs.nixfmt;
+      packages.${system} = {
+        helium-browser = pkgs.helium-browser;
+        python-validity = pkgs.python-validity;
+        zjstatus = pkgs.zjstatus;
+      };
+      formatter.${system} = pkgs.nixfmt-rfc-style;
 
       apps.${system}.update-custom = {
         type = "app";
@@ -135,7 +138,9 @@
               with pkgs;
               [
                 curl
+                gnused
                 jq
+                nix
               ]
             )
           }:$PATH

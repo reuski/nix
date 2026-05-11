@@ -9,7 +9,7 @@ stdenvNoCC.mkDerivation rec {
   version = "v0.23.0";
 
   src = fetchurl {
-    url = "https://github.com/dj95/zjstatus/releases/download/v${version}/zjstatus.wasm";
+    url = "https://github.com/dj95/zjstatus/releases/download/${version}/zjstatus.wasm";
     hash = "sha256-4AaQEiNSQjnbYYAh5MxdF/gtxL+uVDKJW6QfA/E4Yf8=";
   };
 
