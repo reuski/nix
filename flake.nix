@@ -55,7 +55,6 @@
 
   outputs =
     inputs@{
-      self,
       nixpkgs,
       disko,
       home-manager,
@@ -82,7 +81,7 @@
     in
     {
       nixosConfigurations.hiisi = nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit inputs self; };
+        specialArgs = { inherit inputs; };
         modules = [
           { nixpkgs.overlays = overlays; }
 
