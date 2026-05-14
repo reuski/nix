@@ -20,7 +20,12 @@
       ];
 
       services.xserver.xkb = {
-        inherit (config.profile.keyboard) model layout variant options;
+        inherit (config.profile.keyboard)
+          model
+          layout
+          variant
+          options
+          ;
       };
 
       console = {
