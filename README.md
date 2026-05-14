@@ -1,26 +1,34 @@
 # reuski/nix
 
-Dendritic NixOS flake for one active machine: ThinkPad T480 `hiisi` (`x86_64-linux`).
+Pure unstable NixOS flake for ThinkPad T480 `hiisi` (`x86_64-linux`).
 
-The repo uses `flake-parts`; every non-ignored Nix file under `modules/` is a top-level module. Lower-level NixOS, Home Manager, package, and future nix-darwin modules are exported through `flake.modules.*` and composed by stacks/hosts.
+Dendritic `flake-parts`: every visible `*.nix` under `modules/` is a top-level module. Features are exported through `flake.modules.*` and composed by stack/host modules.
 
-## Layout
+## Stack
+
+systemd-boot, latest kernel, systemd initrd, PipeWire, NetworkManager+iwd+resolved, nftables, niri, greetd, Ghostty, fish, Helix.
+
+Wayland-only. No X11, fallback desktop, PulseAudio, legacy networking, or duplicate tooling.
+
+## Tree
 
 ```text
-flake.nix                    # flake-parts entrypoint and automatic modules/ import
-modules/configurations/      # nixosConfigurations and dormant darwinConfigurations builders
-modules/hosts/hiisi/         # only active host; _hardware.nix and _disko.nix are explicit helpers
-modules/stacks/              # host-facing composition
-modules/nixos/               # NixOS modules
-modules/home-manager/        # Home Manager modules
-modules/profile/             # shared profile and assets
-modules/packages/            # overlays and package outputs
-modules/apps/                # flake apps
+flake.nix                 # inputs and module tree import
+modules/configurations/   # output builders
+modules/hosts/hiisi/      # active host; _disko.nix is destructive
+modules/stacks/           # host composition
+modules/nixos/            # NixOS modules
+modules/home-manager/     # Home Manager modules
+modules/profile/          # shared profile/assets
+modules/packages/         # overlays/packages
+modules/apps/             # flake apps
 ```
 
-`configurations.darwin` is present for future nix-darwin expansion, but no macOS host is defined.
+`configurations.darwin` exists only as dormant future plumbing.
 
 ## Install
+
+Destroys `/dev/nvme0n1`.
 
 ```sh
 sudo -i
@@ -28,8 +36,6 @@ rfkill unblock all
 nmcli device wifi connect "SSID" password "PASSWORD"
 curl -L https://github.com/reuski/nix/raw/main/install.sh | sh
 ```
-
-`install.sh` runs disko against `/dev/nvme0n1`.
 
 ## Rebuild
 
@@ -43,11 +49,17 @@ Local checkout:
 sudo nixos-rebuild switch --flake .#hiisi
 ```
 
-## Update
+## Update / validate
 
 ```sh
 nix flake update
 nix run .#update-custom
+nix flake check
+```
+
+Eval only:
+
+```sh
 nix eval --raw .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
 ```
 

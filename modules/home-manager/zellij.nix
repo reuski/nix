@@ -10,105 +10,114 @@
         theme "gruvbox-dark"
         default_layout "main"
         default_mode "locked"
+        simplified_ui true
+        pane_frames false
         mouse_mode true
         copy_command "wl-copy"
         copy_on_select true
-        session_serialization true
+        session_serialization false
         show_startup_tips false
+        show_release_notes false
 
         plugins {
-          zjstatus location="file:${pkgs.zjstatus}/share/zellij/plugins/zjstatus.wasm" {
-            hide_frame_for_single_pane "true"
+            zjstatus location="file:${pkgs.zjstatus}/share/zellij/plugins/zjstatus.wasm" {
+                color_bg     "${gruvbox.bg0}"
+                color_fg     "${gruvbox.fg1}"
+                color_red    "${gruvbox.red}"
+                color_green  "${gruvbox.green}"
+                color_blue   "${gruvbox.blue}"
+                color_yellow "${gruvbox.yellow}"
+                color_gray   "${gruvbox.gray}"
 
-            color_bg     "${gruvbox.bg0}"
-            color_fg     "${gruvbox.fg1}"
-            color_red    "${gruvbox.red}"
-            color_green  "${gruvbox.green}"
-            color_blue   "${gruvbox.blue}"
-            color_yellow "${gruvbox.yellow}"
-            color_gray   "${gruvbox.gray}"
+                border_enabled  "true"
+                border_char     " "
+                border_format   "{char}"
+                border_position "top"
 
-            format_left  "#[fg=$color_fg,bold]{mode}  {tabs}"
-            format_right "#[fg=$color_gray]{datetime}"
-            format_space " "
+                format_left  "#[fg=$gray]{mode}  {tabs}"
+                format_right "#[fg=$gray]{datetime}"
+                format_space " "
 
-            mode_normal        "#[fg=$color_green,bold]NORM"
-            mode_locked        "#[fg=$color_red,bold]LOCK"
-            mode_tmux          "#[fg=$color_yellow,bold]TMUX"
-            mode_resize        "#[fg=$color_yellow,bold]RSZE"
-            mode_pane          "#[fg=$color_yellow,bold]PANE"
-            mode_tab           "#[fg=$color_yellow,bold]TAB"
-            mode_scroll        "#[fg=$color_yellow,bold]SCRL"
-            mode_enter_search  "#[fg=$color_yellow,bold]SRCH"
-            mode_search        "#[fg=$color_yellow,bold]SRCH"
-            mode_rename_tab    "#[fg=$color_yellow,bold]RNME"
-            mode_rename_pane   "#[fg=$color_yellow,bold]RNME"
-            mode_session       "#[fg=$color_yellow,bold]SESS"
-            mode_move          "#[fg=$color_yellow,bold]MOVE"
-            mode_prompt        "#[fg=$color_blue,bold]PRMT"
-            mode_default_to_mode "normal"
+                mode_normal         "#[fg=$green]NORM"
+                mode_locked         "#[fg=$red]LOCK"
+                mode_tmux           "#[fg=$yellow]TMUX"
+                mode_resize         "#[fg=$yellow]RESZ"
+                mode_pane           "#[fg=$yellow]PANE"
+                mode_tab            "#[fg=$yellow]TABS"
+                mode_scroll         "#[fg=$yellow]SCRL"
+                mode_enter_search   "#[fg=$yellow]SRCH"
+                mode_search         "#[fg=$yellow]SRCH"
+                mode_rename_tab     "#[fg=$yellow]RNAM"
+                mode_rename_pane    "#[fg=$yellow]RNAM"
+                mode_session        "#[fg=$yellow]SESS"
+                mode_move           "#[fg=$yellow]MOVE"
+                mode_prompt         "#[fg=$blue]PROM"
+                mode_default_to_mode "normal"
 
-            tab_normal               "#[fg=$color_gray] {index} "
-            tab_active               "#[fg=$color_fg,bold] {index} "
-            tab_sync_indicator       "󰓦 "
-            tab_fullscreen_indicator "󰊓 "
-            tab_floating_indicator   "󰉈 "
+                tab_normal               "#[fg=$gray]  {index}  "
+                tab_active               "#[fg=$fg,bold]  {index}  "
+                tab_sync_indicator       "  SYNC "
+                tab_fullscreen_indicator "  FULL "
+                tab_floating_indicator   "  FLOAT "
 
-            datetime         "#[fg=$color_gray] {format} "
-            datetime_format  "%H:%M"
-            datetime_timezone "${config.profile.timeZone}"
-          }
+                datetime          "#[fg=$gray]{format}"
+                datetime_format   "%H:%M"
+                datetime_timezone "${config.profile.timeZone}"
+            }
         }
 
         themes {
-          gruvbox-dark {
-            fg "${gruvbox.fg1}"
-            bg "${gruvbox.bg0}"
-            black "${gruvbox.black}"
-            red "${gruvbox.red}"
-            green "${gruvbox.green}"
-            yellow "${gruvbox.yellow}"
-            blue "${gruvbox.blue}"
-            magenta "${gruvbox.purple}"
-            cyan "${gruvbox.aqua}"
-            white "${gruvbox.white}"
-            orange "${gruvbox.orange}"
-          }
+            gruvbox-dark {
+                fg "${gruvbox.fg1}"
+                bg "${gruvbox.bg0}"
+                black "${gruvbox.black}"
+                red "${gruvbox.red}"
+                green "${gruvbox.green}"
+                yellow "${gruvbox.yellow}"
+                blue "${gruvbox.blue}"
+                magenta "${gruvbox.purple}"
+                cyan "${gruvbox.aqua}"
+                white "${gruvbox.white}"
+                orange "${gruvbox.orange}"
+            }
         }
 
         keybinds clear-defaults=true {
-          locked {
-            bind "Alt g" { SwitchToMode "normal"; }
-            bind "Alt n" { NewPane; }
-            bind "Alt t" { NewTab; }
-            bind "Alt w" { CloseFocus; }
-            bind "Alt h" { MoveFocus "left"; }
-            bind "Alt l" { MoveFocus "right"; }
-            bind "Alt j" { MoveFocus "down"; }
-            bind "Alt k" { MoveFocus "up"; }
-            bind "Alt H" { MovePane "left"; }
-            bind "Alt L" { MovePane "right"; }
-            bind "Alt J" { MovePane "down"; }
-            bind "Alt K" { MovePane "up"; }
-            bind "Alt f" { ToggleFloatingPanes; }
-          }
-          shared_except "locked" {
-            bind "Alt g" "Esc" "Enter" { SwitchToMode "locked"; }
-          }
+            locked {
+                bind "Alt g" { SwitchToMode "Normal"; }
+                bind "Alt n" { NewPane; }
+                bind "Alt t" { NewTab; }
+                bind "Alt w" { CloseFocus; }
+                bind "Alt h" { MoveFocus "Left"; }
+                bind "Alt l" { MoveFocus "Right"; }
+                bind "Alt j" { MoveFocus "Down"; }
+                bind "Alt k" { MoveFocus "Up"; }
+                bind "Alt H" { MovePane "Left"; }
+                bind "Alt L" { MovePane "Right"; }
+                bind "Alt J" { MovePane "Down"; }
+                bind "Alt K" { MovePane "Up"; }
+                bind "Alt f" { ToggleFloatingPanes; }
+            }
+
+            shared_except "locked" {
+                bind "Alt g" "Esc" "Enter" { SwitchToMode "Locked"; }
+            }
         }
       '';
 
       xdg.configFile."zellij/layouts/main.kdl".text = ''
         layout {
-          default_tab_template {
-            children
-            pane size=1 borderless=true {
-              plugin location="zjstatus"
+            default_tab_template {
+                children
+
+                pane size=2 borderless=true {
+                    plugin location="zjstatus"
+                }
             }
-          }
-          tab {
-            pane
-          }
+
+            tab {
+                pane
+            }
         }
       '';
     };
