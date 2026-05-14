@@ -4,6 +4,16 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+
+    darwin = {
+      url = "github:LnL7/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -54,147 +64,30 @@
   };
 
   outputs =
-    inputs@{
-      nixpkgs,
-      disko,
-      home-manager,
-      nixos-hardware,
-      niri,
-      noctalia,
-      vicinae,
-      ghostty,
-      ...
-    }:
+    inputs:
     let
-      system = "x86_64-linux";
-
-      overlays = [
-        (import ./overlays { inherit inputs; })
-        niri.overlays.niri
-        ghostty.overlays.default
-      ];
-
-      pkgs = import nixpkgs {
-        inherit system overlays;
-        config.allowUnfree = true;
-      };
+      importTree =
+        path:
+        let
+          entries = builtins.readDir path;
+          names = builtins.attrNames entries;
+          visible = builtins.filter (name: builtins.match "_.*" name == null) names;
+          importEntry =
+            name:
+            let
+              type = entries.${name};
+              entry = path + "/${name}";
+            in
+            if type == "directory" then
+              importTree entry
+            else if type == "regular" && builtins.match ".*\\.nix" name != null then
+              [ entry ]
+            else
+              [ ];
+        in
+        builtins.concatLists (map importEntry visible);
     in
-    {
-      nixosConfigurations.hiisi = nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit inputs; };
-        modules = [
-          { nixpkgs.overlays = overlays; }
-
-          disko.nixosModules.disko
-          ./hosts/hiisi/disko.nix
-
-          nixos-hardware.nixosModules.lenovo-thinkpad-t480
-          ./hosts/hiisi/hardware-configuration.nix
-
-          niri.nixosModules.niri
-
-          home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              extraSpecialArgs = { inherit inputs; };
-              backupFileExtension = "hm-backup";
-              users.reuski = import ./home/reuski;
-              sharedModules = [
-                noctalia.homeModules.default
-                vicinae.homeManagerModules.default
-              ];
-            };
-          }
-
-          ./hosts/hiisi
-          ./modules/boot.nix
-          ./modules/networking.nix
-          ./modules/users.nix
-          ./modules/locale.nix
-          ./modules/audio.nix
-          ./modules/graphics.nix
-          ./modules/power.nix
-          ./modules/niri.nix
-          ./modules/nix.nix
-          ./modules/fingerprint.nix
-        ];
-      };
-
-      packages.${system} = {
-        helium-browser = pkgs.helium-browser;
-        python-validity = pkgs.python-validity;
-        zjstatus = pkgs.zjstatus;
-      };
-      formatter.${system} = pkgs.nixfmt-rfc-style;
-
-      apps.${system}.update-custom = {
-        type = "app";
-        program = "${pkgs.writeShellScriptBin "update-custom" ''
-          PATH=${
-            pkgs.lib.makeBinPath (
-              with pkgs;
-              [
-                curl
-                gnused
-                jq
-                nix
-              ]
-            )
-          }:$PATH
-          set -euo pipefail
-
-          update_release() {
-            local repo="$1" file="$2" url_template="$3"
-            local latest current url hash sri
-
-            latest=$(curl -fsSL "https://api.github.com/repos/$repo/releases/latest" | jq -r '.tag_name')
-            current=$(sed -n 's/.*version = "\([^"]*\)".*/\1/p' "$file" | head -1)
-
-            [ "$latest" = "$current" ] && { echo "$repo: up to date ($current)"; return 0; }
-
-            url=$(echo "$url_template" | sed "s/{version}/$latest/g")
-            hash=$(nix-prefetch-url --type sha256 "$url")
-            sri=$(nix hash convert --hash-algo sha256 "$hash")
-
-            sed -i 's/^  version = ".*";/  version = "'"$latest"'";/' "$file"
-            sed -i 's|^    hash = ".*";|    hash = "'"$sri"'";|' "$file"
-
-            echo "$repo: $current -> $latest"
-          }
-
-          update_tag() {
-            local repo="$1" file="$2" url_template="$3"
-            local latest current url hash sri
-
-            latest=$(curl -fsSL "https://api.github.com/repos/$repo/tags?per_page=1" | jq -r '.[0].name')
-            current=$(sed -n 's/.*version = "\([^"]*\)".*/\1/p' "$file" | head -1)
-
-            [ "$latest" = "$current" ] && { echo "$repo: up to date ($current)"; return 0; }
-
-            url=$(echo "$url_template" | sed "s/{version}/$latest/g")
-            hash=$(nix-prefetch-url --type sha256 "$url")
-            sri=$(nix hash convert --hash-algo sha256 "$hash")
-
-            sed -i 's/^  version = ".*";/  version = "'"$latest"'";/' "$file"
-            sed -i 's|^    hash = ".*";|    hash = "'"$sri"'";|' "$file"
-
-            echo "$repo: $current -> $latest"
-          }
-
-          update_release "imputnet/helium-linux" \
-            "pkgs/helium-browser/default.nix" \
-            "https://github.com/imputnet/helium-linux/releases/download/{version}/helium-{version}-x86_64_linux.tar.xz"
-
-          update_tag "uunicorn/python-validity" \
-            "pkgs/python-validity/default.nix" \
-            "https://github.com/uunicorn/python-validity/archive/refs/tags/{version}.tar.gz"
-
-          update_release "dj95/zjstatus" \
-            "pkgs/zjstatus/default.nix" \
-            "https://github.com/dj95/zjstatus/releases/download/{version}/zjstatus.wasm"
-        ''}/bin/update-custom";
-      };
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = importTree ./modules;
     };
 }
