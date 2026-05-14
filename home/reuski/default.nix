@@ -34,6 +34,8 @@ in
   home.homeDirectory = "/home/reuski";
   home.stateVersion = "25.11";
 
+  home.file."Pictures/Screenshots/.keep".text = "";
+
   home.packages = with pkgs; [
     helium-browser
     wl-clipboard
@@ -184,6 +186,7 @@ in
     enable = true;
     colorScheme = "dark";
     theme = gruvboxDarkGtkTheme;
+    gtk4.theme = gruvboxDarkGtkTheme;
     iconTheme = {
       package = pkgs.gruvbox-plus-icons;
       name = "Gruvbox-Plus-Dark";

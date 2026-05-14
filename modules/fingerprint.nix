@@ -8,11 +8,6 @@ let
   systemctl = lib.getExe' config.systemd.package "systemctl";
 in
 {
-  environment.systemPackages = [
-    pkgs.open-fprintd
-    pkgs.python-validity
-  ];
-
   systemd.packages = [ pkgs.open-fprintd ];
   services.dbus.packages = [
     pkgs.open-fprintd

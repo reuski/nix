@@ -20,7 +20,8 @@ in
 
   xdg.portal = {
     xdgOpenUsePortal = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = lib.mkForce [ pkgs.xdg-desktop-portal-gtk ];
+    config.common.default = [ "gtk" ];
   };
 
   security.polkit.enable = true;
@@ -57,6 +58,5 @@ in
 
   systemd.tmpfiles.rules = [
     "d /var/cache/tuigreet 0755 greeter greeter -"
-    "d /home/reuski/Pictures/Screenshots 0755 reuski users -"
   ];
 }
