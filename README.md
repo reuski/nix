@@ -1,32 +1,35 @@
 # reuski/nix
 
-Minimal Dendritic Nix flake.
+Minimal Dendritic Nix flake for personal systems.
 
-Current target: ThinkPad T480 `hiisi` (`x86_64-linux`). Dormant nix-darwin plumbing exists for a future MacBook; VPS hosts should use separate minimal stacks.
+## Shape
 
-## Design
+Visible `modules/**/*.nix` files are flake-parts modules. `_*.nix` files are local helpers. Hosts compose reusable modules through `modules/stacks/`.
 
-Every visible `modules/**/*.nix` file is a top-level flake-parts module. Reusable features are exported through `flake.modules.*`; hosts and stacks compose them into concrete systems. `_*.nix` files are local helpers.
+## Hosts
 
-Foundation: unstable NixOS, systemd-boot, latest kernel, systemd initrd, PipeWire, NetworkManager+iwd+resolved, nftables, niri, greetd, Ghostty, fish, Helix.
+- `hiisi`: laptop.
+- `shodan`: server at `shodan.reuski.dev`.
 
-No X11 fallback, backup desktop, PulseAudio, legacy networking, or duplicate tools.
+## Stack
 
-## Layout
+- Base: NixOS unstable, latest Linux, nftables.
+- Workstation: systemd-boot, NetworkManager+iwd+resolved, PipeWire, niri, greetd, Ghostty, fish, Helix.
+- Server: systemd-networkd, OpenSSH key auth, Caddy, Bun, Git-backed web apps.
 
-```text
-flake.nix                 inputs and automatic module import
-modules/configurations/   output builders
-modules/hosts/            concrete hosts and local helpers
-modules/stacks/           host-facing compositions
-modules/nixos/            reusable NixOS modules
-modules/home-manager/     reusable Home Manager modules
-modules/profile/          shared identity/theme data
-modules/packages/         overlays and custom packages
-modules/apps/             flake apps
+## Web
+
+- `reuski.dev`: static site from `github:reuski/reuski.dev`.
+- `wahuu.games`: Bun service from `github:reuski/wahuu.games`.
+
+Repos sync to `/var/lib/webapps/repos`; app state lives in `/var/lib/webapps/apps`. Private deploy keys live in `/var/lib/webapps/keys`; secrets live in `/var/lib/webapps/secrets`.
+
+```sh
+sudo systemctl restart web-site-reuski-dev.service
+sudo systemctl restart web-service-wahuu-games.service
 ```
 
-## Install
+## Install hiisi
 
 Destroys `/dev/nvme0n1`.
 
@@ -41,24 +44,13 @@ curl -L https://github.com/reuski/nix/raw/main/install.sh | sh
 
 ```sh
 sudo nixos-rebuild switch --flake github:reuski/nix/main#hiisi
+sudo nixos-rebuild switch --flake github:reuski/nix/main#shodan
 ```
 
-Local checkout:
-
-```sh
-sudo nixos-rebuild switch --flake .#hiisi
-```
-
-## Validate / update
+## Validate
 
 ```sh
 nix flake check
-nix flake update
-nix run .#update-custom
-```
-
-Eval only:
-
-```sh
 nix eval --raw .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
+nix eval --raw .#nixosConfigurations.shodan.config.system.build.toplevel.drvPath
 ```

@@ -1,5 +1,5 @@
 {
-  description = "hiisi laptop";
+  description = "personal systems";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

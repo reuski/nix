@@ -1,7 +1,7 @@
 { ... }:
 {
   flake.modules.nixos.thinkpadT480 =
-    { lib, ... }:
+    { lib, pkgs, ... }:
     {
       hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
       hardware.enableRedistributableFirmware = lib.mkDefault true;
@@ -13,5 +13,12 @@
         "nosgx"
         "btusb.enable_autosuspend=0"
       ];
+
+      hardware.graphics.extraPackages = with pkgs; [
+        intel-media-driver
+        vpl-gpu-rt
+      ];
+
+      environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
     };
 }

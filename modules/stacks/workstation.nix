@@ -3,12 +3,13 @@ let
   inherit (config.flake.modules) generic homeManager nixos;
 in
 {
-  flake.modules.nixos.stackHiisi =
+  flake.modules.nixos.stackWorkstation =
     { config, ... }:
     {
       imports = [
         generic.profile
         nixos.nixpkgs
+        nixos.desktopCaches
         nixos.boot
         nixos.networking
         nixos.users
@@ -18,7 +19,6 @@ in
         nixos.power
         nixos.niri
         nixos.nix
-        nixos.fingerprint
       ];
 
       home-manager.users.${config.profile.username} = {

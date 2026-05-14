@@ -10,7 +10,8 @@ in
       inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480
       nixos.thinkpadT480
       ./_hardware.nix
-      nixos.stackHiisi
+      ./_fingerprint.nix
+      nixos.stackWorkstation
     ];
 
     system.stateVersion = "25.11";

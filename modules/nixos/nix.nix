@@ -1,7 +1,7 @@
 { inputs, ... }:
 {
   flake.modules.nixos.nix =
-    { ... }:
+    { config, ... }:
     {
       nix.channel.enable = false;
       nix.registry.nixpkgs.flake = inputs.nixpkgs;
@@ -18,19 +18,9 @@
         ];
         trusted-users = [ "@wheel" ];
         download-buffer-size = 536870912;
-        substituters = [
-          "https://cache.nixos.org"
-          "https://niri.cachix.org"
-          "https://noctalia.cachix.org"
-          "https://vicinae.cachix.org"
-          "https://ghostty.cachix.org"
-        ];
+        substituters = [ "https://cache.nixos.org" ];
         trusted-public-keys = [
           "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-          "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
-          "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
-          "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc="
-          "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
         ];
       };
 
@@ -47,7 +37,7 @@
 
       system.autoUpgrade = {
         enable = true;
-        flake = "github:reuski/nix/main#hiisi";
+        flake = "github:reuski/nix/main#${config.networking.hostName}";
         flags = [
           "--refresh"
           "--option"
