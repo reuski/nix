@@ -1,7 +1,12 @@
 { ... }:
 {
   flake.modules.homeManager.fish =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       gruvbox = config.profile.colors.gruvbox;
       fishHex = color: builtins.substring 1 6 color;

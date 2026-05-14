@@ -1,7 +1,12 @@
 { ... }:
 {
   flake.modules.homeManager.niri =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       wallpaper = ../profile/wallpaper.png;
       wpctl = lib.getExe' pkgs.wireplumber "wpctl";
@@ -22,7 +27,12 @@
         input = {
           keyboard = {
             xkb = {
-              inherit (config.profile.keyboard) model layout variant options;
+              inherit (config.profile.keyboard)
+                model
+                layout
+                variant
+                options
+                ;
             };
             repeat-delay = 200;
             repeat-rate = 50;
