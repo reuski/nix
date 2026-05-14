@@ -23,6 +23,7 @@
     {
       programs.niri.settings = {
         prefer-no-csd = true;
+        xwayland-satellite.enable = false;
 
         input = {
           keyboard = {

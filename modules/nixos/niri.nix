@@ -10,6 +10,8 @@
     {
       imports = [ inputs.niri.nixosModules.niri ];
 
+      niri-flake.cache.enable = false;
+
       programs.niri = {
         enable = true;
         package = niriPackage;
@@ -23,15 +25,7 @@
         };
       };
 
-      xdg.portal = {
-        xdgOpenUsePortal = true;
-        extraPortals = lib.mkForce [ pkgs.xdg-desktop-portal-gtk ];
-        config.common.default = [ "gtk" ];
-      };
-
-      security.polkit.enable = true;
-      programs.dconf.enable = true;
-      services.gnome.gnome-keyring.enable = true;
+      xdg.portal.xdgOpenUsePortal = true;
       security.pam.services.greetd.enableGnomeKeyring = true;
 
       environment.sessionVariables = {
@@ -39,9 +33,9 @@
         QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
       };
 
+      fonts.enableDefaultPackages = false;
       fonts.packages = with pkgs; [
         nerd-fonts.hack
-        nerd-fonts.jetbrains-mono
         nerd-fonts.symbols-only
         noto-fonts
         noto-fonts-cjk-sans

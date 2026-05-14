@@ -10,8 +10,6 @@
         wl-clipboard
         brightnessctl
         playerctl
-        grim
-        slurp
         imv
         zellij
       ];

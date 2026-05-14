@@ -3,6 +3,8 @@
   flake.modules.nixos.users =
     { config, pkgs, ... }:
     {
+      users.mutableUsers = false;
+
       users.users.${config.profile.username} = {
         isNormalUser = true;
         description = config.profile.fullName;
@@ -12,7 +14,6 @@
           "wheel"
           "networkmanager"
           "video"
-          "input"
         ];
         shell = pkgs.fish;
       };

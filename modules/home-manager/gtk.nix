@@ -13,7 +13,7 @@
         enable = true;
         colorScheme = "dark";
         theme = gruvboxDarkGtkTheme;
-        gtk4.theme = gruvboxDarkGtkTheme;
+        gtk4.theme = null;
         iconTheme = {
           package = pkgs.gruvbox-plus-icons;
           name = "Gruvbox-Plus-Dark";

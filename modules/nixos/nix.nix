@@ -5,7 +5,7 @@
     {
       nix.channel.enable = false;
       nix.registry.nixpkgs.flake = inputs.nixpkgs;
-      nix.nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
+      nix.nixPath = [ ];
 
       nix.settings = {
         max-jobs = "auto";
