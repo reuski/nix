@@ -4,7 +4,12 @@ let
 in
 {
   configurations.nixos.shodan.module =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     {
       imports = [
         ./_hardware.nix
