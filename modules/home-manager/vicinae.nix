@@ -33,7 +33,7 @@ in
         };
       };
       settings = {
-        search_files_in_root = true;
+        search_files_in_root = false;
         favorites = [ ];
         fallbacks = [ "files:search" ];
         providers = {

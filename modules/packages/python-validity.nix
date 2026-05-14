@@ -14,7 +14,7 @@
       python3Packages.buildPythonPackage rec {
         pname = "python-validity";
         version = "0.15";
-        format = "setuptools";
+        pyproject = true;
 
         src = fetchurl {
           url = "https://github.com/uunicorn/python-validity/archive/refs/tags/${version}.tar.gz";
@@ -26,7 +26,9 @@
           wrapGAppsNoGuiHook
         ];
 
-        propagatedBuildInputs = with python3Packages; [
+        build-system = [ python3Packages.setuptools ];
+
+        dependencies = with python3Packages; [
           cryptography
           dbus-python
           pygobject3
