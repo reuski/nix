@@ -8,6 +8,7 @@ in
       inputs.disko.nixosModules.disko
       ./_disko.nix
       inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480
+      nixos.thinkpadT480
       ./_hardware.nix
       nixos.stackHiisi
     ];

@@ -11,21 +11,8 @@
     "rtsx_pci_sdmmc"
   ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [
-    "kvm-intel"
-    "thinkpad_acpi"
-  ];
+  boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
-
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
-  hardware.enableRedistributableFirmware = lib.mkDefault true;
-
-  boot.kernelParams = [
-    "acpi_backlight=native"
-    "mem_sleep_default=deep"
-    "nosgx"
-    "btusb.enable_autosuspend=0"
-  ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 }

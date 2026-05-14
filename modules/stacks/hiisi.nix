@@ -21,6 +21,9 @@ in
         nixos.fingerprint
       ];
 
-      home-manager.users.${config.profile.username}.imports = [ homeManager.reuski ];
+      home-manager.users.${config.profile.username} = {
+        imports = [ homeManager.reuski ];
+        profile = config.profile;
+      };
     };
 }
