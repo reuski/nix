@@ -12,4 +12,6 @@
 
   services.resolved.enable = true;
   services.timesyncd.enable = true;
+
+  systemd.services.NetworkManager-wait-online.enable = false;
 }
