@@ -9,7 +9,7 @@ Personal dendritic Nix flake — NixOS, nix-darwin, Home Manager.
 - Reusable modules export through `flake.modules.{nixos,darwin,homeManager,generic}`.
 - `modules/configurations/` registers `configurations.{nixos,darwin}` outputs.
 - `modules/hosts/` holds real systems only: `hiisi`, `shodan`, `abraxas`.
-- `modules/stacks/` composes roles; per-host hardware lives in `_hardware.nix`.
+- `modules/stacks/` composes reusable stacks; per-host hardware lives in `_hardware.nix`.
 
 ## Rules
 

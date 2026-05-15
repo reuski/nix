@@ -31,7 +31,7 @@ in
       programs.home-manager.enable = true;
     };
 
-  flake.modules.homeManager.reuski = {
+  flake.modules.homeManager.wayland = {
     imports = [
       homeManager.base
       homeManager.packages
@@ -43,7 +43,7 @@ in
     ];
   };
 
-  flake.modules.homeManager.reuskiMac = {
+  flake.modules.homeManager.mac = {
     imports = [
       homeManager.base
       homeManager.zed

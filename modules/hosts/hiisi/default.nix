@@ -11,7 +11,7 @@ in
       nixos.thinkpadT480
       ./_hardware.nix
       ./_fingerprint.nix
-      nixos.stackWorkstation
+      nixos.stackWayland
     ];
 
     site.autoUpgradeFlake = "github:reuski/nix/main";

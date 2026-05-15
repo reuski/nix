@@ -7,7 +7,7 @@ Dendritic Nix flake for personal NixOS and nix-darwin systems.
 - `flake.nix`: flake-parts entrypoint and recursive visible-module import.
 - `modules/configurations/`: `configurations.{nixos,darwin}` registries, flake outputs, checks.
 - `modules/hosts/`: concrete hosts plus private `_hardware.nix`, `_disko.nix`, and local helpers.
-- `modules/stacks/`: reusable role compositions.
+- `modules/stacks/`: reusable stack compositions.
 - `modules/nixos/`, `modules/darwin/`, `modules/home-manager/`, `modules/profile/`: reusable system and user modules.
 - `modules/packages/`: overlayed custom packages.
 - `modules/apps/update-custom.nix`: updater for custom package versions and hashes.
@@ -16,9 +16,9 @@ Dendritic Nix flake for personal NixOS and nix-darwin systems.
 
 | Host | Role | Notes |
 | --- | --- | --- |
-| `hiisi` | Workstation | ThinkPad T480, disko-managed ext4 install, niri, Home Manager profile. |
+| `hiisi` | Wayland | ThinkPad T480, disko-managed ext4 install, niri, Home Manager profile. |
 | `shodan` | Server | UpCloud VPS, systemd-networkd, OpenSSH, Caddy, Bun-backed web apps. |
-| `abraxas` | Macbook | Apple Silicon, nix-darwin, Helium + Ghostty via Homebrew, fish + zellij. |
+| `abraxas` | Mac | Apple Silicon MacBook, nix-darwin, Helium + Ghostty via Homebrew, fish + zellij. |
 
 ## Outputs
 
@@ -40,7 +40,7 @@ darwin-rebuild switch --flake .#<host>
 nix run .#update-custom
 ```
 
-## Macbook
+## MacBook
 
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
