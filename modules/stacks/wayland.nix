@@ -17,6 +17,7 @@ in
         nixos.audio
         nixos.graphics
         nixos.power
+        nixos.fonts
         nixos.niri
         nixos.nix
       ];

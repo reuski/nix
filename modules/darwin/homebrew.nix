@@ -14,8 +14,11 @@
         "redis"
       ];
       casks = [
+        "cleanshot"
         "ghostty"
         "helium"
+        "raycast"
+        "tableplus"
         "zed"
       ];
     };

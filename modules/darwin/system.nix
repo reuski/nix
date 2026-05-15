@@ -40,6 +40,16 @@
         trackpad.Clicking = true;
       };
 
+      system.defaults.CustomUserPreferences."com.apple.symbolichotkeys" = {
+        AppleSymbolicHotKeys = {
+          "64" = { enabled = false; };  # Spotlight: ⌘Space
+          "65" = { enabled = false; };  # Spotlight Finder: ⌃⌘Space
+          "28" = { enabled = false; };  # Screenshot to file: ⌘⇧3
+          "29" = { enabled = false; };  # Area screenshot to file: ⌘⇧4
+          "184" = { enabled = false; }; # Screenshot app: ⌘⇧5
+        };
+      };
+
       system.keyboard = {
         enableKeyMapping = true;
         remapCapsLockToControl = true;

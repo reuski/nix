@@ -39,9 +39,9 @@ jobs:
       - id: pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
-          commit-message: "chore: flake.lock update"
-          title: "chore: flake.lock update"
-          body: "Automated flake input refresh."
+          commit-message: "chore: update flake inputs and custom packages"
+          title: "chore: update flake inputs and custom packages"
+          body: "Automated flake input refresh and custom package version bump."
           branch: chore/flake-lock
           delete-branch: true
           labels: automated, flake-lock

@@ -14,11 +14,11 @@ Dendritic Nix flake for personal NixOS and nix-darwin systems.
 
 ## Hosts
 
-| Host | Role | Notes |
-| --- | --- | --- |
-| `hiisi` | Wayland | ThinkPad T480, disko-managed ext4 install, niri, Home Manager profile. |
-| `shodan` | Server | UpCloud VPS, systemd-networkd, OpenSSH, Caddy, Bun-backed web apps. |
-| `abraxas` | Mac | Apple Silicon MacBook, nix-darwin, Helium + Ghostty via Homebrew, fish + zellij. |
+| Host      | Role    | Notes                                                                            |
+| --------- | ------- | -------------------------------------------------------------------------------- |
+| `hiisi`   | Wayland | ThinkPad T480, disko-managed ext4 install, niri, Home Manager profile.           |
+| `shodan`  | Server  | UpCloud VPS, systemd-networkd, OpenSSH, Caddy, Bun-backed web apps.              |
+| `abraxas` | Mac     | Apple Silicon MacBook, nix-darwin, Helium + Ghostty via Homebrew, fish + zellij. |
 
 ## Outputs
 
@@ -47,6 +47,15 @@ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 nix run nix-darwin/master -- switch --flake github:reuski/nix/main#abraxas
 darwin-rebuild switch --flake .#abraxas
+```
+
+## Linux
+
+```sh
+sudo -i
+rfkill unblock all
+nmcli device wifi connect "SSID" password "PASSWORD"
+curl -L https://github.com/reuski/nix/raw/main/install.sh | sh
 ```
 
 ## VPS
