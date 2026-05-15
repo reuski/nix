@@ -50,7 +50,6 @@
         '';
         shellAbbrs = {
           g = "git";
-          vi = "hx";
           dl = "cd ~/Downloads";
           p = "cd ~/Projects";
         };

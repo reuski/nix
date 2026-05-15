@@ -5,6 +5,11 @@
       enable = true;
       package = null;
 
+      extensions = [
+        "0x96f"
+        "bearded-icon-theme"
+      ];
+
       userSettings = {
         theme = "0x96f Theme";
         icon_theme = "Bearded Icon Theme";

@@ -8,7 +8,7 @@
       ...
     }:
     let
-      wallpaper = ../profile/wallpaper.png;
+      wallpaper = ../profile/wallpaper-hiisi.png;
       wpctl = lib.getExe' pkgs.wireplumber "wpctl";
       noctaliaShell = lib.getExe' pkgs.noctalia-shell "noctalia-shell";
       noctalia =

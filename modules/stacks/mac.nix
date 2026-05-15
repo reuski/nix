@@ -12,6 +12,7 @@ in
         darwin.nix
         darwin.users
         darwin.system
+        darwin.fonts
         darwin.homebrew
       ];
 

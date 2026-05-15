@@ -18,6 +18,12 @@ runs:
     - run: nix eval --raw .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
       shell: bash
 
+    - run: nix eval --raw .#nixosConfigurations.shodan.config.system.build.toplevel.drvPath
+      shell: bash
+
+    - run: nix eval --raw .#darwinConfigurations.abraxas.config.system.build.toplevel.drvPath
+      shell: bash
+
     - run: |
         for package in helium-browser python-validity zjstatus; do
           nix eval --raw ".#packages.x86_64-linux.$package.drvPath" >/dev/null
