@@ -19,6 +19,8 @@ in
         homeManager.fzf
         homeManager.git
         homeManager.cliTools
+        homeManager.bun
+        homeManager.python
       ];
 
       home.username = config.profile.username;
@@ -42,6 +44,10 @@ in
   };
 
   flake.modules.homeManager.reuskiMac = {
-    imports = [ homeManager.base ];
+    imports = [
+      homeManager.base
+      homeManager.zed
+      homeManager.colima
+    ];
   };
 }
