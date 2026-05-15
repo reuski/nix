@@ -1,37 +1,35 @@
 # AGENTS.md
 
-## Intent
-
-Personal dendritic Nix flake for NixOS hosts, Home Manager profiles, and nix-darwin-ready configuration plumbing. Prefer upstream module options over custom services, generated files, or shell scripts.
+Personal dendritic Nix flake — NixOS, nix-darwin, Home Manager.
 
 ## Shape
 
-- `flake.nix` recursively imports visible Nix files under `modules/` through flake-parts.
-- Visible `modules/**/*.nix` files are top-level flake-parts modules.
-- `_*.nix` files are private host hardware, disko, or helper modules imported locally.
-- Reusable features export through `flake.modules.{nixos,homeManager,generic}`.
-- `modules/configurations/` turns `configurations.{nixos,darwin}` into flake outputs and checks.
-- `modules/hosts/` contains real systems only: `hiisi` workstation and `shodan` server.
-- `modules/stacks/` composes roles from reusable modules; hardware facts stay in host `_hardware.nix`.
+- `flake.nix` recursively imports visible `modules/**/*.nix` via flake-parts.
+- `_*.nix` files are private host helpers (hardware, disko).
+- Reusable modules export through `flake.modules.{nixos,darwin,homeManager,generic}`.
+- `modules/configurations/` registers `configurations.{nixos,darwin}` outputs.
+- `modules/hosts/` holds real systems only: `hiisi`, `shodan`, `abraxas`.
+- `modules/stacks/` composes roles; per-host hardware lives in `_hardware.nix`.
 
 ## Rules
 
-- Do not import feature modules directly from `flake.nix`.
-- Do not add broad `specialArgs` or `extraSpecialArgs`; capture inputs in top-level modules.
-- Keep modules small, typed, path-named, and single-purpose.
-- Use upstream NixOS, Home Manager, and nix-darwin options before custom units or files.
-- Remove superseded config instead of adding compatibility layers.
-- Add only real hosts and real supported systems; no placeholders.
-- Do not casually run or edit `install.sh`, disko, hardware, or disk device paths.
+- Route every feature through `flake.modules`; never import directly from `flake.nix`.
+- No `specialArgs` / `extraSpecialArgs`. Capture inputs in top-level modules.
+- Modules are small, typed, path-named, single-purpose.
+- Prefer upstream NixOS, Home Manager, and nix-darwin options over custom files or scripts.
+- Delete superseded config; no compatibility shims.
+- Real hosts and supported systems only.
+- Never casually edit `install.sh`, disko, hardware, or device paths.
 - Do not bump `system.stateVersion` or `home.stateVersion` without migration intent.
-- Avoid X11, PulseAudio, legacy networking, duplicate tools, and backup desktops.
-- Add packages only for terminal work, browsing, hardware, services, or introspection.
-- Use `lib.getExe` or `lib.getExe'` for executable paths.
-- Do not run local Nix commands by default; assume the editing platform may not be NixOS and may not have Nix installed.
+- No X11, PulseAudio, legacy networking, duplicate tools, or backup desktops.
+- Add packages only for terminal, browsing, hardware, services, or introspection.
+- Resolve binaries with `lib.getExe` / `lib.getExe'`.
+- Darwin hosts assume Determinate Nix manages the daemon; keep `nix.enable = false`.
+- Do not run Nix locally; the editing platform may lack Nix.
 
 ## Validate
 
-Formatting and config validation run in GitHub Actions. For local agent work, use repo-available checks only and report that Nix validation is delegated to CI.
+CI handles formatting and Nix evaluation. Locally:
 
 ```sh
 git diff --check

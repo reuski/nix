@@ -11,7 +11,6 @@
         brightnessctl
         playerctl
         imv
-        zellij
       ];
     };
 }
