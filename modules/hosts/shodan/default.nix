@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, inputs, ... }:
 let
   inherit (config.flake.modules) nixos;
 in
@@ -12,6 +12,8 @@ in
     }:
     {
       imports = [
+        inputs.disko.nixosModules.disko
+        ./_disko.nix
         ./_hardware.nix
         nixos.stackServer
       ];
@@ -21,11 +23,21 @@ in
         domain = "reuski.dev";
       };
 
+      systemd.network = {
+        config.networkConfig.IPv6PrivacyExtensions = false;
+        networks."10-wan".networkConfig.DHCP = lib.mkForce "ipv4";
+      };
+
       site.autoUpgradeFlake = "github:reuski/nix/main";
 
       users.users.${config.profile.username}.openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOYOhwRvjVJHFoTPD02CCbvnvBUeS1eq1jSmUvfYCmbp sami@reuski.dev"
       ];
+
+      services.tailscale = {
+        enable = true;
+        openFirewall = true;
+      };
 
       webApps = {
         repos = {
