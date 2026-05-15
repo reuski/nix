@@ -2,11 +2,14 @@
 {
   flake.modules.homeManager.ghostty =
     { pkgs, ... }:
+    let
+      isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+    in
     {
       programs.ghostty = {
         enable = true;
-        package = pkgs.ghostty;
-        enableFishIntegration = true;
+        package = if isDarwin then null else pkgs.ghostty;
+        enableFishIntegration = !isDarwin;
 
         settings = {
           font-family = "Hack Nerd Font";

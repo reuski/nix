@@ -4,6 +4,7 @@
     { config, pkgs, ... }:
     let
       gruvbox = config.profile.colors.gruvbox;
+      copyCommand = if pkgs.stdenv.hostPlatform.isDarwin then "pbcopy" else "wl-copy";
     in
     {
       xdg.configFile."zellij/config.kdl".text = ''
@@ -13,7 +14,7 @@
         simplified_ui true
         pane_frames false
         mouse_mode true
-        copy_command "wl-copy"
+        copy_command "${copyCommand}"
         copy_on_select true
         session_serialization false
         show_startup_tips false

@@ -8,10 +8,12 @@
   ];
 
   perSystem =
-    { pkgs, ... }:
+    { pkgs, system, ... }:
     {
-      packages = {
-        inherit (pkgs) helium-browser python-validity zjstatus;
-      };
+      packages =
+        { inherit (pkgs) zjstatus; }
+        // lib.optionalAttrs (lib.hasSuffix "-linux" system) {
+          inherit (pkgs) helium-browser python-validity;
+        };
     };
 }
