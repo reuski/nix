@@ -4,12 +4,7 @@
 
   boot.loader.grub = {
     enable = true;
-    devices = [ "nodev" ];
-  };
-
-  fileSystems."/" = {
-    device = "/dev/disk/by-label/nixos";
-    fsType = "ext4";
+    devices = [ "/dev/vda" ];
   };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

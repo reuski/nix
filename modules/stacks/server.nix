@@ -6,6 +6,7 @@ in
   flake.modules.nixos.stackServer = {
     imports = [
       generic.profile
+      nixos.nixpkgs
       nixos.locale
       nixos.server
       nixos.nix
