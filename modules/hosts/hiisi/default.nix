@@ -14,6 +14,7 @@ in
       nixos.stackWorkstation
     ];
 
+    site.autoUpgradeFlake = "github:reuski/nix/main";
     system.stateVersion = "25.11";
   };
 }

@@ -1,57 +1,65 @@
 { inputs, ... }:
 {
   flake.modules.nixos.nix =
-    { config, ... }:
+    { config, lib, ... }:
     {
-      nix.channel.enable = false;
-      nix.registry.nixpkgs.flake = inputs.nixpkgs;
-      nix.nixPath = [ ];
-
-      nix.settings = {
-        max-jobs = "auto";
-        cores = 0;
-        builders-use-substitutes = true;
-        connect-timeout = 5;
-        experimental-features = [
-          "nix-command"
-          "flakes"
-        ];
-        trusted-users = [ "@wheel" ];
-        download-buffer-size = 536870912;
-        substituters = [ "https://cache.nixos.org" ];
-        trusted-public-keys = [
-          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        ];
+      options.site.autoUpgradeFlake = lib.mkOption {
+        type = lib.types.str;
+        default = ".";
+        description = "Flake reference for system auto-upgrade.";
       };
 
-      nix.gc = {
-        automatic = true;
-        dates = "weekly";
-        options = "--delete-older-than 7d";
-      };
+      config = {
+        nix.channel.enable = false;
+        nix.registry.nixpkgs.flake = inputs.nixpkgs;
+        nix.nixPath = [ ];
 
-      nix.optimise = {
-        automatic = true;
-        dates = "weekly";
-      };
+        nix.settings = {
+          max-jobs = "auto";
+          cores = 0;
+          builders-use-substitutes = true;
+          connect-timeout = 5;
+          experimental-features = [
+            "nix-command"
+            "flakes"
+          ];
+          trusted-users = [ "@wheel" ];
+          download-buffer-size = 536870912;
+          substituters = [ "https://cache.nixos.org" ];
+          trusted-public-keys = [
+            "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+          ];
+        };
 
-      system.autoUpgrade = {
-        enable = true;
-        flake = "github:reuski/nix/main#${config.networking.hostName}";
-        flags = [
-          "--refresh"
-          "--option"
-          "tarball-ttl"
-          "0"
-        ];
-        dates = "daily";
-        randomizedDelaySec = "45min";
-        persistent = true;
-      };
+        nix.gc = {
+          automatic = true;
+          dates = "weekly";
+          options = "--delete-older-than 7d";
+        };
 
-      systemd.services.nixos-upgrade.serviceConfig = {
-        Restart = "on-failure";
-        RestartSec = "5min";
+        nix.optimise = {
+          automatic = true;
+          dates = "weekly";
+        };
+
+        system.autoUpgrade = {
+          enable = true;
+          flake = "${config.site.autoUpgradeFlake}#${config.networking.hostName}";
+          flags = [
+            "--refresh"
+            "--option"
+            "tarball-ttl"
+            "0"
+          ];
+          dates = "daily";
+          randomizedDelaySec = "45min";
+          persistent = true;
+        };
+
+        systemd.services.nixos-upgrade.serviceConfig = {
+          Restart = "on-failure";
+          RestartSec = "5min";
+        };
       };
     };
 }
