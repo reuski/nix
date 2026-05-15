@@ -51,7 +51,6 @@
         settings = {
           PasswordAuthentication = false;
           KbdInteractiveAuthentication = false;
-          AuthenticationMethods = "publickey";
           PermitRootLogin = "no";
           AllowUsers = [ config.profile.username ];
           X11Forwarding = false;

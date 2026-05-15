@@ -1,56 +1,38 @@
-# reuski/nix
+# nix
 
-Minimal Dendritic Nix flake for personal systems.
+Dendritic Nix flake for NixOS systems.
 
-## Shape
+## Structure
 
-Visible `modules/**/*.nix` files are flake-parts modules. `_*.nix` files are local helpers. Hosts compose reusable modules through `modules/stacks/`.
+Visible `modules/**/*.nix` files are flake-parts modules. `_*.nix` files are local helpers. Reusable features are exported through `flake.modules.*` and composed into systems via `modules/hosts/` and `modules/stacks/`.
 
 ## Hosts
 
-- `hiisi`: laptop.
-- `shodan`: server at `shodan.reuski.dev`.
+| Host   | Role        |
+|--------|-------------|
+| hiisi  | Workstation |
+| shodan | Server      |
 
-## Stack
+## Stacks
 
-- Base: NixOS unstable, latest Linux, nftables.
-- Workstation: systemd-boot, NetworkManager+iwd+resolved, PipeWire, niri, greetd, Ghostty, fish, Helix.
-- Server: systemd-networkd, OpenSSH key auth, Caddy, Bun, Git-backed web apps.
+- **Workstation**: systemd-boot, NetworkManager+iwd+resolved, PipeWire, niri, greetd, Ghostty, fish, Helix.
+- **Server**: systemd-networkd, OpenSSH, Caddy, Bun, git-backed web apps.
 
-## Web
-
-- `reuski.dev`: static site from `github:reuski/reuski.dev`.
-- `wahuu.games`: Bun service from `github:reuski/wahuu.games`.
-
-Repos sync to `/var/lib/webapps/repos`; app state lives in `/var/lib/webapps/apps`. Private deploy keys live in `/var/lib/webapps/keys`; secrets live in `/var/lib/webapps/secrets`.
+## Commands
 
 ```sh
-sudo systemctl restart web-site-reuski-dev.service
-sudo systemctl restart web-service-wahuu-games.service
-```
+# Format
+nix fmt
 
-## Install hiisi
+# Update custom packages
+nix run .#update-custom
 
-Destroys `/dev/nvme0n1`.
-
-```sh
-sudo -i
-rfkill unblock all
-nmcli device wifi connect "SSID" password "PASSWORD"
-curl -L https://github.com/reuski/nix/raw/main/install.sh | sh
-```
-
-## Rebuild
-
-```sh
-sudo nixos-rebuild switch --flake github:reuski/nix/main#hiisi
-sudo nixos-rebuild switch --flake github:reuski/nix/main#shodan
-```
-
-## Validate
-
-```sh
+# Check
 nix flake check
-nix eval --raw .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
-nix eval --raw .#nixosConfigurations.shodan.config.system.build.toplevel.drvPath
+
+# Evaluate a host
+nix eval --raw .#nixosConfigurations.<host>.config.system.build.toplevel.drvPath
+
+# Rebuild
+sudo nixos-rebuild switch --flake .#<host>
 ```
