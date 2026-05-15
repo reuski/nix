@@ -3,7 +3,7 @@ let
   inherit (config.flake.modules) generic homeManager darwin;
 in
 {
-  flake.modules.darwin.stackMacbook =
+  flake.modules.darwin.stackMac =
     { config, ... }:
     {
       imports = [
@@ -16,7 +16,7 @@ in
       ];
 
       home-manager.users.${config.profile.username} = {
-        imports = [ homeManager.reuskiMac ];
+        imports = [ homeManager.mac ];
         profile = config.profile;
       };
     };

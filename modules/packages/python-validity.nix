@@ -60,7 +60,7 @@
         meta = {
           description = "Validity/Synaptics fingerprint sensor driver for ThinkPads";
           homepage = "https://github.com/uunicorn/python-validity";
-          license = lib.licenses.gpl3Only;
+          license = lib.licenses.mit;
           platforms = lib.platforms.linux;
         };
       }

@@ -1,12 +1,12 @@
 { inputs, lib, ... }:
 {
   flake.overlays.upstream =
-    final: _prev:
+    _final: prev:
     let
-      sys = final.stdenv.hostPlatform.system;
+      inherit (prev.stdenv.hostPlatform) isLinux system;
     in
-    lib.optionalAttrs final.stdenv.hostPlatform.isLinux {
-      noctalia-shell = inputs.noctalia.packages.${sys}.default;
-      vicinae = inputs.vicinae.packages.${sys}.default;
+    lib.optionalAttrs isLinux {
+      noctalia-shell = inputs.noctalia.packages.${system}.default;
+      vicinae = inputs.vicinae.packages.${system}.default;
     };
 }

@@ -4,7 +4,7 @@ let
 in
 {
   configurations.darwin.abraxas.module = {
-    imports = [ darwin.stackMacbook ];
+    imports = [ darwin.stackMac ];
 
     networking.hostName = "abraxas";
     networking.computerName = "abraxas";
