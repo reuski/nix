@@ -10,10 +10,11 @@
   perSystem =
     { pkgs, system, ... }:
     {
-      packages =
-        { inherit (pkgs) zjstatus; }
-        // lib.optionalAttrs (lib.hasSuffix "-linux" system) {
-          inherit (pkgs) helium-browser python-validity;
-        };
+      packages = {
+        inherit (pkgs) zjstatus;
+      }
+      // lib.optionalAttrs (lib.hasSuffix "-linux" system) {
+        inherit (pkgs) helium-browser python-validity;
+      };
     };
 }
