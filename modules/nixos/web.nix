@@ -411,48 +411,42 @@
           };
       };
 
-      deployService =
-        hasSite: targetUnit: name:
-        {
-          description = "Deploy web app ${name}";
-          wants = [ "network-online.target" ];
-          after = [ "network-online.target" ];
-          path = with pkgs; [ coreutils ];
-          serviceConfig = hardening // {
-            Type = "oneshot";
-            TimeoutStartSec = "25min";
-            ExecStart = pkgs.writeShellScript "deploy-${safeName name}" ''
-              set -euo pipefail
+      deployService = hasSite: targetUnit: name: {
+        description = "Deploy web app ${name}";
+        wants = [ "network-online.target" ];
+        after = [ "network-online.target" ];
+        path = with pkgs; [ coreutils ];
+        serviceConfig = hardening // {
+          Type = "oneshot";
+          TimeoutStartSec = "25min";
+          ExecStart = pkgs.writeShellScript "deploy-${safeName name}" ''
+            set -euo pipefail
 
-              revision=${lib.escapeShellArg "${appRoot name}/revision"}
-              old=""
-              if [ -e "$revision" ]; then
-                old=$(cat "$revision")
+            revision=${lib.escapeShellArg "${appRoot name}/revision"}
+            old=""
+            if [ -e "$revision" ]; then
+              old=$(cat "$revision")
+            fi
+
+            ${systemctl} restart ${lib.escapeShellArg "${syncUnit name}.service"}
+
+            new=$(cat "$revision")
+            ${optionalString hasSite ''
+              site=${lib.escapeShellArg (siteRoot name)}
+              if [ "$old" = "$new" ] && [ -d "$site" ]; then
+                exit 0
               fi
+            ''}
+            ${optionalString (!hasSite) ''
+              if [ "$old" = "$new" ]; then
+                exit 0
+              fi
+            ''}
 
-              ${systemctl} restart ${lib.escapeShellArg "${syncUnit name}.service"}
-
-              new=$(cat "$revision")
-              ${
-                optionalString hasSite ''
-                  site=${lib.escapeShellArg (siteRoot name)}
-                  if [ "$old" = "$new" ] && [ -d "$site" ]; then
-                    exit 0
-                  fi
-                ''
-              }
-              ${
-                optionalString (!hasSite) ''
-                  if [ "$old" = "$new" ]; then
-                    exit 0
-                  fi
-                ''
-              }
-
-              ${systemctl} restart ${lib.escapeShellArg "${targetUnit name}.service"}
-            '';
-          };
+            ${systemctl} restart ${lib.escapeShellArg "${targetUnit name}.service"}
+          '';
         };
+      };
 
       deployTimer = name: {
         description = "Deploy web app ${name}";
@@ -627,9 +621,7 @@
 
         systemd.timers =
           (mapAttrs' (name: _site: nameValuePair (deployUnit name) (deployTimer name)) cfg.sites)
-          // (mapAttrs' (
-            name: _service: nameValuePair (deployUnit name) (deployTimer name)
-          ) cfg.services);
+          // (mapAttrs' (name: _service: nameValuePair (deployUnit name) (deployTimer name)) cfg.services);
 
       };
     };
