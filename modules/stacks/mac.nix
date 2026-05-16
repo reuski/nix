@@ -17,7 +17,10 @@ in
       ];
 
       home-manager.users.${config.profile.username} = {
-        imports = [ homeManager.mac ];
+        imports = [
+          homeManager.mac
+          homeManager.llamaServer
+        ];
         profile = config.profile;
       };
     };
