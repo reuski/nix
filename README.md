@@ -40,37 +40,43 @@ darwin-rebuild switch --flake .#<host>
 nix run .#update-custom
 ```
 
-## MacBook
+## MacBook (abraxas)
 
 ```sh
-curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-nix run nix-darwin/master -- switch --flake github:reuski/nix/main#abraxas
-darwin-rebuild switch --flake .#abraxas
+curl -fsSL https://github.com/reuski/nix/raw/main/install.sh | sh -s -- abraxas
 ```
 
-## Linux
+## NixOS (hiisi)
 
 ```sh
 sudo -i
 rfkill unblock all
 nmcli device wifi connect "SSID" password "PASSWORD"
-curl -L https://github.com/reuski/nix/raw/main/install.sh | sh
+curl -fsSL https://github.com/reuski/nix/raw/main/install.sh | sh -s -- hiisi
 ```
 
-## VPS
+## VPS (shodan)
 
 ```sh
-nix run github:nix-community/nixos-anywhere -- \
-  --flake github:reuski/nix/main#shodan \
-  --target-host root@<ip>
+curl -fsSL https://github.com/reuski/nix/raw/main/install.sh | sh -s -- shodan
+```
+
+## Post-Install
+
+```sh
+mkdir -p ~/Projects
+git clone https://github.com/reuski/nix ~/Projects/nix
+/run/current-system/sw/bin/darwin-rebuild switch --flake ~/Projects/nix#abraxas
 ```
 
 ```sh
-ssh reuski@<ip>
+ssh reuski@shodan.reuski.dev
 sudo tailscale up
-sudo install -d -m 700 /var/lib/webapps/secrets
-sudoedit /var/lib/webapps/secrets/wahuu-games.env
+sudo install -d -m 755 /var/lib/web
+sudo install -d -m 700 /var/lib/web/keys /var/lib/web/secrets
+sudoedit /var/lib/web/secrets/beebud.env
+sudoedit /var/lib/web/secrets/wahuu-games.env
+sudo systemctl restart web-service-beebud web-service-wahuu-games caddy
 ```
 
 ## Password Hash
