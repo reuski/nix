@@ -8,6 +8,7 @@
           pkgs.lib.makeBinPath (
             with pkgs;
             [
+              coreutils
               curl
               gnused
               jq
@@ -18,17 +19,18 @@
         set -euo pipefail
 
         update_version() {
-          local latest="$1" file="$2" url_template="$3" current url hash
+          local latest="$1" file="$2" url_template="$3" current url hash tmp
 
-          current=$(sed -n 's/.*version = "\([^"]*\)".*/\1/p' "$file" | head -1)
+          current=$(sed -n '/mkDerivation\|writeShellApplication\|buildPythonPackage/,/)/{ s/.*version = "\([^"]*\)";/\1/p; }' "$file" | head -1)
 
           [ "$latest" = "$current" ] && { echo "$file: up to date ($current)"; return 0; }
 
           url=$(echo "$url_template" | sed "s/{version}/$latest/g")
           hash=$(nix store prefetch-file --json --hash-type sha256 "$url" | jq -r .hash)
 
-          sed -i '0,/version = "[^"]*";/s//version = "'"$latest"'";/' "$file"
-          sed -i '0,/hash = "[^"]*";/s//hash = "'"$hash"'";/' "$file"
+          tmp=$(mktemp "$file.XXXXXX")
+          sed 's/version = "'"$current"'";/version = "'"$latest"'";/; s/hash = "[^"]*";/hash = "'"$hash"'";/' "$file" > "$tmp"
+          mv "$tmp" "$file"
 
           echo "$file: $current -> $latest"
         }

@@ -54,7 +54,9 @@
         postFixup = ''
           wrapProgram $out/bin/validity-sensors-firmware \
             --prefix PATH : ${lib.makeBinPath [ innoextract ]}
-          wrapPythonProgramsIn "$out/lib/python-validity" "$out ''${pythonPath[*]}"
+          buildPythonPath "$out ''${pythonPath[*]}"
+          wrapProgram $out/lib/python-validity/dbus-service \
+            --prefix PYTHONPATH : "$program_PYTHONPATH"
         '';
 
         meta = {
