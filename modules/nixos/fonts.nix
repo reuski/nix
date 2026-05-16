@@ -15,8 +15,15 @@
 
       fonts.fontconfig.defaultFonts = {
         monospace = [ "Hack Nerd Font" ];
-        sansSerif = [ "Inter" "Noto Sans" "Noto Color Emoji" ];
-        serif = [ "Noto Serif" "Noto Color Emoji" ];
+        sansSerif = [
+          "Inter"
+          "Noto Sans"
+          "Noto Color Emoji"
+        ];
+        serif = [
+          "Noto Serif"
+          "Noto Color Emoji"
+        ];
         emoji = [ "Noto Color Emoji" ];
       };
     };
