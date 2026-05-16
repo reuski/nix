@@ -31,6 +31,7 @@
       enabled = cfg.sites != { } || cfg.services != { };
       bun = lib.getExe pkgs.bun;
       ssh = lib.getExe' pkgs.openssh "ssh";
+      systemctl = lib.getExe' pkgs.systemd "systemctl";
 
       safeName = lib.replaceStrings [ "." "/" ":" "@" " " "_" ] [ "-" "-" "-" "-" "-" "-" ];
       validName = name: builtins.match "[a-z0-9]+(-[a-z0-9]+)*" name != null;
@@ -42,6 +43,7 @@
       syncUnit = name: "web-sync-${safeName name}";
       siteUnit = name: "web-site-${safeName name}";
       serviceUnit = name: "web-service-${safeName name}";
+      deployUnit = name: "web-deploy-${safeName name}";
       caddyHosts = domains: concatStringsSep ", " domains;
       appDomains = app: [ app.domain ] ++ app.aliases;
 
@@ -220,6 +222,7 @@
           // loadCredentials (repoCredentials app)
           // {
             Type = "oneshot";
+            RemainAfterExit = true;
             User = cfg.user;
             Group = cfg.group;
             StateDirectory = appState name;
@@ -243,7 +246,14 @@
                 git clone ${cloneArgs app.repo} --branch "$branch" "$url" "$checkout"
               else
                 git -C "$checkout" remote set-url origin "$url"
+                old=$(git -C "$checkout" rev-parse HEAD)
+                current_branch=$(git -C "$checkout" branch --show-current)
                 git -C "$checkout" fetch ${fetchArgs app.repo} --prune --force origin "+refs/heads/$branch:refs/remotes/origin/$branch"
+                new=$(git -C "$checkout" rev-parse "refs/remotes/origin/$branch")
+                if [ "$old" = "$new" ] && [ "$current_branch" = "$branch" ]; then
+                  printf '%s\n' "$old" > "$STATE_DIRECTORY/revision"
+                  exit 0
+                fi
                 git -C "$checkout" checkout -B "$branch" "refs/remotes/origin/$branch"
                 git -C "$checkout" reset --hard "refs/remotes/origin/$branch"
                 git -C "$checkout" clean -ffdx
@@ -401,6 +411,61 @@
           };
       };
 
+      deployService =
+        hasSite: targetUnit: name:
+        {
+          description = "Deploy web app ${name}";
+          wants = [ "network-online.target" ];
+          after = [ "network-online.target" ];
+          path = with pkgs; [ coreutils ];
+          serviceConfig = hardening // {
+            Type = "oneshot";
+            TimeoutStartSec = "25min";
+            ExecStart = pkgs.writeShellScript "deploy-${safeName name}" ''
+              set -euo pipefail
+
+              revision=${lib.escapeShellArg "${appRoot name}/revision"}
+              old=""
+              if [ -e "$revision" ]; then
+                old=$(cat "$revision")
+              fi
+
+              ${systemctl} restart ${lib.escapeShellArg "${syncUnit name}.service"}
+
+              new=$(cat "$revision")
+              ${
+                optionalString hasSite ''
+                  site=${lib.escapeShellArg (siteRoot name)}
+                  if [ "$old" = "$new" ] && [ -d "$site" ]; then
+                    exit 0
+                  fi
+                ''
+              }
+              ${
+                optionalString (!hasSite) ''
+                  if [ "$old" = "$new" ]; then
+                    exit 0
+                  fi
+                ''
+              }
+
+              ${systemctl} restart ${lib.escapeShellArg "${targetUnit name}.service"}
+            '';
+          };
+        };
+
+      deployTimer = name: {
+        description = "Deploy web app ${name}";
+        wantedBy = [ "timers.target" ];
+        timerConfig = {
+          OnCalendar = cfg.deployInterval;
+          RandomizedDelaySec = cfg.deployRandomizedDelaySec;
+          FixedRandomDelay = true;
+          Persistent = true;
+          Unit = "${deployUnit name}.service";
+        };
+      };
+
       headers = ''
         header {
           Strict-Transport-Security "max-age=31536000"
@@ -461,6 +526,14 @@
         email = mkOption {
           type = types.str;
           default = config.profile.email;
+        };
+        deployInterval = mkOption {
+          type = types.str;
+          default = "hourly";
+        };
+        deployRandomizedDelaySec = mkOption {
+          type = types.str;
+          default = "5min";
         };
         sites = mkOption {
           type = types.attrsOf siteType;
@@ -539,12 +612,24 @@
           // (mapAttrs' (
             name: service: nameValuePair (serviceUnit name) (runtimeService name service)
           ) cfg.services)
+          // (mapAttrs' (
+            name: _site: nameValuePair (deployUnit name) (deployService true siteUnit name)
+          ) cfg.sites)
+          // (mapAttrs' (
+            name: _service: nameValuePair (deployUnit name) (deployService false serviceUnit name)
+          ) cfg.services)
           // {
             caddy = {
               wants = hostedUnits;
               after = siteUnits;
             };
           };
+
+        systemd.timers =
+          (mapAttrs' (name: _site: nameValuePair (deployUnit name) (deployTimer name)) cfg.sites)
+          // (mapAttrs' (
+            name: _service: nameValuePair (deployUnit name) (deployTimer name)
+          ) cfg.services);
 
       };
     };
