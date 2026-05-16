@@ -4,9 +4,9 @@ Dendritic Nix flake for personal NixOS and nix-darwin systems.
 
 ## Layout
 
-- `flake.nix`: flake-parts entrypoint and recursive visible-module import.
-- `modules/configurations/`: `configurations.{nixos,darwin}` registries, flake outputs, checks.
-- `modules/hosts/`: concrete hosts plus private `_hardware.nix`, `_disko.nix`, and local helpers.
+- `flake.nix`: flake-parts entrypoint, recursive visible-module import.
+- `modules/configurations/`: `configurations.{nixos,darwin}` registries and flake outputs.
+- `modules/hosts/`: concrete hosts with private `_hardware.nix`, `_disko.nix`, and local helpers.
 - `modules/stacks/`: reusable stack compositions.
 - `modules/nixos/`, `modules/darwin/`, `modules/home-manager/`, `modules/profile/`: reusable system and user modules.
 - `modules/packages/`: overlayed custom packages.
@@ -14,60 +14,40 @@ Dendritic Nix flake for personal NixOS and nix-darwin systems.
 
 ## Hosts
 
-| Host      | Role    | Notes                                                                            |
-| --------- | ------- | -------------------------------------------------------------------------------- |
-| `hiisi`   | Wayland | ThinkPad T480, disko-managed ext4 install, niri, Home Manager profile.           |
-| `shodan`  | Server  | UpCloud VPS, systemd-networkd, OpenSSH, Caddy, Bun-backed web apps.              |
-| `abraxas` | Mac     | Apple Silicon MacBook, nix-darwin, Helium + Ghostty via Homebrew, fish + zellij. |
+| Host      | Role    | Notes                                 |
+| --------- | ------- | ------------------------------------- |
+| `hiisi`   | Wayland | ThinkPad T480, disko ext4, niri       |
+| `shodan`  | Server  | UpCloud VPS, systemd-networkd, Caddy  |
+| `abraxas` | Mac     | MacBook, nix-darwin, Helium + Ghostty |
 
-## Outputs
-
-- `nixosConfigurations.{hiisi,shodan}`
-- `darwinConfigurations.abraxas`
-- `packages.x86_64-linux.{helium-browser,python-validity,zjstatus}`
-- `packages.aarch64-darwin.zjstatus`
-- `apps.x86_64-linux.update-custom`
-- `formatter.{x86_64-linux,aarch64-darwin}`
-
-## Commands
+## Dev
 
 ```sh
 nix fmt
 nix flake check
 nix eval --raw .#nixosConfigurations.<host>.config.system.build.toplevel.drvPath
+nix run .#update-custom
 sudo nixos-rebuild switch --flake .#<host>
 darwin-rebuild switch --flake .#<host>
-nix run .#update-custom
 ```
 
-## MacBook (abraxas)
+## Install
 
 ```sh
-curl -fsSL https://github.com/reuski/nix/raw/main/install.sh | sh -s -- abraxas
-```
-
-## NixOS (hiisi)
-
-```sh
-sudo -i
 rfkill unblock all
 nmcli device wifi connect "SSID" password "PASSWORD"
 curl -fsSL https://github.com/reuski/nix/raw/main/install.sh | sh -s -- hiisi
 ```
 
-## VPS (shodan)
-
-```sh
-curl -fsSL https://github.com/reuski/nix/raw/main/install.sh | sh -s -- shodan
-```
-
 ## Post-Install
 
+**abraxas**
+
 ```sh
-mkdir -p ~/Projects
-git clone https://github.com/reuski/nix ~/Projects/nix
-/run/current-system/sw/bin/darwin-rebuild switch --flake ~/Projects/nix#abraxas
+darwin-rebuild switch --flake github:reuski/nix#abraxas
 ```
+
+**shodan**
 
 ```sh
 ssh reuski@shodan.reuski.dev

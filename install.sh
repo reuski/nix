@@ -2,6 +2,8 @@
 set -eu
 
 FLAKE="${FLAKE:-github:reuski/nix/main}"
+[ -f flake.nix ] && [ "$FLAKE" = "github:reuski/nix/main" ] && FLAKE="."
+
 export NIX_CONFIG="${NIX_CONFIG:-experimental-features = nix-command flakes
 accept-flake-config = true
 download-buffer-size = 536870912}"
@@ -55,10 +57,12 @@ ensure_brew() {
 
 usage() {
   cat >&2 <<EOF
-usage:
-  install.sh abraxas
-  install.sh hiisi
-  install.sh shodan [root@host]
+usage: install.sh <host>
+
+hosts:
+  abraxas    Apple Silicon MacBook
+  hiisi      NixOS laptop (run as root from live ISO)
+  shodan     Remote NixOS VPS
 EOF
   exit 2
 }
@@ -69,7 +73,7 @@ case "${1:-}" in
     [ "$(id -u)" -ne 0 ] || die "run as your macOS user"
     ensure_nix
     ensure_brew
-    nix run github:LnL7/nix-darwin/master#darwin-rebuild -- switch --flake "$FLAKE#abraxas"
+    nix run github:nix-darwin/nix-darwin -- switch --flake "$FLAKE#abraxas"
     ;;
   hiisi)
     [ "$(uname -s)" = Linux ] || die "hiisi requires Linux"
