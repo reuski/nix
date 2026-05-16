@@ -39,23 +39,30 @@ in
         openFirewall = true;
       };
 
-      webApps = {
-        repos = {
-          reuski-dev.url = "https://github.com/reuski/reuski.dev.git";
-          wahuu-games.url = "https://github.com/reuski/wahuu.games.git";
-        };
-
+      web = {
         sites.reuski-dev = {
-          domains = [ "reuski.dev" ];
-          repo = "reuski-dev";
+          domain = "reuski.dev";
+          aliases = [ "www.reuski.dev" ];
+          repo = "https://github.com/reuski/reuski.dev.git";
         };
 
-        services.wahuu-games = {
-          domains = [ "wahuu.games" ];
-          repo = "wahuu-games";
-          port = 3000;
-          build = "${lib.getExe pkgs.bun} run build";
-          envFiles = [ "/var/lib/webapps/secrets/wahuu-games.env" ];
+        services = {
+          beebud = {
+            domain = "beebud.buzz";
+            aliases = [ "www.beebud.buzz" ];
+            repo = "https://github.com/reuski/beebud.git";
+            port = 3001;
+            start = "${lib.getExe pkgs.bun} build/index.js";
+            envFile = "/var/lib/web/secrets/beebud.env";
+          };
+
+          wahuu-games = {
+            domain = "wahuu.games";
+            aliases = [ "www.wahuu.games" ];
+            repo = "https://github.com/reuski/wahuu.games.git";
+            port = 3000;
+            envFile = "/var/lib/web/secrets/wahuu-games.env";
+          };
         };
       };
 

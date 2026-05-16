@@ -10,7 +10,7 @@ in
       nixos.locale
       nixos.server
       nixos.nix
-      nixos.webApps
+      nixos.web
     ];
   };
 }
