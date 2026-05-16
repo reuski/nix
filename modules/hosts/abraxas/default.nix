@@ -3,21 +3,25 @@ let
   inherit (config.flake.modules) darwin;
 in
 {
-  configurations.darwin.abraxas.module = { config, ... }: {
-    imports = [ darwin.stackMac ];
+  configurations.darwin.abraxas.module =
+    { config, ... }:
+    {
+      imports = [ darwin.stackMac ];
 
-    networking.hostName = "abraxas";
-    networking.computerName = "abraxas";
-    networking.localHostName = "abraxas";
+      networking.hostName = "abraxas";
+      networking.computerName = "abraxas";
+      networking.localHostName = "abraxas";
 
-    nixpkgs.hostPlatform = "aarch64-darwin";
+      nixpkgs.hostPlatform = "aarch64-darwin";
 
-    system.stateVersion = 6;
+      system.stateVersion = 6;
 
-    home-manager.users.${config.profile.username} = { lib, ... }: {
-      home.activation.wallpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        /usr/bin/osascript -e 'tell app "Finder" to set desktop picture to POSIX file "${../../profile/wallpaper-abraxas.png}"' &>/dev/null || true
-      '';
+      home-manager.users.${config.profile.username} =
+        { lib, ... }:
+        {
+          home.activation.wallpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            /usr/bin/osascript -e 'tell app "Finder" to set desktop picture to POSIX file "${../../profile/wallpaper-abraxas.png}"' &>/dev/null || true
+          '';
+        };
     };
-  };
 }
