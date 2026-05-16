@@ -4,6 +4,7 @@
     config.flake.overlays.upstream
     config.flake.overlays.helium-browser
     config.flake.overlays.python-validity
+    config.flake.overlays.pi
     config.flake.overlays.zjstatus
   ];
 
@@ -11,7 +12,7 @@
     { pkgs, system, ... }:
     {
       packages = {
-        inherit (pkgs) zjstatus;
+        inherit (pkgs) pi-acp pi-coding-agent zjstatus;
       }
       // lib.optionalAttrs (lib.hasSuffix "-linux" system) {
         inherit (pkgs) helium-browser python-validity;

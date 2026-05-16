@@ -20,6 +20,7 @@ in
         homeManager.git
         homeManager.cliTools
         homeManager.bun
+        homeManager.pi
         homeManager.python
       ];
 
@@ -35,6 +36,7 @@ in
     imports = [
       homeManager.base
       homeManager.packages
+      homeManager.zed
       homeManager.xdg
       homeManager.niri
       homeManager.noctalia
