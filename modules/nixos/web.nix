@@ -61,10 +61,8 @@
 
       repoKeyFiles = app: optional (app.repo.keyFile != null) app.repo.keyFile;
       repoCredentials = app: optional (app.repo.keyFile != null) "git-key:${app.repo.keyFile}";
-      appCredentials =
-        app: optional (app.envFile != null) "env:${app.envFile}" ++ repoCredentials app;
-      loadCredentials =
-        credentials: optionalAttrs (credentials != [ ]) { LoadCredential = credentials; };
+      appCredentials = app: optional (app.envFile != null) "env:${app.envFile}" ++ repoCredentials app;
+      loadCredentials = credentials: optionalAttrs (credentials != [ ]) { LoadCredential = credentials; };
       conditions = app: unique (optional (app.envFile != null) app.envFile ++ repoKeyFiles app);
       repoGitSsh =
         app:
@@ -78,9 +76,9 @@
           ln -s "$CREDENTIALS_DIRECTORY/env" .env
         '';
       envCleanup = app: optionalString (app.envFile != null) "rm -f .env";
-      usesSsh =
-        builtins.any (app: sshRepo app.repo || app.repo.keyFile != null)
-          (builtins.attrValues cfg.sites ++ builtins.attrValues cfg.services);
+      usesSsh = builtins.any (app: sshRepo app.repo || app.repo.keyFile != null) (
+        builtins.attrValues cfg.sites ++ builtins.attrValues cfg.services
+      );
 
       hardening = {
         CapabilityBoundingSet = "";
@@ -533,15 +531,11 @@
         };
 
         systemd.services =
-          (mapAttrs' (
-            name: site: nameValuePair (syncUnit name) (syncService "0755" name site)
-          ) cfg.sites)
+          (mapAttrs' (name: site: nameValuePair (syncUnit name) (syncService "0755" name site)) cfg.sites)
           // (mapAttrs' (
             name: service: nameValuePair (syncUnit name) (syncService "0750" name service)
           ) cfg.services)
-          // (mapAttrs' (
-            name: site: nameValuePair (siteUnit name) (siteService name site)
-          ) cfg.sites)
+          // (mapAttrs' (name: site: nameValuePair (siteUnit name) (siteService name site)) cfg.sites)
           // (mapAttrs' (
             name: service: nameValuePair (serviceUnit name) (runtimeService name service)
           ) cfg.services)
