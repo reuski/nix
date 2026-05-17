@@ -10,6 +10,7 @@ in
       nixos.common
       nixos.locale
       nixos.server
+      nixos.vim
       nixos.nix
       nixos.web
     ];

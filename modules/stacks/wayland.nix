@@ -19,6 +19,7 @@ in
         nixos.graphics
         nixos.power
         nixos.fonts
+        nixos.vim
         nixos.niri
         nixos.nix
       ];

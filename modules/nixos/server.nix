@@ -100,7 +100,7 @@
         home = config.profile.homeDirectory;
         hashedPassword = "!";
         extraGroups = [ "wheel" ];
-        shell = pkgs.fish;
+        shell = pkgs.bashInteractive;
       };
 
       security.apparmor.enable = true;
@@ -120,7 +120,6 @@
         lsof
         rsync
         tcpdump
-        vim
       ];
     };
 }
