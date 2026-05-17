@@ -7,6 +7,15 @@
       ...
     }:
     {
+      documentation.enable = false;
+      programs.command-not-found.enable = false;
+      programs.nano.enable = false;
+      fonts.fontconfig.enable = false;
+      xdg.icons.enable = false;
+      xdg.mime.enable = false;
+      xdg.sounds.enable = false;
+      system.disableInstallerTools = true;
+
       boot.kernelModules = [ "tcp_bbr" ];
       boot.kernel.sysctl = {
         "kernel.dmesg_restrict" = 1;
