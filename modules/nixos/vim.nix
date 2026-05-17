@@ -3,7 +3,7 @@
   flake.modules.nixos.vim =
     { config, pkgs, ... }:
     let
-      vim = pkgs.vim_configurable.customize {
+      vim = pkgs.vim-full.customize {
         name = "vim";
         vimrcConfig = {
           packages.gruvbox.start = [ pkgs.vimPlugins.gruvbox ];

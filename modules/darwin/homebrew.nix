@@ -17,8 +17,10 @@
         "cleanshot"
         "ghostty"
         "helium"
+        "localsend"
         "raycast"
         "tableplus"
+        "tailscale"
         "zed"
       ];
     };

@@ -43,11 +43,6 @@ in
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOYOhwRvjVJHFoTPD02CCbvnvBUeS1eq1jSmUvfYCmbp sami@reuski.dev"
         ];
 
-        services.tailscale = {
-          enable = true;
-          openFirewall = true;
-        };
-
         web = {
           sites.reuski-dev = {
             domain = "reuski.dev";

@@ -37,6 +37,16 @@ in
         ];
       };
 
+      services.tailscale = {
+        enable = true;
+        openFirewall = true;
+      };
+
+      programs.localsend = {
+        enable = true;
+        openFirewall = true;
+      };
+
       home-manager.users.${config.profile.username} = {
         imports = [ homeManager.wayland ];
         profile = config.profile;
