@@ -1,25 +1,13 @@
 { ... }:
 {
-  flake.modules.nixos.boot =
-    { pkgs, ... }:
-    {
-      boot.loader.systemd-boot = {
-        enable = true;
-        configurationLimit = 4;
-        editor = false;
-      };
-      boot.loader.efi.canTouchEfiVariables = true;
-
-      boot.initrd.systemd.enable = true;
-      boot.kernelPackages = pkgs.linuxPackages_latest;
-      boot.tmp.cleanOnBoot = true;
-
-      zramSwap = {
-        enable = true;
-        algorithm = "zstd";
-        memoryPercent = 50;
-      };
-
-      systemd.oomd.enable = true;
+  flake.modules.nixos.boot = {
+    boot.loader.systemd-boot = {
+      enable = true;
+      configurationLimit = 4;
+      editor = false;
     };
+    boot.loader.efi.canTouchEfiVariables = true;
+
+    boot.initrd.systemd.enable = true;
+  };
 }

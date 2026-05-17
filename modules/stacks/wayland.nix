@@ -10,6 +10,7 @@ in
         generic.profile
         nixos.nixpkgs
         nixos.desktopCaches
+        nixos.common
         nixos.boot
         nixos.networking
         nixos.users
