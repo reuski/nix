@@ -30,10 +30,6 @@ in
           IPv6PrivacyExtensions = false;
         };
 
-        nix.settings = {
-          max-jobs = lib.mkForce 1;
-          cores = lib.mkForce 1;
-        };
         zramSwap.memoryPercent = lib.mkForce 100;
         services.journald.extraConfig = lib.mkForce ''
           SystemMaxUse=100M

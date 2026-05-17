@@ -7,8 +7,6 @@ FLAKE="${FLAKE:-github:reuski/nix/main}"
 export NIX_CONFIG="${NIX_CONFIG:-experimental-features = nix-command flakes
 accept-flake-config = true}"
 
-KEXEC_LOWMEM_25_11="https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-kexec-installer-noninteractive-x86_64-linux.tar.gz"
-
 die() {
   printf '%s\n' "error: $*" >&2
   exit 1
@@ -66,40 +64,17 @@ install_nixos_media() {
   nixos-install --flake "$FLAKE#$host" --no-root-passwd --no-channel-copy
 }
 
-patch_kexec_image() {
-  url="$1"
-  dir="$2"
-  need curl
-  need tar
-  curl -fsSL "$url" -o "$dir/kexec.tar.gz"
-  mkdir "$dir/extract"
-  tar -xzf "$dir/kexec.tar.gz" -C "$dir/extract"
-  find "$dir/extract" -type f \( -name run -o -name kexec-boot -o -name kexec-run \) \
-    -exec sed -i 's|kexec --load|kexec --kexec-syscall-auto --load|g' {} +
-  tar -czf "$dir/kexec-patched.tar.gz" -C "$dir/extract" .
-}
-
 install_nixos_anywhere() {
   host="$1"
-  target="${2:-}"
-  kexec="${3:-}"
-  [ -n "$target" ] || die "usage: install.sh $host <ssh-target>"
-  [ "$(uname -s)" = Linux ] || die "$host install must run from an x86_64-linux nix host"
+  target="$2"
+  [ "$(uname -s)" = Linux ] || die "$host remote install must run from x86_64-linux"
   ensure_nix
-  set -- --flake "$FLAKE#$host"
-  if [ -n "$kexec" ]; then
-    work=$(mktemp -d)
-    trap 'rm -rf "$work"' EXIT INT TERM
-    patch_kexec_image "$kexec" "$work"
-    set -- "$@" --kexec "$work/kexec-patched.tar.gz"
-  fi
-  set -- "$@" "$target"
-  nix run github:nix-community/nixos-anywhere -- "$@"
+  nix run github:nix-community/nixos-anywhere -- --flake "$FLAKE#$host" "$target"
 }
 
 usage() {
   cat >&2 <<EOF
-usage: install.sh <host> [args]
+usage: install.sh <host> [ssh-target]
 
 hosts:
   abraxas    MacBook
@@ -121,7 +96,11 @@ case "${1:-}" in
     install_nixos_media hiisi
     ;;
   shodan)
-    install_nixos_anywhere shodan "${2:-}" "$KEXEC_LOWMEM_25_11"
+    if [ -n "${2:-}" ]; then
+      install_nixos_anywhere shodan "$2"
+    else
+      install_nixos_media shodan
+    fi
     ;;
   *)
     usage

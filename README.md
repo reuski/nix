@@ -24,6 +24,7 @@ darwin-rebuild switch --flake .#<host>
 ## Install
 
 ```sh
+sudo -i
 rfkill unblock all
 nmcli device wifi connect "SSID" password "PASSWORD"
 curl -fsSL https://github.com/reuski/nix/raw/main/install.sh | sh -s -- hiisi
