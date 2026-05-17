@@ -14,7 +14,7 @@ in
         homeManager.bat
         homeManager.direnv
         homeManager.delta
-        homeManager.helix
+        homeManager.vim
         homeManager.eza
         homeManager.fzf
         homeManager.git

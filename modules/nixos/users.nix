@@ -3,6 +3,8 @@
   flake.modules.nixos.users =
     { config, pkgs, ... }:
     {
+      programs.fish.enable = true;
+
       users.users.${config.profile.username} = {
         isNormalUser = true;
         description = config.profile.fullName;
