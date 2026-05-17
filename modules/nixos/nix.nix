@@ -1,7 +1,12 @@
-{ inputs, ... }:
+{ ... }:
 {
   flake.modules.nixos.nix =
-    { config, lib, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     {
       options.site.autoUpgradeFlake = lib.mkOption {
         type = lib.types.str;
@@ -11,7 +16,10 @@
 
       config = {
         nix.channel.enable = false;
-        nix.registry.nixpkgs.flake = inputs.nixpkgs;
+        nix.registry.nixpkgs.to = {
+          type = "path";
+          path = pkgs.path;
+        };
         nix.nixPath = [ ];
 
         nix.settings = {

@@ -8,7 +8,7 @@ in
     {
       imports = [
         generic.profile
-        nixos.nixpkgs
+        nixos.nixpkgsWayland
         nixos.desktopCaches
         nixos.common
         nixos.boot
