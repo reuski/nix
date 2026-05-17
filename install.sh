@@ -5,8 +5,9 @@ FLAKE="${FLAKE:-github:reuski/nix/main}"
 [ -f flake.nix ] && [ "$FLAKE" = "github:reuski/nix/main" ] && FLAKE="."
 
 export NIX_CONFIG="${NIX_CONFIG:-experimental-features = nix-command flakes
-accept-flake-config = true
-download-buffer-size = 67108864}"
+accept-flake-config = true}"
+
+KEXEC_LOWMEM_25_11="https://github.com/nix-community/nixos-images/releases/download/nixos-25.11/nixos-kexec-installer-noninteractive-x86_64-linux.tar.gz"
 
 die() {
   printf '%s\n' "error: $*" >&2
@@ -42,17 +43,6 @@ load_brew() {
   [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 }
 
-install_nixos_media() {
-  host="$1"
-  [ "$(uname -s)" = Linux ] || die "$host requires Linux"
-  [ "$(id -u)" -eq 0 ] || die "run as root from the NixOS installer"
-  [ -e /etc/NIXOS ] || die "run from the NixOS installer"
-  need nix
-  need nixos-install
-  nix run github:nix-community/disko -- --mode destroy,format,mount --yes-wipe-all-disks --flake "$FLAKE#$host"
-  nixos-install --flake "$FLAKE#$host" --no-root-passwd
-}
-
 ensure_brew() {
   load_brew
   has brew && return
@@ -62,14 +52,41 @@ ensure_brew() {
   has brew || die "brew not found; open a new shell and rerun"
 }
 
+install_nixos_media() {
+  host="$1"
+  [ "$(uname -s)" = Linux ] || die "$host requires Linux"
+  [ "$(id -u)" -eq 0 ] || die "run as root from the NixOS installer"
+  [ -e /etc/NIXOS ] || die "run from the NixOS installer"
+  need nix
+  need nixos-install
+  nix run github:nix-community/disko -- --mode destroy,format,mount --yes-wipe-all-disks --flake "$FLAKE#$host"
+  if [ -e /dev/disk/by-partlabel/swap ]; then
+    swapon /dev/disk/by-partlabel/swap || true
+  fi
+  nixos-install --flake "$FLAKE#$host" --no-root-passwd --no-channel-copy
+}
+
+install_nixos_anywhere() {
+  host="$1"
+  target="${2:-}"
+  kexec="${3:-}"
+  [ -n "$target" ] || die "usage: install.sh $host <ssh-target>"
+  [ "$(uname -s)" = Linux ] || die "$host install must run from an x86_64-linux nix host"
+  ensure_nix
+  set -- --flake "$FLAKE#$host"
+  [ -n "$kexec" ] && set -- "$@" --kexec "$kexec"
+  set -- "$@" "$target"
+  nix run github:nix-community/nixos-anywhere -- "$@"
+}
+
 usage() {
   cat >&2 <<EOF
-usage: install.sh <host>
+usage: install.sh <host> [args]
 
 hosts:
-  abraxas    Apple Silicon MacBook
-  hiisi      NixOS laptop (run as root from live ISO)
-  shodan     UpCloud Starter VPS (run as root from NixOS install media)
+  abraxas    MacBook
+  hiisi      NixOS laptop
+  shodan     VPS
 EOF
   exit 2
 }
@@ -86,7 +103,7 @@ case "${1:-}" in
     install_nixos_media hiisi
     ;;
   shodan)
-    install_nixos_media shodan
+    install_nixos_anywhere shodan "${2:-}" "$KEXEC_LOWMEM_25_11"
     ;;
   *)
     usage

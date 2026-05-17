@@ -23,6 +23,19 @@ in
         nixos.nix
       ];
 
+      nix.settings = {
+        extra-substituters = [
+          "https://niri.cachix.org"
+          "https://noctalia.cachix.org"
+          "https://vicinae.cachix.org"
+        ];
+        extra-trusted-public-keys = [
+          "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
+          "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+          "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc="
+        ];
+      };
+
       home-manager.users.${config.profile.username} = {
         imports = [ homeManager.wayland ];
         profile = config.profile;
