@@ -14,5 +14,10 @@ in
       nixos.nix
       nixos.web
     ];
+
+    services.tailscale = {
+      enable = true;
+      openFirewall = true;
+    };
   };
 }
