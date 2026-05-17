@@ -33,7 +33,6 @@ in
         nix.settings = {
           max-jobs = lib.mkForce 1;
           cores = lib.mkForce 1;
-          download-buffer-size = lib.mkForce 67108864;
         };
         zramSwap.memoryPercent = lib.mkForce 100;
         services.journald.extraConfig = lib.mkForce ''
