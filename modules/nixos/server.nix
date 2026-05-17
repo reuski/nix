@@ -7,7 +7,6 @@
       ...
     }:
     {
-      boot.kernelPackages = pkgs.linuxPackages_latest;
       boot.kernelModules = [ "tcp_bbr" ];
       boot.kernel.sysctl = {
         "kernel.dmesg_restrict" = 1;
@@ -15,15 +14,7 @@
         "net.core.default_qdisc" = "fq";
         "net.ipv4.tcp_congestion_control" = "bbr";
       };
-      boot.tmp.cleanOnBoot = true;
 
-      zramSwap = {
-        enable = true;
-        algorithm = "zstd";
-        memoryPercent = 50;
-      };
-
-      systemd.oomd.enable = true;
       systemd.coredump.enable = false;
       systemd.targets = {
         sleep.enable = false;
@@ -94,7 +85,6 @@
         };
       };
 
-      users.mutableUsers = false;
       users.users.${config.profile.username} = {
         isNormalUser = true;
         description = config.profile.fullName;
@@ -103,16 +93,7 @@
         extraGroups = [ "wheel" ];
         shell = pkgs.fish;
       };
-      users.users.root.hashedPassword = "!";
 
-      programs.fish.enable = true;
-
-      security.sudo.enable = false;
-      security.sudo-rs = {
-        enable = true;
-        execWheelOnly = true;
-        wheelNeedsPassword = false;
-      };
       security.apparmor.enable = true;
       security.protectKernelImage = true;
 

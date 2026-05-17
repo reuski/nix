@@ -3,8 +3,6 @@
   flake.modules.nixos.users =
     { config, pkgs, ... }:
     {
-      users.mutableUsers = false;
-
       users.users.${config.profile.username} = {
         isNormalUser = true;
         description = config.profile.fullName;
@@ -16,17 +14,6 @@
           "video"
         ];
         shell = pkgs.fish;
-      };
-
-      users.users.root.hashedPassword = "!";
-
-      programs.fish.enable = true;
-
-      security.sudo.enable = false;
-      security.sudo-rs = {
-        enable = true;
-        execWheelOnly = true;
-        wheelNeedsPassword = false;
       };
     };
 }

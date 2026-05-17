@@ -2,16 +2,6 @@
 
 Dendritic Nix flake for personal NixOS and nix-darwin systems.
 
-## Layout
-
-- `flake.nix`: flake-parts entrypoint, recursive visible-module import.
-- `modules/configurations/`: `configurations.{nixos,darwin}` registries and flake outputs.
-- `modules/hosts/`: concrete hosts with private `_hardware.nix`, `_disko.nix`, and local helpers.
-- `modules/stacks/`: reusable stack compositions.
-- `modules/nixos/`, `modules/darwin/`, `modules/home-manager/`, `modules/profile/`: reusable system and user modules.
-- `modules/packages/`: overlayed custom packages.
-- `modules/apps/update-custom.nix`: updater for custom package versions and hashes.
-
 ## Hosts
 
 | Host      | Role    | Notes                                 |

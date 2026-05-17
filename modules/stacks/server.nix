@@ -7,6 +7,7 @@ in
     imports = [
       generic.profile
       nixos.nixpkgs
+      nixos.common
       nixos.locale
       nixos.server
       nixos.nix
