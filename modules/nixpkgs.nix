@@ -6,7 +6,7 @@
 }:
 let
   baseOverlays = [ config.flake.overlays.default ];
-  linuxOverlays = [
+  waylandOverlays = [
     inputs.niri.overlays.niri
     inputs.ghostty.overlays.default
   ];
@@ -17,14 +17,19 @@ in
     {
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
-        overlays = baseOverlays ++ lib.optionals (lib.hasSuffix "-linux" system) linuxOverlays;
+        overlays = baseOverlays ++ lib.optionals (lib.hasSuffix "-linux" system) waylandOverlays;
         config.allowUnfree = true;
       };
     };
 
   flake.modules.nixos.nixpkgs = {
-    nixpkgs.overlays = baseOverlays ++ linuxOverlays;
+    nixpkgs.overlays = baseOverlays;
     nixpkgs.config.allowUnfree = true;
+  };
+
+  flake.modules.nixos.nixpkgsWayland = {
+    imports = [ config.flake.modules.nixos.nixpkgs ];
+    nixpkgs.overlays = waylandOverlays;
   };
 
   flake.modules.darwin.nixpkgs = {
