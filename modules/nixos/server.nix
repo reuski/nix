@@ -120,6 +120,7 @@
         lsof
         rsync
         tcpdump
+        vim
       ];
     };
 }
