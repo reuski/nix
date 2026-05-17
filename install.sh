@@ -66,6 +66,19 @@ install_nixos_media() {
   nixos-install --flake "$FLAKE#$host" --no-root-passwd --no-channel-copy
 }
 
+patch_kexec_image() {
+  url="$1"
+  dir="$2"
+  need curl
+  need tar
+  curl -fsSL "$url" -o "$dir/kexec.tar.gz"
+  mkdir "$dir/extract"
+  tar -xzf "$dir/kexec.tar.gz" -C "$dir/extract"
+  find "$dir/extract" -type f \( -name run -o -name kexec-boot -o -name kexec-run \) \
+    -exec sed -i 's|kexec --load|kexec --kexec-syscall-auto --load|g' {} +
+  tar -czf "$dir/kexec-patched.tar.gz" -C "$dir/extract" .
+}
+
 install_nixos_anywhere() {
   host="$1"
   target="${2:-}"
@@ -74,7 +87,12 @@ install_nixos_anywhere() {
   [ "$(uname -s)" = Linux ] || die "$host install must run from an x86_64-linux nix host"
   ensure_nix
   set -- --flake "$FLAKE#$host"
-  [ -n "$kexec" ] && set -- "$@" --kexec "$kexec"
+  if [ -n "$kexec" ]; then
+    work=$(mktemp -d)
+    trap 'rm -rf "$work"' EXIT INT TERM
+    patch_kexec_image "$kexec" "$work"
+    set -- "$@" --kexec "$work/kexec-patched.tar.gz"
+  fi
   set -- "$@" "$target"
   nix run github:nix-community/nixos-anywhere -- "$@"
 }
