@@ -6,7 +6,7 @@ FLAKE="${FLAKE:-github:reuski/nix/main}"
 
 export NIX_CONFIG="${NIX_CONFIG:-experimental-features = nix-command flakes
 accept-flake-config = true
-download-buffer-size = 536870912}"
+download-buffer-size = 67108864}"
 
 die() {
   printf '%s\n' "error: $*" >&2
@@ -42,6 +42,17 @@ load_brew() {
   [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 }
 
+install_nixos_media() {
+  host="$1"
+  [ "$(uname -s)" = Linux ] || die "$host requires Linux"
+  [ "$(id -u)" -eq 0 ] || die "run as root from the NixOS installer"
+  [ -e /etc/NIXOS ] || die "run from the NixOS installer"
+  need nix
+  need nixos-install
+  nix run github:nix-community/disko -- --mode destroy,format,mount --yes-wipe-all-disks --flake "$FLAKE#$host"
+  nixos-install --flake "$FLAKE#$host" --no-root-passwd
+}
+
 ensure_brew() {
   load_brew
   has brew && return
@@ -58,7 +69,7 @@ usage: install.sh <host>
 hosts:
   abraxas    Apple Silicon MacBook
   hiisi      NixOS laptop (run as root from live ISO)
-  shodan     Remote NixOS VPS
+  shodan     UpCloud Starter VPS (run as root from NixOS install media)
 EOF
   exit 2
 }
@@ -72,22 +83,10 @@ case "${1:-}" in
     nix run github:nix-darwin/nix-darwin -- switch --flake "$FLAKE#abraxas"
     ;;
   hiisi)
-    [ "$(uname -s)" = Linux ] || die "hiisi requires Linux"
-    [ "$(id -u)" -eq 0 ] || die "run as root from the NixOS live ISO"
-    [ -e /etc/NIXOS ] || die "run from the NixOS live ISO"
-    need nix
-    need nixos-install
-    nix run github:nix-community/disko -- --mode destroy,format,mount --yes-wipe-all-disks --flake "$FLAKE#hiisi"
-    nixos-install --flake "$FLAKE#hiisi" --no-root-passwd
+    install_nixos_media hiisi
     ;;
   shodan)
-    target="${2:-root@shodan.reuski.dev}"
-    ensure_nix
-    nix run github:nix-community/nixos-anywhere -- \
-      --build-on-remote \
-      --copy-host-keys \
-      --flake "$FLAKE#shodan" \
-      "$target"
+    install_nixos_media shodan
     ;;
   *)
     usage

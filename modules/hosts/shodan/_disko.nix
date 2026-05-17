@@ -19,6 +19,8 @@
               extraArgs = [
                 "-L"
                 "nixos"
+                "-m"
+                "0"
               ];
               mountpoint = "/";
               mountOptions = [ "noatime" ];

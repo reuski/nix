@@ -25,10 +25,22 @@ in
           domain = "reuski.dev";
         };
 
-        systemd.network = {
-          config.networkConfig.IPv6PrivacyExtensions = false;
-          networks."10-wan".networkConfig.DHCP = lib.mkForce "ipv4";
+        systemd.network.networks."10-wan".networkConfig = {
+          DHCP = lib.mkForce "ipv4";
+          IPv6PrivacyExtensions = false;
         };
+
+        nix.settings = {
+          max-jobs = lib.mkForce 1;
+          cores = lib.mkForce 1;
+          download-buffer-size = lib.mkForce 67108864;
+        };
+        zramSwap.memoryPercent = lib.mkForce 100;
+        services.journald.extraConfig = lib.mkForce ''
+          SystemMaxUse=100M
+          RuntimeMaxUse=50M
+          MaxRetentionSec=2week
+        '';
 
         site.autoUpgradeFlake = "github:reuski/nix/main";
 
