@@ -57,6 +57,9 @@ install_nixos_media() {
   [ -e /etc/NIXOS ] || die "run from the NixOS installer"
   need nix
   need nixos-install
+  for m in /nix/.rw-store / /tmp /run; do
+    mount -o remount,size=90% "$m" 2>/dev/null || true
+  done
   nix run github:nix-community/disko -- --mode destroy,format,mount --yes-wipe-all-disks --flake "$FLAKE#$host"
   if [ -e /dev/disk/by-partlabel/swap ]; then
     swapon /dev/disk/by-partlabel/swap || true
