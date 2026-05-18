@@ -101,6 +101,9 @@
         hashedPassword = "!";
         extraGroups = [ "wheel" ];
         shell = pkgs.bashInteractive;
+        openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOYOhwRvjVJHFoTPD02CCbvnvBUeS1eq1jSmUvfYCmbp sami@reuski.dev"
+        ];
       };
 
       security.apparmor.enable = true;

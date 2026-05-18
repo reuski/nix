@@ -7,7 +7,6 @@ in
     channel = "stable";
     module =
       {
-        config,
         lib,
         pkgs,
         ...
@@ -18,6 +17,7 @@ in
           ./_disko.nix
           ./_hardware.nix
           nixos.stackServer
+          nixos.web
         ];
 
         networking = {
@@ -36,12 +36,6 @@ in
           RuntimeMaxUse=50M
           MaxRetentionSec=2week
         '';
-
-        site.autoUpgradeFlake = "github:reuski/nix/main";
-
-        users.users.${config.profile.username}.openssh.authorizedKeys.keys = [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOYOhwRvjVJHFoTPD02CCbvnvBUeS1eq1jSmUvfYCmbp sami@reuski.dev"
-        ];
 
         web = {
           sites.reuski-dev = {

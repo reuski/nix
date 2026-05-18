@@ -12,8 +12,9 @@ in
       nixos.server
       nixos.vim
       nixos.nix
-      nixos.web
     ];
+
+    site.autoUpgradeFlake = "github:reuski/nix/main";
 
     services.tailscale = {
       enable = true;
