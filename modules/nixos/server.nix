@@ -118,6 +118,7 @@
         git
         jq
         lsof
+        ncurses
         rsync
         tcpdump
       ];
