@@ -8,7 +8,7 @@ Personal dendritic Nix flake — NixOS, nix-darwin, Home Manager.
 - `_*.nix` files are private host helpers (hardware, disko).
 - Reusable modules export through `flake.modules.{nixos,darwin,homeManager,generic}`.
 - `modules/configurations/` registers `configurations.{nixos,darwin}` outputs.
-- `modules/hosts/` holds real systems only: `hiisi`, `shodan`, `abraxas`.
+- `modules/hosts/` holds real systems only: `hiisi`, `shodan`, `ukko`, `abraxas`.
 - `modules/stacks/` composes reusable stacks; per-host hardware lives in `_hardware.nix`.
 
 ## Rules
