@@ -8,6 +8,7 @@ Dendritic Nix flake for personal NixOS and nix-darwin systems.
 | --------- | ------- | ------------------------------------- |
 | `hiisi`   | Wayland | ThinkPad T480, disko ext4, niri       |
 | `shodan`  | Server  | UpCloud VPS, systemd-networkd, Caddy  |
+| `ukko`    | Server  | ThinkCentre M920q Tiny, wired LAN     |
 | `abraxas` | Mac     | MacBook, nix-darwin, Helium + Ghostty |
 
 ## Dev
@@ -48,6 +49,12 @@ sudo install -d -m 700 /var/lib/web/keys /var/lib/web/secrets
 sudoedit /var/lib/web/secrets/beebud.env
 sudoedit /var/lib/web/secrets/wahuu-games.env
 sudo systemctl restart web-service-beebud web-service-wahuu-games caddy
+```
+
+**ukko**
+
+```sh
+sudo tailscale up
 ```
 
 ## Password Hash

@@ -83,6 +83,7 @@ hosts:
   abraxas    MacBook
   hiisi      NixOS laptop
   shodan     VPS
+  ukko       Home server
 EOF
   exit 2
 }
@@ -103,6 +104,13 @@ case "${1:-}" in
       install_nixos_anywhere shodan "$2"
     else
       install_nixos_media shodan
+    fi
+    ;;
+  ukko)
+    if [ -n "${2:-}" ]; then
+      install_nixos_anywhere ukko "$2"
+    else
+      install_nixos_media ukko
     fi
     ;;
   *)
