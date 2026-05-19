@@ -54,7 +54,7 @@ ssh-to-age -i "$KEYDIR/ssh_host_ed25519_key.pub"
 
 $EDITOR .sops.yaml
 sops updatekeys --yes secrets/users.yaml
-sops updatekeys --yes "secrets/$host.yaml"
+sops updatekeys --yes "secrets/$HOST.yaml"
 git add .sops.yaml secrets/users.yaml "secrets/$HOST.yaml"
 git commit -m "onboard $HOST secrets"
 ```
