@@ -28,9 +28,11 @@
         dnssec = lib.mkForce "false";
         dnsovertls = lib.mkForce "false";
         fallbackDns = lib.mkForce [ ];
-        extraConfig = ''
-          DNSStubListener=no
-        '';
+        settings = {
+          Resolve = {
+            DNSStubListener = "no";
+          };
+        };
       };
 
       services.adguardhome = {
