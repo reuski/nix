@@ -43,9 +43,12 @@
           set -g fish_pager_color_prefix ${fishHex gruvbox.yellow} --bold
           set -g fish_pager_color_description ${fishHex gruvbox.gray}
 
-          set -l config_home "$HOME/.config"
-          set -q XDG_CONFIG_HOME; and set config_home "$XDG_CONFIG_HOME"
-          set -l sops_env "$config_home/sops-nix/secrets/api-env"
+          set -l sops_env /run/secrets/env
+          if not test -r "$sops_env"
+            set -l config_home "$HOME/.config"
+            set -q XDG_CONFIG_HOME; and set config_home "$XDG_CONFIG_HOME"
+            set sops_env "$config_home/sops-nix/secrets/env"
+          end
           if test -r "$sops_env"
             for line in (string match -rv '^\s*(#|$)' < "$sops_env")
               set -l parts (string split -m 1 = -- $line)

@@ -1,32 +1,32 @@
 keys:
   - &admin age1sgpvlv0ghe7ws66n3n74l63c8tgrsqlwnlh4h97345hfcew779ks5mft8z
-  - &host_shodan age168fau08ynm0njqpga45k3a23tjthcqxqqt430z6lc5ujkz85cv7qjgg6c4
-  - &host_ukko age1pe7gyn74p4dz2p74kqdqqz84zxy35qy7vgkhy7jel8et9p3suflsjl747c
-  - &host_hiisi age1exd00pfp4dpf2qrwg46fuzp4rrnnr8x339hyaw4wqa6qrt2djensmsgnlw
+  - &shodan age168fau08ynm0njqpga45k3a23tjthcqxqqt430z6lc5ujkz85cv7qjgg6c4
+  - &ukko age1pe7gyn74p4dz2p74kqdqqz84zxy35qy7vgkhy7jel8et9p3suflsjl747c
+  - &hiisi age1exd00pfp4dpf2qrwg46fuzp4rrnnr8x339hyaw4wqa6qrt2djensmsgnlw
 
 creation_rules:
   - path_regex: secrets/users\.yaml$
     key_groups:
       - age:
           - *admin
-          - *host_shodan
-          - *host_ukko
-          - *host_hiisi
+          - *shodan
+          - *ukko
+          - *hiisi
   - path_regex: secrets/shodan\.yaml$
     key_groups:
       - age:
           - *admin
-          - *host_shodan
+          - *shodan
   - path_regex: secrets/ukko\.yaml$
     key_groups:
       - age:
           - *admin
-          - *host_ukko
+          - *ukko
   - path_regex: secrets/hiisi\.yaml$
     key_groups:
       - age:
           - *admin
-          - *host_hiisi
+          - *hiisi
   - path_regex: secrets/abraxas\.yaml$
     key_groups:
       - age:
