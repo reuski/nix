@@ -19,6 +19,8 @@ in
       home-manager.users.${config.profile.username} =
         { lib, ... }:
         {
+          sops.secrets.api-env = { };
+
           home.activation.wallpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
             /usr/bin/osascript -e 'tell app "Finder" to set desktop picture to POSIX file "${../../profile/wallpaper-abraxas.png}"' &>/dev/null || true
           '';

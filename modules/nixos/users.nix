@@ -5,11 +5,16 @@
     {
       programs.fish.enable = true;
 
+      sops.secrets."users/${config.profile.username}/password" = {
+        neededForUsers = true;
+        sopsFile = ../../secrets/users.yaml;
+      };
+
       users.users.${config.profile.username} = {
         isNormalUser = true;
         description = config.profile.fullName;
         home = config.profile.homeDirectory;
-        hashedPassword = "$y$j9T$GErnHaaXaY3kHubPGs1h8.$0tIEdbq75t4mWHwuu4daaeQcGO6mgOVYCb/pItnCy62";
+        hashedPasswordFile = config.sops.secrets."users/${config.profile.username}/password".path;
         extraGroups = [
           "wheel"
           "networkmanager"

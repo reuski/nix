@@ -9,6 +9,7 @@ in
       nixos.nixpkgs
       nixos.common
       nixos.locale
+      nixos.secrets
       nixos.server
       nixos.vim
       nixos.nix

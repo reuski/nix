@@ -4,9 +4,6 @@ description: Check formatting, evaluate Nix expressions, and build smoke tests
 runs:
   using: composite
   steps:
-    - run: bash -n install.sh
-      shell: bash
-
     - run: nix flake lock
       shell: bash
 
@@ -19,6 +16,9 @@ runs:
       shell: bash
 
     - run: nix eval --raw .#nixosConfigurations.shodan.config.system.build.toplevel.drvPath
+      shell: bash
+
+    - run: nix eval --raw .#nixosConfigurations.ukko.config.system.build.toplevel.drvPath
       shell: bash
 
     - run: nix eval --raw .#darwinConfigurations.abraxas.config.system.build.toplevel.drvPath

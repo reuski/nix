@@ -6,7 +6,8 @@ on:
       - "**/*.nix"
       - "flake.lock"
       - "flake.nix"
-      - "install.sh"
+      - ".sops.yaml"
+      - "secrets/**"
       - ".github/workflows/**"
       - ".github/actions/**"
   push:
@@ -15,7 +16,8 @@ on:
       - "**/*.nix"
       - "flake.lock"
       - "flake.nix"
-      - "install.sh"
+      - ".sops.yaml"
+      - "secrets/**"
       - ".github/workflows/**"
       - ".github/actions/**"
   workflow_dispatch:

@@ -32,6 +32,13 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
 
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     niri = {
       url = "github:sodiboo/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
