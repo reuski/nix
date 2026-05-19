@@ -8,7 +8,7 @@
 
         sops = {
           defaultSopsFile = ../../secrets + "/${config.networking.hostName}.yaml";
-          age.keyFile = "${config.profile.homeDirectory}/.config/sops/age/keys.txt";
+          age.keyFile = "${config.profile.homeDirectory}/Library/Application Support/sops/age/keys.txt";
         };
       };
     };
