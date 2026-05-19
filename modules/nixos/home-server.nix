@@ -1,7 +1,7 @@
 { ... }:
 {
   flake.modules.nixos.homeServer =
-    { lib, ... }:
+    { config, lib, ... }:
     let
       mediaGroup = "media";
       mediaRoot = "/srv/media";
@@ -87,7 +87,14 @@
       services.prowlarr = servarrSettings;
 
       users.groups.${mediaGroup} = { };
-      users.users.jellyfin.extraGroups = [ mediaGroup ];
+      users.users = {
+        jellyfin.extraGroups = [
+          mediaGroup
+          "render"
+          "video"
+        ];
+        ${config.profile.username}.extraGroups = [ mediaGroup ];
+      };
 
       systemd.services = {
         sonarr.serviceConfig.UMask = lib.mkForce "0002";
@@ -96,9 +103,6 @@
 
       systemd.tmpfiles.rules = [
         "d ${mediaRoot} 2775 root ${mediaGroup} -"
-        "d ${mediaRoot}/downloads 2775 root ${mediaGroup} -"
-        "d ${mediaRoot}/movies 2775 radarr ${mediaGroup} -"
-        "d ${mediaRoot}/series 2775 sonarr ${mediaGroup} -"
       ];
     };
 }
