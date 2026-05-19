@@ -7,6 +7,7 @@ in
     channel = "stable";
     module =
       {
+        config,
         lib,
         pkgs,
         ...
@@ -51,7 +52,7 @@ in
               repo = "https://github.com/reuski/beebud.git";
               port = 3001;
               start = "${lib.getExe pkgs.bun} build/index.js";
-              envFile = "/var/lib/web/secrets/beebud.env";
+              envFile = config.sops.secrets."web/beebud/env".path;
             };
 
             wahuu-games = {
@@ -59,8 +60,23 @@ in
               aliases = [ "www.wahuu.games" ];
               repo = "https://github.com/reuski/wahuu.games.git";
               port = 3000;
-              envFile = "/var/lib/web/secrets/wahuu-games.env";
+              envFile = config.sops.secrets."web/wahuu-games/env".path;
             };
+          };
+        };
+
+        sops.secrets = {
+          "web/beebud/env" = {
+            owner = config.web.user;
+            group = config.web.group;
+            mode = "0400";
+            restartUnits = [ "web-service-beebud.service" ];
+          };
+          "web/wahuu-games/env" = {
+            owner = config.web.user;
+            group = config.web.group;
+            mode = "0400";
+            restartUnits = [ "web-service-wahuu-games.service" ];
           };
         };
 

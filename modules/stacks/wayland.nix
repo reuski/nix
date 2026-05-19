@@ -13,6 +13,7 @@ in
         nixos.common
         nixos.boot
         nixos.networking
+        nixos.secrets
         nixos.users
         nixos.locale
         nixos.audio

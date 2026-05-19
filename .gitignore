@@ -1,0 +1,5 @@
+*.dec.yaml
+*.dec.yml
+*.decrypted.yaml
+*.decrypted.yml
+**/age/keys.txt

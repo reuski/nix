@@ -1,28 +1,37 @@
-{ ... }:
+{ inputs, ... }:
 {
-  flake.modules.darwin.homebrew = {
-    homebrew = {
-      enable = true;
-      onActivation = {
-        autoUpdate = false;
-        upgrade = true;
-        cleanup = "uninstall";
+  flake.modules.darwin.homebrew =
+    { config, ... }:
+    {
+      imports = [ inputs.nix-homebrew.darwinModules.nix-homebrew ];
+
+      nix-homebrew = {
+        enable = true;
+        user = config.profile.username;
       };
-      taps = [ "imputnet/helium" ];
-      brews = [
-        "postgresql@18"
-        "redis"
-      ];
-      casks = [
-        "cleanshot"
-        "ghostty"
-        "helium"
-        "localsend"
-        "raycast"
-        "tableplus"
-        "tailscale"
-        "zed"
-      ];
+
+      homebrew = {
+        enable = true;
+        onActivation = {
+          autoUpdate = false;
+          upgrade = true;
+          cleanup = "uninstall";
+        };
+        taps = [ "imputnet/helium" ];
+        brews = [
+          "postgresql@18"
+          "redis"
+        ];
+        casks = [
+          "cleanshot"
+          "ghostty"
+          "helium"
+          "localsend"
+          "raycast"
+          "tableplus"
+          "tailscale"
+          "zed"
+        ];
+      };
     };
-  };
 }
