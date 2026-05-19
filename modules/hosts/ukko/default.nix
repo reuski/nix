@@ -10,6 +10,8 @@ in
       ./_hardware.nix
       nixos.boot
       nixos.homeServer
+      nixos.intelQuickSync
+      nixos.ukkoJellyfin
       nixos.stackServer
     ];
 

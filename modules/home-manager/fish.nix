@@ -10,6 +10,7 @@
     let
       gruvbox = config.profile.colors.gruvbox;
       fishHex = color: builtins.substring 1 6 color;
+      sopsEnv = if pkgs.stdenv.isLinux then "/run/secrets/env" else "${config.home.homeDirectory}/.config/sops-nix/secrets/env";
     in
     {
       programs.fish = {
@@ -43,12 +44,7 @@
           set -g fish_pager_color_prefix ${fishHex gruvbox.yellow} --bold
           set -g fish_pager_color_description ${fishHex gruvbox.gray}
 
-          set -l sops_env /run/secrets/env
-          if not test -r "$sops_env"
-            set -l config_home "$HOME/.config"
-            set -q XDG_CONFIG_HOME; and set config_home "$XDG_CONFIG_HOME"
-            set sops_env "$config_home/sops-nix/secrets/env"
-          end
+          set -l sops_env ${sopsEnv}
           if test -r "$sops_env"
             for line in (string match -rv '^\s*(#|$)' < "$sops_env")
               set -l parts (string split -m 1 = -- $line)
