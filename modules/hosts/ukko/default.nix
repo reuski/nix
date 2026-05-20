@@ -11,7 +11,8 @@ in
       nixos.boot
       nixos.homeServer
       nixos.intelQuickSync
-      nixos.ukkoJellyfin
+      nixos.connectivity
+      nixos.jellyfinServer
       nixos.stackServer
     ];
 
