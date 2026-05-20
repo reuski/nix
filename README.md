@@ -52,7 +52,7 @@ mkdir -p "$KEYDIR"
 ssh-keygen -t ed25519 -N "" -C "$HOST" -f "$KEYDIR/ssh_host_ed25519_key"
 ssh-to-age -i "$KEYDIR/ssh_host_ed25519_key.pub"
 
-$EDITOR .sops.yaml
+vim .sops.yaml
 sops updatekeys --yes secrets/users.yaml
 sops updatekeys --yes "secrets/$HOST.yaml"
 git add .sops.yaml secrets/users.yaml "secrets/$HOST.yaml"
