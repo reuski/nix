@@ -9,11 +9,5 @@
       services.fstrim.enable = true;
       services.fwupd.enable = true;
       services.upower.enable = true;
-
-      hardware.bluetooth = {
-        enable = true;
-        powerOnBoot = false;
-        settings.General.Experimental = true;
-      };
     };
 }

@@ -1,6 +1,6 @@
 { ... }:
 {
-  flake.modules.nixos.server =
+  flake.modules.nixos.headless =
     {
       config,
       pkgs,

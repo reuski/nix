@@ -1,9 +1,9 @@
 { ... }:
 {
-  flake.modules.homeManager.llamaServer =
+  flake.modules.homeManager.llama =
     { pkgs, ... }:
     let
-      llamaServer = pkgs.writeShellApplication {
+      llama = pkgs.writeShellApplication {
         name = "llama-server";
         runtimeInputs = with pkgs; [
           cmake
@@ -76,6 +76,6 @@
       };
     in
     {
-      home.packages = [ llamaServer ];
+      home.packages = [ llama ];
     };
 }

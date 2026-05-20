@@ -50,11 +50,11 @@
         }
 
         update_release "imputnet/helium-linux" \
-          "modules/packages/helium-browser.nix" \
+          "modules/packages/helium.nix" \
           "https://github.com/imputnet/helium-linux/releases/download/{version}/helium-{version}-x86_64_linux.tar.xz"
 
         update_tag "uunicorn/python-validity" \
-          "modules/packages/python-validity.nix" \
+          "modules/packages/validity.nix" \
           "https://github.com/uunicorn/python-validity/archive/refs/tags/{version}.tar.gz"
 
         update_release "dj95/zjstatus" \

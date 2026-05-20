@@ -6,7 +6,10 @@ in
   configurations.darwin.abraxas.module =
     { config, ... }:
     {
-      imports = [ darwin.stackMac ];
+      imports = [
+        darwin.mac
+        ./_desktop.nix
+      ];
 
       networking.hostName = "abraxas";
       networking.computerName = "abraxas";
@@ -14,16 +17,8 @@ in
 
       nixpkgs.hostPlatform = "aarch64-darwin";
 
+      home-manager.users.${config.profile.username}.sops.secrets.env = { };
+
       system.stateVersion = 6;
-
-      home-manager.users.${config.profile.username} =
-        { lib, ... }:
-        {
-          sops.secrets.env = { };
-
-          home.activation.wallpaper = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-            /usr/bin/osascript -e 'tell app "Finder" to set desktop picture to POSIX file "${../../profile/wallpaper-abraxas.png}"' &>/dev/null || true
-          '';
-        };
     };
 }

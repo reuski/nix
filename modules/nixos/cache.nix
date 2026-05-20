@@ -1,6 +1,6 @@
 { lib, ... }:
 {
-  flake.modules.nixos.desktopCaches = {
+  flake.modules.nixos.cache = {
     nix.settings = {
       substituters = lib.mkAfter [
         "https://niri.cachix.org"
