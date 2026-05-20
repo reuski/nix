@@ -4,7 +4,6 @@
     { config, lib, ... }:
     let
       mediaGroup = "media";
-      mediaRoot = "/srv/media";
       servarrSettings = {
         enable = true;
         openFirewall = true;
@@ -17,7 +16,11 @@
     {
       networking.firewall = {
         allowedTCPPorts = [ 53 ];
-        allowedUDPPorts = [ 53 ];
+        allowedUDPPorts = [
+          53
+          1900
+          7359
+        ];
       };
 
       environment.etc."resolv.conf".source = lib.mkForce "/run/systemd/resolve/resolv.conf";
@@ -77,6 +80,17 @@
         };
       };
 
+      services.avahi = {
+        enable = true;
+        nssmdns4 = true;
+        openFirewall = true;
+        publish = {
+          enable = true;
+          addresses = true;
+          workstation = true;
+        };
+      };
+
       services.jellyfin = {
         enable = true;
         openFirewall = true;
@@ -100,9 +114,5 @@
         sonarr.serviceConfig.UMask = lib.mkForce "0002";
         radarr.serviceConfig.UMask = lib.mkForce "0002";
       };
-
-      systemd.tmpfiles.rules = [
-        "d ${mediaRoot} 2775 root ${mediaGroup} -"
-      ];
     };
 }

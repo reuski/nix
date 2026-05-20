@@ -1,14 +1,17 @@
 { ... }:
 {
-  flake.modules.nixos.ukkoJellyfin =
-    { lib, pkgs, ... }:
+  flake.modules.nixos.jellyfinServer =
     {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
+    lib.mkIf config.services.jellyfin.enable {
       boot.kernel.sysctl = {
         "fs.inotify.max_user_instances" = 1024;
         "fs.inotify.max_user_watches" = 1048576;
       };
-
-      networking.firewall.allowedUDPPorts = [ 7359 ];
 
       fonts = {
         fontconfig.enable = lib.mkForce true;
