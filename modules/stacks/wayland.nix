@@ -1,18 +1,18 @@
-{ config, ... }:
+{ config, inputs, ... }:
 let
   inherit (config.flake.modules) generic homeManager nixos;
 in
 {
-  flake.modules.nixos.stackWayland =
+  flake.modules.nixos.wayland =
     { config, ... }:
     {
       imports = [
         generic.profile
-        nixos.nixpkgsWayland
-        nixos.desktopCaches
+        nixos.nixpkgs
+        nixos.cache
         nixos.common
         nixos.boot
-        nixos.networking
+        nixos.network
         nixos.secrets
         nixos.users
         nixos.locale
@@ -25,18 +25,10 @@ in
         nixos.nix
       ];
 
-      nix.settings = {
-        extra-substituters = [
-          "https://niri.cachix.org"
-          "https://noctalia.cachix.org"
-          "https://vicinae.cachix.org"
-        ];
-        extra-trusted-public-keys = [
-          "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
-          "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
-          "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc="
-        ];
-      };
+      nixpkgs.overlays = [
+        inputs.niri.overlays.niri
+        inputs.ghostty.overlays.default
+      ];
 
       services.tailscale = {
         enable = true;

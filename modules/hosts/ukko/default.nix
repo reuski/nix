@@ -8,15 +8,10 @@ in
       inputs.disko.nixosModules.disko
       ./_disko.nix
       ./_hardware.nix
+      ./_services.nix
       nixos.boot
-      nixos.homeServer
-      nixos.intelQuickSync
-      nixos.connectivity
-      nixos.jellyfinServer
-      nixos.stackServer
+      nixos.server
     ];
-
-    networking.hostName = "ukko";
 
     system.stateVersion = "25.11";
   };

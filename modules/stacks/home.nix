@@ -18,7 +18,7 @@ in
         homeManager.eza
         homeManager.fzf
         homeManager.git
-        homeManager.cliTools
+        homeManager.cli
         homeManager.bun
         homeManager.pi
         homeManager.python

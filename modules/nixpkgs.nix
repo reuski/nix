@@ -27,11 +27,6 @@ in
     nixpkgs.config.allowUnfree = true;
   };
 
-  flake.modules.nixos.nixpkgsWayland = {
-    imports = [ config.flake.modules.nixos.nixpkgs ];
-    nixpkgs.overlays = waylandOverlays;
-  };
-
   flake.modules.darwin.nixpkgs = {
     nixpkgs.overlays = baseOverlays;
     nixpkgs.config.allowUnfree = true;

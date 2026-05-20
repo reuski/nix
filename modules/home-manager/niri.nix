@@ -8,7 +8,6 @@
       ...
     }:
     let
-      wallpaper = ../profile/wallpaper-hiisi.png;
       wpctl = lib.getExe' pkgs.wireplumber "wpctl";
       noctaliaShell = lib.getExe' pkgs.noctalia-shell "noctalia-shell";
       noctalia =
@@ -39,33 +38,8 @@
             repeat-rate = 50;
           };
           mod-key = "Super";
-          touchpad = {
-            tap = true;
-            natural-scroll = false;
-            dwt = true;
-            accel-profile = "adaptive";
-            click-method = "clickfinger";
-            scroll-method = "two-finger";
-          };
-          trackpoint = {
-            accel-profile = "flat";
-            accel-speed = 0.0;
-          };
           mouse.accel-profile = "flat";
           warp-mouse-to-focus.enable = true;
-        };
-
-        outputs."eDP-1" = {
-          mode = {
-            width = 1920;
-            height = 1080;
-            refresh = 60.000;
-          };
-          scale = 1.25;
-          position = {
-            x = 0;
-            y = 0;
-          };
         };
 
         layout = {
@@ -91,18 +65,7 @@
 
         hotkey-overlay.skip-at-startup = true;
 
-        spawn-at-startup = [
-          {
-            command = [
-              (lib.getExe pkgs.swaybg)
-              "--image"
-              "${wallpaper}"
-              "--mode"
-              "fill"
-            ];
-          }
-          { command = [ noctaliaShell ]; }
-        ];
+        spawn-at-startup = [ { command = [ noctaliaShell ]; } ];
 
         binds = {
           "Mod+Return".action.spawn = lib.getExe pkgs.ghostty;
