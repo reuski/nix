@@ -21,121 +21,118 @@ git diff --check
 
 ## Secrets
 
-### Admin
+Admin age key (one-time):
 
 ```sh
-age-keygen -o "$HOME/.config/sops/age/keys.txt"
-age-keygen -y "$HOME/.config/sops/age/keys.txt"
-# Add the public key to .sops.yaml recipients
+age-keygen -o "$HOME/.config/sops/age/keys.txt" # public key → .sops.yaml
 ```
 
-### Password Hash
+## NixOS
 
 ```sh
-tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT
-systemd-firstboot --root="$tmp" --prompt-root-password --force --welcome=no
-chmod u+r "$tmp/etc/shadow"
-awk -F: '$1 == "root" { print $2 }' "$tmp/etc/shadow"
-```
-
-## Install NixOS
-
-### Host
-
-```sh
-HOST="hiisi"
+HOST=hiisi
 FLAKE="github:reuski/nix/main#$HOST"
-KEYDIR="$HOME/.local/state/reuski-nix/$HOST/etc/ssh"
+HOSTDIR="$HOME/.local/state/reuski-nix/$HOST"
+KEYDIR="$HOSTDIR/etc/ssh"
+```
 
+### Onboard
+
+```sh
 mkdir -p "$KEYDIR"
 ssh-keygen -t ed25519 -N "" -C "$HOST" -f "$KEYDIR/ssh_host_ed25519_key"
-ssh-to-age -i "$KEYDIR/ssh_host_ed25519_key.pub"
+ssh-to-age -i "$KEYDIR/ssh_host_ed25519_key.pub"  # → .sops.yaml
 
-vim .sops.yaml
 sops updatekeys --yes secrets/users.yaml
 sops updatekeys --yes "secrets/$HOST.yaml"
 git add .sops.yaml secrets/users.yaml "secrets/$HOST.yaml"
-git commit -m "onboard $HOST secrets"
+git commit -m "onboard $HOST"
 ```
 
-### Boot
+### nixos-anywhere
+
+```sh
+TARGET=root@<target-ip>
+
+nix run github:nix-community/nixos-anywhere -- \
+  --flake "$FLAKE" \
+  --extra-files "$HOSTDIR" \
+  "$TARGET"
+```
+
+### ISO install
 
 ```sh
 sudo -i
 # nmcli device wifi connect "SSID" password "PASSWORD"
 systemctl start sshd
 passwd
-ip addr show
+ip addr
 ```
 
-### Copy
+From admin host, push the host key and run install:
 
 ```sh
-HOST="hiisi"
-TARGET="root@<iso-ip>"
-KEYDIR="$HOME/.local/state/reuski-nix/$HOST/etc/ssh"
-
+TARGET=root@<iso-ip>
 scp -r "$KEYDIR" "$TARGET:/tmp/ssh"
+
+ssh "$TARGET" NIX_CONFIG='experimental-features = nix-command flakes' bash <<EOF
+  nix run github:nix-community/disko/latest -- \
+    --mode destroy,format,mount --yes-wipe-all-disks --flake "$FLAKE"
+  install -d -m 0700 /mnt/etc/ssh
+  install -m 0600 /tmp/ssh/ssh_host_ed25519_key     /mnt/etc/ssh/
+  install -m 0644 /tmp/ssh/ssh_host_ed25519_key.pub /mnt/etc/ssh/
+  nixos-install --flake "$FLAKE" --no-root-passwd --no-channel-copy
+  reboot
+EOF
 ```
 
-### Install
+### Post
 
 ```sh
-HOST="hiisi"
-FLAKE="github:reuski/nix/main#$HOST"
-export NIX_CONFIG="experimental-features = nix-command flakes"
-
-nix run github:nix-community/disko/latest -- --mode destroy,format,mount --yes-wipe-all-disks --flake "$FLAKE"
-
-install -d -m 0700 /mnt/etc/ssh
-install -m 0600 /tmp/ssh/ssh_host_ed25519_key /mnt/etc/ssh/ssh_host_ed25519_key
-install -m 0644 /tmp/ssh/ssh_host_ed25519_key.pub /mnt/etc/ssh/ssh_host_ed25519_key.pub
-
-nixos-install --flake "$FLAKE" --no-root-passwd --no-channel-copy
-reboot
+systemctl status sops-install-secrets
+ls /run/secrets
 ```
 
-### nixos-anywhere
+## nix-darwin
 
 ```sh
-HOST="shodan"
-TARGET="root@<target-ip>"
-KEYDIR="$HOME/.local/state/reuski-nix/$HOST"
+HOST=abraxas
 FLAKE="github:reuski/nix/main#$HOST"
-
-nix run github:nix-community/nixos-anywhere -- \
-  --extra-files "$KEYDIR" \
-  --flake "$FLAKE" \
-  "$TARGET"
+HOSTDIR="$HOME/.local/state/reuski-nix/$HOST"
 ```
 
-## macOS
+### Onboard
+
+On admin:
+
+```sh
+mkdir -p "$HOSTDIR"
+age-keygen -o "$HOSTDIR/keys.txt"   # → .sops.yaml
+
+sops updatekeys --yes secrets/users.yaml
+sops updatekeys --yes "secrets/$HOST.yaml"
+git add .sops.yaml secrets/users.yaml "secrets/$HOST.yaml"
+git commit -m "onboard $HOST"
+```
 
 ### Bootstrap
 
+On the Mac:
+
 ```sh
 xcode-select --install
-curl -sSfL https://install.determinate.systems/nix | sh -s -- install --no-confirm
+curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm
 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 
-HOST="abraxas"
-FLAKE="github:reuski/nix/main#$HOST"
-
 install -d -m 0700 "$HOME/.config/sops/age"
-scp "<admin-host>:.config/sops/age/keys.txt" "$HOME/.config/sops/age/keys.txt"
+scp <admin>:".local/state/reuski-nix/$HOST/keys.txt" "$HOME/.config/sops/age/keys.txt"
+chmod 0600 "$HOME/.config/sops/age/keys.txt"
 
 nix run github:nix-darwin/nix-darwin -- switch --flake "$FLAKE"
 ```
 
-## Post
-
-### NixOS
-
-```sh
-systemctl status sops-install-secrets.service
-ls -la /run/secrets
-```
+## Per-host post
 
 ### shodan
 
