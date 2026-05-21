@@ -49,14 +49,17 @@
         }
       );
 
-      address = host: "http://${host.domain}${optionalString (host.listen != 80) ":${toString host.listen}"}";
+      address =
+        host: "http://${host.domain}${optionalString (host.listen != 80) ":${toString host.listen}"}";
 
-      serviceHost = _name: service:
+      serviceHost =
+        _name: service:
         nameValuePair (address service) {
           extraConfig = "reverse_proxy ${service.host}:${toString service.port}";
         };
 
-      siteHost = _name: site:
+      siteHost =
+        _name: site:
         nameValuePair (address site) {
           extraConfig = ''
             root * ${site.root}
