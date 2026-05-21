@@ -5,15 +5,35 @@
   ...
 }:
 let
+  localAddress = "192.168.1.11";
   mediaGroup = "media";
   servarrSettings = {
     enable = true;
-    openFirewall = true;
-    settings.server.bindaddress = "*";
+    settings.server.bindaddress = "127.0.0.1";
   };
   mediaService = servarrSettings // {
     group = mediaGroup;
   };
+  dashboardRoot = pkgs.writeTextDir "index.html" ''
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>ukko</title>
+      </head>
+      <body>
+        <h1>ukko</h1>
+        <nav>
+          <a href="http://adguard.ukko.home.arpa">AdGuard</a>
+          <a href="http://jellyfin.ukko.home.arpa">Jellyfin</a>
+          <a href="http://sonarr.ukko.home.arpa">Sonarr</a>
+          <a href="http://radarr.ukko.home.arpa">Radarr</a>
+          <a href="http://prowlarr.ukko.home.arpa">Prowlarr</a>
+        </nav>
+      </body>
+    </html>
+  '';
 in
 {
   networking.firewall = {
@@ -37,8 +57,7 @@ in
 
   services.adguardhome = {
     enable = true;
-    openFirewall = true;
-    host = "0.0.0.0";
+    host = "127.0.0.1";
     port = 3000;
     settings = {
       dns = {
@@ -54,6 +73,16 @@ in
         bootstrap_dns = [
           "9.9.9.9"
           "1.1.1.1"
+        ];
+        rewrites = [
+          {
+            domain = "ukko.home.arpa";
+            answer = localAddress;
+          }
+          {
+            domain = "*.ukko.home.arpa";
+            answer = localAddress;
+          }
         ];
       };
       filtering = {
@@ -95,6 +124,21 @@ in
   services.sonarr = mediaService;
   services.radarr = mediaService;
   services.prowlarr = servarrSettings;
+
+  proxy = {
+    services = {
+      adguard.port = 3000;
+      jellyfin.port = 8096;
+      sonarr.port = 8989;
+      radarr.port = 7878;
+      prowlarr.port = 9696;
+    };
+    sites.ukko = {
+      domain = "ukko.local";
+      listen = 8080;
+      root = "${dashboardRoot}";
+    };
+  };
 
   boot.kernel.sysctl = {
     "fs.inotify.max_user_instances" = 1024;

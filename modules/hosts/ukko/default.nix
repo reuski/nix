@@ -8,6 +8,7 @@ in
       inputs.disko.nixosModules.disko
       ./_disko.nix
       ./_hardware.nix
+      ./_network.nix
       ./_services.nix
       nixos.boot
       nixos.server

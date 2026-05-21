@@ -13,6 +13,7 @@ in
       nixos.headless
       nixos.vim
       nixos.nix
+      nixos.proxy
     ];
 
     site.autoUpgradeFlake = "github:reuski/nix/main";
