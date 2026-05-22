@@ -19,7 +19,6 @@ in
         homeManager.fzf
         homeManager.git
         homeManager.cli
-        homeManager.bun
         homeManager.pi
         homeManager.python
       ];
@@ -36,7 +35,7 @@ in
     imports = [
       homeManager.base
       homeManager.packages
-      homeManager.zed
+      homeManager.development
       homeManager.xdg
       homeManager.niri
       homeManager.noctalia
@@ -48,8 +47,9 @@ in
   flake.modules.homeManager.mac = {
     imports = [
       homeManager.base
-      homeManager.zed
       homeManager.colima
     ];
+
+    targets.darwin.linkApps.enable = true;
   };
 }
