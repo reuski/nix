@@ -21,7 +21,14 @@
     "i915"
   ];
   boot.extraModulePackages = [ ];
-  boot.kernelParams = [ "i915.enable_guc=3" ];
+  boot.kernelParams = [
+    "i915.enable_guc=3"
+    "i915.fastboot=1"
+  ];
+  boot.tmp = {
+    useTmpfs = true;
+    tmpfsSize = "50%";
+  };
 
   hardware = {
     cpu.intel.updateMicrocode = lib.mkDefault true;
@@ -31,11 +38,10 @@
       extraPackages = with pkgs; [
         intel-compute-runtime
         intel-media-driver
-        vpl-gpu-rt
       ];
     };
     bluetooth = {
-      enable = true;
+      enable = false;
       powerOnBoot = true;
       settings = {
         General.Experimental = true;
@@ -45,11 +51,19 @@
   };
 
   networking.wireless.iwd = {
-    enable = true;
+    enable = false;
     settings = {
       General.EnableNetworkConfiguration = false;
       Settings.AutoConnect = true;
     };
+  };
+
+  powerManagement.cpuFreqGovernor = "powersave";
+
+  zramSwap = {
+    enable = true;
+    memoryPercent = 50;
+    algorithm = "zstd";
   };
 
   systemd.network.networks."20-wifi" = {
@@ -64,15 +78,14 @@
     linkConfig.RequiredForOnline = "routable";
   };
 
+  services.fstrim.enable = true;
   services.fwupd.enable = true;
   services.thermald.enable = true;
 
   environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
   environment.systemPackages = with pkgs; [
-    bluez
     intel-gpu-tools
     iw
-    iwd
     libva-utils
     pciutils
     usbutils

@@ -49,7 +49,5 @@ in
       homeManager.base
       homeManager.colima
     ];
-
-    targets.darwin.linkApps.enable = true;
   };
 }
