@@ -13,6 +13,7 @@ in
         darwin.users
         darwin.system
         darwin.fonts
+        darwin.apps
         darwin.homebrew
         darwin.secrets
       ];

@@ -8,6 +8,7 @@ in
     {
       imports = [
         darwin.mac
+        darwin.development
         ./_desktop.nix
       ];
 
