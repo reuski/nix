@@ -25,15 +25,9 @@ in
     ];
   };
 
-  environment.etc."resolv.conf".source = lib.mkForce "/run/systemd/resolve/resolv.conf";
-  networking.nameservers = lib.mkForce [ "127.0.0.1" ];
-
-  services.resolved = {
-    dnssec = lib.mkForce "false";
-    dnsovertls = lib.mkForce "false";
-    fallbackDns = lib.mkForce [ ];
-    settings.Resolve.DNSStubListener = "no";
-  };
+  services.resolved.enable = lib.mkForce false;
+  networking.resolvconf.enable = lib.mkForce false;
+  environment.etc."resolv.conf".text = "nameserver 127.0.0.1\noptions edns0\n";
 
   services.adguardhome = {
     enable = true;
@@ -42,18 +36,18 @@ in
     settings = {
       dns = {
         bind_hosts = [
-          "0.0.0.0"
-          "::"
+          "127.0.0.1"
+          localAddress
         ];
         port = 53;
-        upstream_dns = [
-          "https://dns.quad9.net/dns-query"
-          "https://cloudflare-dns.com/dns-query"
-        ];
-        bootstrap_dns = [
-          "9.9.9.9"
-          "1.1.1.1"
-        ];
+        upstream_dns = [ "https://dns.quad9.net/dns-query" ];
+        bootstrap_dns = [ "9.9.9.9" ];
+      };
+      filtering = {
+        protection_enabled = true;
+        filtering_enabled = true;
+        parental_enabled = false;
+        safe_search.enabled = false;
         rewrites = [
           {
             domain = "ukko.home.arpa";
@@ -64,12 +58,6 @@ in
             answer = localAddress;
           }
         ];
-      };
-      filtering = {
-        protection_enabled = true;
-        filtering_enabled = true;
-        parental_enabled = false;
-        safe_search.enabled = false;
       };
       filters = [
         {
@@ -132,16 +120,32 @@ in
     ];
   };
 
-  proxy.services = {
-    adguard.port = 3000;
-    jellyfin.port = 8096;
-    sonarr.port = 8989;
-    radarr.port = 7878;
-    prowlarr.port = 9696;
-    dashboard = {
-      domain = "ukko.local";
-      listen = 8080;
+  proxy = {
+    services = {
+      adguard.port = 3000;
+      dashboard.domain = "ukko.home.arpa";
+      jellyfin.port = 8096;
+      sonarr.port = 8989;
+      radarr.port = 7878;
+      prowlarr.port = 9696;
     };
+  };
+
+  services.caddy = let
+    mkHost = _name: service: "http://${service.domain}${lib.optionalString (service.listen != 80) ":${toString service.listen}"}";
+    hosts = lib.mapAttrsToList mkHost config.proxy.services;
+  in {
+    globalConfig = "grace_period 1m";
+    virtualHosts = lib.genAttrs hosts (_: {
+      extraConfig = ''
+        header {
+          X-Content-Type-Options "nosniff"
+          X-Frame-Options "SAMEORIGIN"
+          Referrer-Policy "strict-origin-when-cross-origin"
+          X-Robots-Tag "noindex, nofollow"
+        }
+      '';
+    });
   };
 
   boot.kernel.sysctl = {
