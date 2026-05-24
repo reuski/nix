@@ -76,7 +76,8 @@ From admin host, push the host key and run install:
 TARGET=root@<iso-ip>
 scp -r "$KEYDIR" "$TARGET:/tmp/ssh"
 
-ssh "$TARGET" NIX_CONFIG='experimental-features = nix-command flakes' bash <<EOF
+ssh "$TARGET" bash <<EOF
+  export NIX_CONFIG='experimental-features = nix-command flakes'
   nix run github:nix-community/disko/latest -- \
     --mode destroy,format,mount --yes-wipe-all-disks --flake "$FLAKE"
   install -d -m 0700 /mnt/etc/ssh
