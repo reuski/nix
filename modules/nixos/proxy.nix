@@ -52,16 +52,29 @@
       address =
         host: "http://${host.domain}${optionalString (host.listen != 80) ":${toString host.listen}"}";
 
+      headers = ''
+        header {
+          X-Content-Type-Options "nosniff"
+          X-Frame-Options "SAMEORIGIN"
+          Referrer-Policy "strict-origin-when-cross-origin"
+          X-Robots-Tag "noindex, nofollow"
+        }
+      '';
+
       serviceHost =
         _name: service:
         nameValuePair (address service) {
-          extraConfig = "reverse_proxy ${service.host}:${toString service.port}";
+          extraConfig = ''
+            ${headers}
+            reverse_proxy ${service.host}:${toString service.port}
+          '';
         };
 
       siteHost =
         _name: site:
         nameValuePair (address site) {
           extraConfig = ''
+            ${headers}
             root * ${site.root}
             file_server
           '';

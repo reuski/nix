@@ -112,6 +112,7 @@
       environment.systemPackages = with pkgs; [
         curl
         dnsutils
+        ghostty.terminfo
         git
         jq
         lsof
