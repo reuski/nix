@@ -131,22 +131,28 @@ in
     };
   };
 
-  services.caddy = let
-    mkHost = _name: service: "http://${service.domain}${lib.optionalString (service.listen != 80) ":${toString service.listen}"}";
-    hosts = lib.mapAttrsToList mkHost config.proxy.services;
-  in {
-    globalConfig = "grace_period 1m";
-    virtualHosts = lib.genAttrs hosts (_: {
-      extraConfig = ''
-        header {
-          X-Content-Type-Options "nosniff"
-          X-Frame-Options "SAMEORIGIN"
-          Referrer-Policy "strict-origin-when-cross-origin"
-          X-Robots-Tag "noindex, nofollow"
-        }
-      '';
-    });
-  };
+  services.caddy =
+    let
+      mkHost =
+        _name: service:
+        "http://${service.domain}${
+          lib.optionalString (service.listen != 80) ":${toString service.listen}"
+        }";
+      hosts = lib.mapAttrsToList mkHost config.proxy.services;
+    in
+    {
+      globalConfig = "grace_period 1m";
+      virtualHosts = lib.genAttrs hosts (_: {
+        extraConfig = ''
+          header {
+            X-Content-Type-Options "nosniff"
+            X-Frame-Options "SAMEORIGIN"
+            Referrer-Policy "strict-origin-when-cross-origin"
+            X-Robots-Tag "noindex, nofollow"
+          }
+        '';
+      });
+    };
 
   boot.kernel.sysctl = {
     "fs.inotify.max_user_instances" = 1024;
