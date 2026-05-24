@@ -52,10 +52,12 @@ in
           {
             domain = "ukko.home.arpa";
             answer = localAddress;
+            enabled = true;
           }
           {
             domain = "*.ukko.home.arpa";
             answer = localAddress;
+            enabled = true;
           }
         ];
       };
