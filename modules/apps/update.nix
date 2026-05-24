@@ -29,7 +29,7 @@
           hash=$(nix store prefetch-file --json --hash-type sha256 "$url" | jq -r .hash)
 
           tmp=$(mktemp "$file.XXXXXX")
-          sed 's/version = "'"$current"'";/version = "'"$latest"'";/; s/hash = "[^"]*";/hash = "'"$hash"'";/' "$file" > "$tmp"
+          sed 's#version = "'"$current"'";#version = "'"$latest"'";#; s#hash = "[^"]*";#hash = "'"$hash"'";#' "$file" > "$tmp"
           mv "$tmp" "$file"
 
           echo "$file: $current -> $latest"
