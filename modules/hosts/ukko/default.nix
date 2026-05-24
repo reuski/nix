@@ -12,6 +12,8 @@ in
       ./_services.nix
       nixos.boot
       nixos.server
+      nixos.metal
+      nixos.dashboard
     ];
 
     system.stateVersion = "25.11";

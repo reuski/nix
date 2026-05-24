@@ -40,31 +40,12 @@
         intel-media-driver
       ];
     };
-    bluetooth = {
-      enable = false;
-      powerOnBoot = true;
-      settings = {
-        General.Experimental = true;
-        Policy.AutoEnable = true;
-      };
-    };
+    bluetooth.enable = false;
   };
 
-  networking.wireless.iwd = {
-    enable = false;
-    settings = {
-      General.EnableNetworkConfiguration = false;
-      Settings.AutoConnect = true;
-    };
-  };
+  networking.wireless.iwd.enable = false;
 
   powerManagement.cpuFreqGovernor = "powersave";
-
-  zramSwap = {
-    enable = true;
-    memoryPercent = 50;
-    algorithm = "zstd";
-  };
 
   systemd.network.networks."20-wifi" = {
     matchConfig.Name = "wl*";
@@ -78,8 +59,6 @@
     linkConfig.RequiredForOnline = "routable";
   };
 
-  services.fstrim.enable = true;
-  services.fwupd.enable = true;
   services.thermald.enable = true;
 
   environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";

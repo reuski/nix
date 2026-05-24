@@ -14,26 +14,6 @@ let
   mediaService = servarrSettings // {
     group = mediaGroup;
   };
-  dashboardRoot = pkgs.writeTextDir "index.html" ''
-    <!doctype html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>ukko</title>
-      </head>
-      <body>
-        <h1>ukko</h1>
-        <nav>
-          <a href="http://adguard.ukko.home.arpa">AdGuard</a>
-          <a href="http://jellyfin.ukko.home.arpa">Jellyfin</a>
-          <a href="http://sonarr.ukko.home.arpa">Sonarr</a>
-          <a href="http://radarr.ukko.home.arpa">Radarr</a>
-          <a href="http://prowlarr.ukko.home.arpa">Prowlarr</a>
-        </nav>
-      </body>
-    </html>
-  '';
 in
 {
   networking.firewall = {
@@ -125,18 +105,42 @@ in
   services.radarr = mediaService;
   services.prowlarr = servarrSettings;
 
-  proxy = {
-    services = {
-      adguard.port = 3000;
-      jellyfin.port = 8096;
-      sonarr.port = 8989;
-      radarr.port = 7878;
-      prowlarr.port = 9696;
-    };
-    sites.ukko = {
+  services.heimdash = {
+    enable = true;
+    mounts = [ "/" ];
+    services = [
+      {
+        name = "AdGuard";
+        url = "http://adguard.ukko.home.arpa";
+      }
+      {
+        name = "Jellyfin";
+        url = "http://jellyfin.ukko.home.arpa";
+      }
+      {
+        name = "Sonarr";
+        url = "http://sonarr.ukko.home.arpa";
+      }
+      {
+        name = "Radarr";
+        url = "http://radarr.ukko.home.arpa";
+      }
+      {
+        name = "Prowlarr";
+        url = "http://prowlarr.ukko.home.arpa";
+      }
+    ];
+  };
+
+  proxy.services = {
+    adguard.port = 3000;
+    jellyfin.port = 8096;
+    sonarr.port = 8989;
+    radarr.port = 7878;
+    prowlarr.port = 9696;
+    dashboard = {
       domain = "ukko.local";
       listen = 8080;
-      root = "${dashboardRoot}";
     };
   };
 
