@@ -135,6 +135,7 @@
         services = mkMerge (
           [
             {
+              flaresolverr.enable = mkDefault config.services.prowlarr.enable;
               sonarr.group = mkDefault cfg.group;
               radarr.group = mkDefault cfg.group;
             }
