@@ -111,6 +111,88 @@
 
           exit 0
         '';
+
+      prowlarrConfigure = pkgs.writeShellScript "prowlarr-configure" ''
+        set -euo pipefail
+
+        prowlarr_url=http://127.0.0.1:${toString config.services.prowlarr.settings.server.port}
+        flaresolverr_url=http://127.0.0.1:${toString config.services.flaresolverr.port}/
+        config=${lib.escapeShellArg "${config.services.prowlarr.dataDir}/config.xml"}
+        tag=flaresolverr
+
+        request() {
+          method=$1
+          path=$2
+          ${lib.getExe pkgs.curl} --fail --silent --show-error \
+            --request "$method" \
+            --header "X-Api-Key: $api_key" \
+            --header 'Content-Type: application/json' \
+            "$prowlarr_url/api/v1/$path"
+        }
+
+        ready=0
+        for _ in $(${lib.getExe' pkgs.coreutils "seq"} 1 60); do
+          api_key=$(${xml} sel -t -v /Config/ApiKey "$config" 2>/dev/null || true)
+          if [ -n "$api_key" ] && ${lib.getExe pkgs.curl} --fail --silent --show-error \
+            --header "X-Api-Key: $api_key" \
+            "$prowlarr_url/api/v1/system/status" >/dev/null; then
+            ready=1
+            break
+          fi
+          ${lib.getExe' pkgs.coreutils "sleep"} 1
+        done
+
+        if [ "$ready" != 1 ]; then
+          printf 'Prowlarr API is not ready\n' >&2
+          exit 1
+        fi
+
+        tag_id=$(request GET tag | ${lib.getExe pkgs.jq} -r \
+          --arg label "$tag" \
+          'map(select(.label == $label)) | first | .id // empty')
+        if [ -z "$tag_id" ]; then
+          tag_id=$(${lib.getExe pkgs.jq} -n --arg label "$tag" '{ label: $label }' | ${lib.getExe pkgs.curl} --fail --silent --show-error \
+            --request POST \
+            --header "X-Api-Key: $api_key" \
+            --header 'Content-Type: application/json' \
+            --data @- \
+            "$prowlarr_url/api/v1/tag" | ${lib.getExe pkgs.jq} -r .id)
+        fi
+
+        payload=$(${lib.getExe pkgs.jq} -n \
+          --arg host "$flaresolverr_url" \
+          --argjson requestTimeout 60 \
+          --argjson tags "[$tag_id]" \
+          '{
+            name: "FlareSolverr",
+            implementationName: "FlareSolverr",
+            implementation: "FlareSolverr",
+            configContract: "FlareSolverrSettings",
+            tags: $tags,
+            fields: [
+              { name: "host", value: $host },
+              { name: "requestTimeout", value: $requestTimeout }
+            ]
+          }')
+
+        proxy_id=$(request GET indexerProxy | ${lib.getExe pkgs.jq} -r \
+          'map(select(.implementation == "FlareSolverr")) | first | .id // empty')
+        if [ -n "$proxy_id" ]; then
+          printf '%s' "$payload" | ${lib.getExe pkgs.jq} --argjson id "$proxy_id" '. + { id: $id }' | ${lib.getExe pkgs.curl} --fail --silent --show-error \
+            --request PUT \
+            --header "X-Api-Key: $api_key" \
+            --header 'Content-Type: application/json' \
+            --data @- \
+            "$prowlarr_url/api/v1/indexerProxy/$proxy_id" >/dev/null
+        else
+          printf '%s' "$payload" | ${lib.getExe pkgs.curl} --fail --silent --show-error \
+            --request POST \
+            --header "X-Api-Key: $api_key" \
+            --header 'Content-Type: application/json' \
+            --data @- \
+            "$prowlarr_url/api/v1/indexerProxy" >/dev/null
+        fi
+      '';
     in
     {
       options.media.servarr = {
@@ -131,56 +213,89 @@
         };
       };
 
-      config = mkIf cfg.enable {
-        services = mkMerge (
-          [
-            {
-              sonarr.group = mkDefault cfg.group;
-              radarr.group = mkDefault cfg.group;
-            }
-          ]
-          ++ mapAttrsToList (
+      config = mkIf cfg.enable (mkMerge [
+        {
+          services = mkMerge (
+            [
+              {
+                sonarr.group = mkDefault cfg.group;
+                radarr.group = mkDefault cfg.group;
+              }
+            ]
+            ++ mapAttrsToList (
+              name: app:
+              mkIf app.enable {
+                ${name}.settings = {
+                  app.launchBrowser = mkDefault false;
+                  auth = {
+                    method = mkDefault "Forms";
+                    required = mkDefault authenticationRequired;
+                  };
+                  log.analyticsEnabled = mkDefault false;
+                  server.bindaddress = mkDefault "127.0.0.1";
+                  update = {
+                    automatically = mkDefault false;
+                    mechanism = mkDefault "external";
+                  };
+                };
+              }
+            ) apps
+          );
+
+          users.groups.${cfg.group} = { };
+          users.users.${config.profile.username}.extraGroups = [ cfg.group ];
+
+          systemd.services = mapAttrs (
             name: app:
             mkIf app.enable {
-              ${name}.settings = {
-                app.launchBrowser = mkDefault false;
-                auth = {
-                  method = mkDefault "Forms";
-                  required = mkDefault authenticationRequired;
-                };
-                log.analyticsEnabled = mkDefault false;
-                server.bindaddress = mkDefault "127.0.0.1";
-                update = {
-                  automatically = mkDefault false;
-                  mechanism = mkDefault "external";
-                };
+              wants = [ "sops-install-secrets.service" ];
+              after = [ "sops-install-secrets.service" ];
+              path = [ pkgs.coreutils ];
+              preStart = "${setupScript name app}";
+              postStart = "${cleanupScript name app}";
+              serviceConfig = {
+                LoadCredential = [ "admin-password:${cfg.admin.passwordFile}" ];
+              }
+              // optionalAttrs (name == "sonarr" || name == "radarr") {
+                UMask = mkForce "0002";
+              }
+              // optionalAttrs (name == "prowlarr") {
+                UMask = mkDefault "0077";
               };
             }
-          ) apps
-        );
+          ) apps;
+        }
+        (mkIf config.services.prowlarr.enable {
+          services.flaresolverr = {
+            enable = true;
+            openFirewall = false;
+          };
 
-        users.groups.${cfg.group} = { };
-        users.users.${config.profile.username}.extraGroups = [ cfg.group ];
-
-        systemd.services = mapAttrs (
-          name: app:
-          mkIf app.enable {
-            wants = [ "sops-install-secrets.service" ];
-            after = [ "sops-install-secrets.service" ];
-            path = [ pkgs.coreutils ];
-            preStart = "${setupScript name app}";
-            postStart = "${cleanupScript name app}";
-            serviceConfig = {
-              LoadCredential = [ "admin-password:${cfg.admin.passwordFile}" ];
-            }
-            // optionalAttrs (name == "sonarr" || name == "radarr") {
-              UMask = mkForce "0002";
-            }
-            // optionalAttrs (name == "prowlarr") {
-              UMask = mkDefault "0077";
+          systemd.services = {
+            flaresolverr.environment.HOST = "127.0.0.1";
+            prowlarr = {
+              requires = [ "flaresolverr.service" ];
+              after = [ "flaresolverr.service" ];
             };
-          }
-        ) apps;
-      };
+            prowlarr-configure = {
+              description = "Configure Prowlarr";
+              wantedBy = [ "multi-user.target" ];
+              requires = [
+                "prowlarr.service"
+                "flaresolverr.service"
+              ];
+              after = [
+                "prowlarr.service"
+                "flaresolverr.service"
+              ];
+              restartTriggers = [ prowlarrConfigure ];
+              serviceConfig = {
+                Type = "oneshot";
+                ExecStart = prowlarrConfigure;
+              };
+            };
+          };
+        })
+      ]);
     };
 }
