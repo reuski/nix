@@ -132,12 +132,34 @@
         send() {
           method=$1
           path=$2
-          ${lib.getExe pkgs.curl} --fail --silent --show-error \
+          response=$(${lib.getExe' pkgs.coreutils "mktemp"})
+          if ! status=$(${lib.getExe pkgs.curl} --silent --show-error \
             --request "$method" \
             --header "X-Api-Key: $api_key" \
             --header 'Content-Type: application/json' \
             --data @- \
-            "$prowlarr_url/api/v1/$path" >/dev/null
+            --output "$response" \
+            --write-out '%{http_code}' \
+            "$prowlarr_url/api/v1/$path"); then
+            status=000
+          fi
+
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            printf 'Prowlarr %s %s returned HTTP %s\n' "$method" "$path" "$status" >&2
+            ${lib.getExe pkgs.jq} -r '
+              if type == "array" then
+                .[] | if type == "object" and has("propertyName") and has("errorMessage") then "\(.propertyName): \(.errorMessage)" else tostring end
+              elif type == "object" then
+                .message // .errorMessage // tostring
+              else
+                tostring
+              end
+            ' "$response" >&2 || ${lib.getExe' pkgs.coreutils "cat"} "$response" >&2
+            ${lib.getExe' pkgs.coreutils "rm"} -f "$response"
+            exit 1
+          fi
+
+          ${lib.getExe' pkgs.coreutils "rm"} -f "$response"
         }
 
         tag_id() {
@@ -182,8 +204,12 @@
         ${lib.getExe pkgs.jq} --exit-status 'type == "array"' "$indexers" >/dev/null
 
         ${lib.getExe pkgs.jq} -c '.[]' "$indexers" | while IFS= read -r indexer; do
-          name=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r .name)
-          ids=$(printf '%s' "$indexer" | tag_ids)
+          name=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r '.name // empty')
+          if [ -z "$name" ]; then
+            printf 'Prowlarr indexer is missing name\n' >&2
+            exit 1
+          fi
+
           current=$(request GET indexer | ${lib.getExe pkgs.jq} -c \
             --arg name "$name" \
             'map(select(.name == $name)) | first // empty')
@@ -193,10 +219,27 @@
             base=$current
           else
             id=
-            definition=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r '.definitionName // .implementationName')
-            base=$(request GET indexer/schema | ${lib.getExe pkgs.jq} -c \
-              --arg definition "$definition" \
-              '[.. | objects | select(.definitionName? == $definition or .implementationName? == $definition)] | first // error("indexer schema not found")')
+            definition=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r '.definitionName // .implementationName // empty')
+            if [ -z "$definition" ]; then
+              printf '%s is missing definitionName or implementationName\n' "$name" >&2
+              exit 1
+            fi
+
+            base=
+            for _ in $(${lib.getExe' pkgs.coreutils "seq"} 1 120); do
+              base=$(request GET indexer/schema | ${lib.getExe pkgs.jq} -c \
+                --arg definition "$definition" \
+                '[.. | objects | select(.definitionName? == $definition or .implementationName? == $definition)] | first // empty' || true)
+              if [ -n "$base" ]; then
+                break
+              fi
+              ${lib.getExe' pkgs.coreutils "sleep"} 1
+            done
+
+            if [ -z "$base" ]; then
+              printf '%s uses unsupported Prowlarr definition: %s\n' "$name" "$definition" >&2
+              exit 1
+            fi
           fi
 
           missing=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r \
@@ -207,6 +250,7 @@
             exit 1
           fi
 
+          ids=$(printf '%s' "$indexer" | tag_ids)
           payload=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} \
             --argjson base "$base" \
             --argjson tags "$ids" \
@@ -216,9 +260,17 @@
             }')
 
           if [ -n "$id" ]; then
-            printf '%s' "$payload" | send PUT "indexer/$id"
+            printf '%s' "$payload" | ${lib.getExe pkgs.jq} --argjson id "$id" '.id = $id' | send PUT "indexer/$id?forceSave=true"
           else
-            printf '%s' "$payload" | send POST indexer
+            printf '%s' "$payload" | ${lib.getExe pkgs.jq} '.enable = false' | send POST "indexer?forceSave=true"
+            id=$(request GET indexer | ${lib.getExe pkgs.jq} -r \
+              --arg name "$name" \
+              'map(select(.name == $name)) | first | .id // empty')
+            if [ -z "$id" ]; then
+              printf '%s was not created by Prowlarr\n' "$name" >&2
+              exit 1
+            fi
+            printf '%s' "$payload" | ${lib.getExe pkgs.jq} --argjson id "$id" '.id = $id' | send PUT "indexer/$id?forceSave=true"
           fi
         done
       '';
