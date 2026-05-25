@@ -116,7 +116,6 @@
         set -euo pipefail
 
         prowlarr_url=http://127.0.0.1:${toString config.services.prowlarr.settings.server.port}
-        flaresolverr_url=http://127.0.0.1:${toString config.services.flaresolverr.port}/
         config=${lib.escapeShellArg "${config.services.prowlarr.dataDir}/config.xml"}
         indexers=$CREDENTIALS_DIRECTORY/indexers
 
@@ -181,31 +180,6 @@
         fi
 
         ${lib.getExe pkgs.jq} --exit-status 'type == "array"' "$indexers" >/dev/null
-
-        flaresolverr_tag_id=$(tag_id cf)
-        payload=$(${lib.getExe pkgs.jq} -n \
-          --arg host "$flaresolverr_url" \
-          --argjson requestTimeout 60 \
-          --argjson tags "[$flaresolverr_tag_id]" \
-          '{
-            name: "FlareSolverr (CF)",
-            implementationName: "FlareSolverr",
-            implementation: "FlareSolverr",
-            configContract: "FlareSolverrSettings",
-            tags: $tags,
-            fields: [
-              { name: "host", value: $host },
-              { name: "requestTimeout", value: $requestTimeout }
-            ]
-          }')
-
-        proxy_id=$(request GET indexerProxy | ${lib.getExe pkgs.jq} -r \
-          'map(select(.implementation == "FlareSolverr")) | first | .id // empty')
-        if [ -n "$proxy_id" ]; then
-          printf '%s' "$payload" | ${lib.getExe pkgs.jq} --argjson id "$proxy_id" '. + { id: $id }' | send PUT "indexerProxy/$proxy_id"
-        else
-          printf '%s' "$payload" | send POST indexerProxy
-        fi
 
         ${lib.getExe pkgs.jq} -c '.[]' "$indexers" | while IFS= read -r indexer; do
           name=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r .name)
@@ -322,36 +296,20 @@
           ) apps;
         }
         (mkIf config.services.prowlarr.enable {
-          services.flaresolverr = {
-            enable = true;
-            openFirewall = false;
-          };
-
-          systemd.services = {
-            flaresolverr.environment.HOST = "127.0.0.1";
-            prowlarr = {
-              requires = [ "flaresolverr.service" ];
-              after = [ "flaresolverr.service" ];
-            };
-            prowlarr-configure = {
-              description = "Configure Prowlarr";
-              wantedBy = [ "multi-user.target" ];
-              wants = [ "sops-install-secrets.service" ];
-              requires = [
-                "prowlarr.service"
-                "flaresolverr.service"
-              ];
-              after = [
-                "sops-install-secrets.service"
-                "prowlarr.service"
-                "flaresolverr.service"
-              ];
-              restartTriggers = [ prowlarrConfigure ];
-              serviceConfig = {
-                Type = "oneshot";
-                LoadCredential = [ "indexers:${cfg.prowlarr.indexersFile}" ];
-                ExecStart = prowlarrConfigure;
-              };
+          systemd.services.prowlarr-configure = {
+            description = "Configure Prowlarr";
+            wantedBy = [ "multi-user.target" ];
+            wants = [ "sops-install-secrets.service" ];
+            requires = [ "prowlarr.service" ];
+            after = [
+              "sops-install-secrets.service"
+              "prowlarr.service"
+            ];
+            restartTriggers = [ prowlarrConfigure ];
+            serviceConfig = {
+              Type = "oneshot";
+              LoadCredential = [ "indexers:${cfg.prowlarr.indexersFile}" ];
+              ExecStart = prowlarrConfigure;
             };
           };
         })
