@@ -53,6 +53,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    vpn-confinement.url = "github:Maroka-chan/VPN-Confinement";
+
     ghostty = {
       url = "github:ghostty-org/ghostty";
       inputs.nixpkgs.follows = "nixpkgs";
