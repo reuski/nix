@@ -11,48 +11,36 @@
       cfg = config.media.jellyfin;
       inherit (lib)
         concatLists
-        mapAttrsToList
         mkIf
         mkOption
         types
         unique
         ;
 
-      libraryType = types.submodule (
-        { name, ... }:
-        {
-          options = {
-            title = mkOption {
-              type = types.str;
-              default = name;
-            };
-            collectionType = mkOption {
-              type = types.enum [
-                "books"
-                "boxsets"
-                "homevideos"
-                "mixed"
-                "movies"
-                "music"
-                "musicvideos"
-                "photos"
-                "tvshows"
-              ];
-              default = "mixed";
-            };
-            paths = mkOption { type = types.nonEmptyListOf types.str; };
+      libraryType = types.submodule {
+        options = {
+          name = mkOption { type = types.str; };
+          type = mkOption {
+            type = types.enum [
+              "books"
+              "boxsets"
+              "homevideos"
+              "mixed"
+              "movies"
+              "music"
+              "musicvideos"
+              "photos"
+              "tvshows"
+            ];
+            default = "mixed";
           };
-        }
-      );
+          paths = mkOption { type = types.nonEmptyListOf types.str; };
+        };
+      };
 
-      libraries = mapAttrsToList (_name: library: {
-        name = library.title;
-        type = library.collectionType;
-        paths = library.paths;
-      }) cfg.libraries;
-      librariesFile = pkgs.writeText "jellyfin-libraries.json" (builtins.toJSON libraries);
-      libraryPaths = unique (concatLists (mapAttrsToList (_name: library: library.paths) cfg.libraries));
-      libraryTitles = map (library: library.name) libraries;
+      libraryPaths = unique (concatLists (map (library: library.paths) cfg.libraries));
+      libraryNames = map (library: library.name) cfg.libraries;
+      librariesFile = pkgs.writeText "jellyfin-libraries.json" (builtins.toJSON cfg.libraries);
       intelPackages = builtins.filter (package: package != null) [
         (pkgs.intel-media-driver or null)
         (pkgs.intel-compute-runtime or null)
@@ -62,6 +50,7 @@
         .EnableUPnP = false
         | .EnableRemoteAccess = false
         | .EnableQuickConnect = false
+        | .RemoteClientBitrateLimit = 0
         | .UICulture = "en-US"
         | .MetadataCountryCode = "FI"
         | .PreferredMetadataLanguage = "en"
@@ -80,6 +69,9 @@
         | .TonemappingAlgorithm = "bt2390"
         | .TonemappingMode = "auto"
         | .TonemappingRange = "auto"
+        | .EnableAudioVbr = true
+        | .DownMixAudioBoost = 1.0
+        | .DownMixStereoAlgorithm = "dave750"
         | .EncodingThreadCount = 0
         | .EnableSubtitleExtraction = true
         | .EnableFallbackFont = true
@@ -89,7 +81,7 @@
       setupScript = pkgs.writeShellScript "jellyfin-setup" ''
         set -euo pipefail
 
-        base=${lib.escapeShellArg cfg.url}
+        base=http://127.0.0.1:8096
         admin=${lib.escapeShellArg cfg.admin.name}
         auth_header='MediaBrowser Client="nix", Device="nixos", DeviceId="nixos-jellyfin-setup", Version="1"'
         password=$(tr -d '\r\n' < "$CREDENTIALS_DIRECTORY/admin-password")
@@ -134,6 +126,8 @@
           exit 1
         fi
 
+        api_auth -X POST "$base/QuickConnect/Enabled?status=false" >/dev/null
+
         api_auth "$base/System/Configuration" \
           | jq -f ${systemFilter} \
           > "$tmp/system.json"
@@ -150,20 +144,11 @@
           type=$(jq -r '.type' <<< "$library")
           paths=$(jq -c '.paths' <<< "$library")
 
-          name_uri=$(jq -rn --arg value "$name" '$value | @uri')
-
           if jq --exit-status --arg name "$name" 'any(.[]; .Name == $name)' "$tmp/folders.json" >/dev/null; then
-            jq -r '.paths[]' <<< "$library" | while IFS= read -r path; do
-              if jq --exit-status --arg name "$name" --arg path "$path" 'any(.[]; .Name == $name and (((.Locations // []) + ((.LibraryOptions.PathInfos // []) | map(.Path))) | any(. == $path)))' "$tmp/folders.json" >/dev/null; then
-                continue
-              fi
-
-              jq -nc --arg path "$path" '{Path:$path}' \
-                | api_auth -X POST "$base/Library/VirtualFolders/Paths?name=$name_uri" --data-binary @- >/dev/null
-            done
             continue
           fi
 
+          name_uri=$(jq -rn --arg value "$name" '$value | @uri')
           type_uri=$(jq -rn --arg value "$type" '$value | @uri')
           payload=$(jq -nc --argjson paths "$paths" '{LibraryOptions:{EnableRealtimeMonitor:true, EnableChapterImageExtraction:false, PathInfos: ($paths | map({Path:.}))}}')
           api_auth -X POST "$base/Library/VirtualFolders?name=$name_uri&collectionType=$type_uri&refreshLibrary=true" --data "$payload" >/dev/null
@@ -182,17 +167,9 @@
           type = types.str;
           default = "media";
         };
-        url = mkOption {
-          type = types.str;
-          default = "http://127.0.0.1:8096";
-        };
         openFirewall = mkOption {
           type = types.bool;
-          default = true;
-        };
-        proxy.enable = mkOption {
-          type = types.bool;
-          default = true;
+          default = false;
         };
         admin = {
           name = mkOption {
@@ -202,16 +179,16 @@
           passwordFile = mkOption { type = types.str; };
         };
         libraries = mkOption {
-          type = types.attrsOf libraryType;
-          default = { };
+          type = types.listOf libraryType;
+          default = [ ];
         };
       };
 
       config = mkIf cfg.enable {
         assertions = [
           {
-            assertion = builtins.length libraryTitles == builtins.length (unique libraryTitles);
-            message = "media.jellyfin library titles must be unique.";
+            assertion = builtins.length libraryNames == builtins.length (unique libraryNames);
+            message = "media.jellyfin library names must be unique.";
           }
         ];
 
@@ -221,14 +198,7 @@
           openFirewall = cfg.openFirewall;
         };
 
-        proxy.services = mkIf cfg.proxy.enable {
-          jellyfin.port = 8096;
-        };
-
-        networking.firewall.allowedUDPPorts = mkIf cfg.openFirewall [
-          1900
-          7359
-        ];
+        proxy.services.jellyfin.port = 8096;
 
         hardware.graphics = {
           enable = true;
