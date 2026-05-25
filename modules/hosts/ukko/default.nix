@@ -14,6 +14,7 @@ in
       nixos.server
       nixos.metal
       nixos.dashboard
+      nixos.jellyfin
     ];
 
     system.stateVersion = "25.11";
