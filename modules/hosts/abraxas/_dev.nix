@@ -1,7 +1,5 @@
+{ darwin, homeManager }:
 { config, ... }:
-let
-  inherit (config.flake.modules) darwin homeManager;
-in
 {
   imports = [
     darwin.zed

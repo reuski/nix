@@ -1,6 +1,7 @@
 { config, ... }:
 let
-  inherit (config.flake.modules) darwin;
+  inherit (config.flake.modules) darwin homeManager;
+  dev = import ./_dev.nix { inherit darwin homeManager; };
 in
 {
   configurations.darwin.abraxas.module =
@@ -8,7 +9,7 @@ in
     {
       imports = [
         darwin.mac
-        ./_dev.nix
+        dev
         ./_desktop.nix
       ];
 
