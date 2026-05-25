@@ -163,31 +163,30 @@
         users.groups.${cfg.group} = { };
         users.users.${config.profile.username}.extraGroups = [ cfg.group ];
 
-        systemd.services =
-          {
-            flaresolverr = mkIf config.services.flaresolverr.enable {
-              environment.HOST = "127.0.0.1";
+        systemd.services = {
+          flaresolverr = mkIf config.services.flaresolverr.enable {
+            environment.HOST = "127.0.0.1";
+          };
+        }
+        // mapAttrs (
+          name: app:
+          mkIf app.enable {
+            wants = [ "sops-install-secrets.service" ];
+            after = [ "sops-install-secrets.service" ];
+            path = [ pkgs.coreutils ];
+            preStart = "${setupScript name app}";
+            postStart = "${cleanupScript name app}";
+            serviceConfig = {
+              LoadCredential = [ "admin-password:${cfg.admin.passwordFile}" ];
+            }
+            // optionalAttrs (name == "sonarr" || name == "radarr") {
+              UMask = mkForce "0002";
+            }
+            // optionalAttrs (name == "prowlarr") {
+              UMask = mkDefault "0077";
             };
           }
-          // mapAttrs (
-            name: app:
-            mkIf app.enable {
-              wants = [ "sops-install-secrets.service" ];
-              after = [ "sops-install-secrets.service" ];
-              path = [ pkgs.coreutils ];
-              preStart = "${setupScript name app}";
-              postStart = "${cleanupScript name app}";
-              serviceConfig = {
-                LoadCredential = [ "admin-password:${cfg.admin.passwordFile}" ];
-              }
-              // optionalAttrs (name == "sonarr" || name == "radarr") {
-                UMask = mkForce "0002";
-              }
-              // optionalAttrs (name == "prowlarr") {
-                UMask = mkDefault "0077";
-              };
-            }
-          ) apps;
+        ) apps;
       };
     };
 }
