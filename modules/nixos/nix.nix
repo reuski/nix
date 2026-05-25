@@ -10,7 +10,7 @@
     {
       options.site.autoUpgradeFlake = lib.mkOption {
         type = lib.types.str;
-        default = ".";
+        default = "github:reuski/nix/main";
         description = "Flake reference for system auto-upgrade.";
       };
 

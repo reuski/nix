@@ -5,7 +5,6 @@
     let
       cfg = config.proxy;
       inherit (lib)
-        concatLists
         mapAttrs'
         mapAttrsToList
         mkIf
@@ -16,21 +15,18 @@
         unique
         ;
 
-      hostOptions = name: {
-        domain = mkOption {
-          type = types.str;
-          default = "${name}.${cfg.domain}";
-        };
-        listen = mkOption {
-          type = types.port;
-          default = 80;
-        };
-      };
-
       serviceType = types.submodule (
         { name, ... }:
         {
-          options = hostOptions name // {
+          options = {
+            domain = mkOption {
+              type = types.str;
+              default = "${name}.${cfg.domain}";
+            };
+            listen = mkOption {
+              type = types.port;
+              default = 80;
+            };
             host = mkOption {
               type = types.str;
               default = "127.0.0.1";
@@ -40,17 +36,9 @@
         }
       );
 
-      siteType = types.submodule (
-        { name, ... }:
-        {
-          options = hostOptions name // {
-            root = mkOption { type = types.str; };
-          };
-        }
-      );
-
       address =
-        host: "http://${host.domain}${optionalString (host.listen != 80) ":${toString host.listen}"}";
+        service:
+        "http://${service.domain}${optionalString (service.listen != 80) ":${toString service.listen}"}";
 
       headers = ''
         header {
@@ -70,25 +58,8 @@
           '';
         };
 
-      siteHost =
-        _name: site:
-        nameValuePair (address site) {
-          extraConfig = ''
-            ${headers}
-            root * ${site.root}
-            file_server
-          '';
-        };
-
-      hosts = concatLists [
-        (mapAttrsToList (_name: service: address service) cfg.services)
-        (mapAttrsToList (_name: site: address site) cfg.sites)
-      ];
-      ports = concatLists [
-        (mapAttrsToList (_name: service: service.listen) cfg.services)
-        (mapAttrsToList (_name: site: site.listen) cfg.sites)
-      ];
-      enabled = cfg.services != { } || cfg.sites != { };
+      hosts = mapAttrsToList (_name: service: address service) cfg.services;
+      ports = mapAttrsToList (_name: service: service.listen) cfg.services;
     in
     {
       options.proxy = {
@@ -100,17 +71,13 @@
           type = types.attrsOf serviceType;
           default = { };
         };
-        sites = mkOption {
-          type = types.attrsOf siteType;
-          default = { };
-        };
         openFirewall = mkOption {
           type = types.bool;
           default = true;
         };
       };
 
-      config = mkIf enabled {
+      config = mkIf (cfg.services != { }) {
         assertions = [
           {
             assertion = builtins.length hosts == builtins.length (unique hosts);
@@ -122,7 +89,7 @@
 
         services.caddy = {
           enable = true;
-          virtualHosts = mapAttrs' serviceHost cfg.services // mapAttrs' siteHost cfg.sites;
+          virtualHosts = mapAttrs' serviceHost cfg.services;
         };
       };
     };

@@ -41,9 +41,9 @@
       libraryPaths = unique (concatLists (map (library: library.paths) cfg.libraries));
       libraryNames = map (library: library.name) cfg.libraries;
       librariesFile = pkgs.writeText "jellyfin-libraries.json" (builtins.toJSON cfg.libraries);
-      intelPackages = builtins.filter (package: package != null) [
-        (pkgs.intel-media-driver or null)
-        (pkgs.intel-compute-runtime or null)
+      intelPackages = [
+        pkgs.intel-media-driver
+        pkgs.intel-compute-runtime
       ];
       subtitleFontPath = "${pkgs.inter}/share/fonts";
       systemFilter = pkgs.writeText "jellyfin-system.jq" ''

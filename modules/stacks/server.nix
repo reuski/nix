@@ -16,8 +16,6 @@ in
       nixos.proxy
     ];
 
-    site.autoUpgradeFlake = "github:reuski/nix/main";
-
     services.tailscale = {
       enable = true;
       openFirewall = true;
