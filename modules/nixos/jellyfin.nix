@@ -14,7 +14,6 @@
         mapAttrsToList
         mkIf
         mkOption
-        optionalAttrs
         types
         unique
         ;
@@ -58,6 +57,35 @@
         (pkgs.intel-media-driver or null)
         (pkgs.intel-compute-runtime or null)
       ];
+      subtitleFontPath = "${pkgs.inter}/share/fonts";
+      systemFilter = pkgs.writeText "jellyfin-system.jq" ''
+        .EnableUPnP = false
+        | .EnableRemoteAccess = false
+        | .EnableQuickConnect = false
+        | .UICulture = "en-US"
+        | .MetadataCountryCode = "FI"
+        | .PreferredMetadataLanguage = "en"
+      '';
+      encodingFilter = pkgs.writeText "jellyfin-encoding.jq" ''
+        .TranscodingTempPath = "/var/cache/jellyfin/transcodes"
+        | .HardwareAccelerationType = "qsv"
+        | .EnableHardwareEncoding = true
+        | .EnableDecodingColorDepth10Hevc = true
+        | .EnableDecodingColorDepth10Vp9 = true
+        | .EnableDecodingColorDepth10Av1 = true
+        | .AllowHevcEncoding = true
+        | .AllowAv1Encoding = false
+        | .EnableTonemapping = true
+        | .EnableVppTonemapping = true
+        | .TonemappingAlgorithm = "bt2390"
+        | .TonemappingMode = "auto"
+        | .TonemappingRange = "auto"
+        | .EncodingThreadCount = 0
+        | .EnableSubtitleExtraction = true
+        | .EnableFallbackFont = true
+        | .FallbackFontPath = ${builtins.toJSON subtitleFontPath}
+        | .DeinterlaceMethod = "yadif"
+      '';
       setupScript = pkgs.writeShellScript "jellyfin-setup" ''
         set -euo pipefail
 
@@ -107,12 +135,12 @@
         fi
 
         api_auth "$base/System/Configuration" \
-          | jq '.EnableUPnP = false | .EnableRemoteAccess = false | .EnableQuickConnect = false | .UICulture = "en-US" | .MetadataCountryCode = "FI" | .PreferredMetadataLanguage = "en"' \
+          | jq -f ${systemFilter} \
           > "$tmp/system.json"
         api_auth -X POST "$base/System/Configuration" --data-binary "@$tmp/system.json" >/dev/null
 
         api_auth "$base/System/Configuration/encoding" \
-          | jq '.TranscodingTempPath = "/var/cache/jellyfin/transcodes" | .HardwareAccelerationType = "qsv" | .EnableHardwareEncoding = true | .EnableDecodingColorDepth10Hevc = true | .EnableDecodingColorDepth10Vp9 = true | .EnableDecodingColorDepth10Av1 = true | .AllowHevcEncoding = true | .AllowAv1Encoding = false | .EnableTonemapping = true | .EnableVppTonemapping = true | .TonemappingAlgorithm = "bt2390" | .TonemappingMode = "auto" | .TonemappingRange = "auto" | .EncodingThreadCount = 0 | .EnableSubtitleExtraction = true | .DeinterlaceMethod = "yadif"' \
+          | jq -f ${encodingFilter} \
           > "$tmp/encoding.json"
         api_auth -X POST "$base/System/Configuration/encoding" --data-binary "@$tmp/encoding.json" >/dev/null
 
@@ -166,10 +194,6 @@
           type = types.bool;
           default = true;
         };
-        hardwareAcceleration = mkOption {
-          type = types.enum [ "intel-qsv" ];
-          default = "intel-qsv";
-        };
         admin = {
           name = mkOption {
             type = types.str;
@@ -208,20 +232,10 @@
 
         hardware.graphics = {
           enable = true;
-          extraPackages = mkIf (cfg.hardwareAcceleration == "intel-qsv") intelPackages;
+          extraPackages = intelPackages;
         };
 
-        environment.sessionVariables.LIBVA_DRIVER_NAME = mkIf (cfg.hardwareAcceleration == "intel-qsv") "iHD";
-
-        fonts = {
-          fontconfig.enable = true;
-          packages = with pkgs; [
-            liberation_ttf
-            noto-fonts
-            noto-fonts-cjk-sans
-            noto-fonts-color-emoji
-          ];
-        };
+        environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
 
         boot.kernel.sysctl = {
           "fs.inotify.max_user_instances" = 1024;
@@ -249,9 +263,7 @@
           jellyfin = {
             wants = [ "network-online.target" ];
             after = [ "network-online.target" ];
-            environment = optionalAttrs (cfg.hardwareAcceleration == "intel-qsv") {
-              LIBVA_DRIVER_NAME = "iHD";
-            };
+            environment.LIBVA_DRIVER_NAME = "iHD";
             serviceConfig = {
               UMask = lib.mkForce "0002";
               SupplementaryGroups = [

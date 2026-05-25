@@ -6,13 +6,6 @@
 let
   localAddress = "192.168.1.11";
   mediaGroup = "media";
-  servarrSettings = {
-    enable = true;
-    settings.server.bindaddress = "127.0.0.1";
-  };
-  mediaService = servarrSettings // {
-    group = mediaGroup;
-  };
 in
 {
   networking.firewall = {
@@ -82,11 +75,23 @@ in
     };
   };
 
-  sops.secrets."jellyfin/admin-password" = {
-    owner = "root";
-    group = "root";
-    mode = "0400";
-    restartUnits = [ "jellyfin-setup.service" ];
+  sops.secrets = {
+    "jellyfin/admin-password" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "jellyfin-setup.service" ];
+    };
+    "servarr/admin-password" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [
+        "sonarr.service"
+        "radarr.service"
+        "prowlarr.service"
+      ];
+    };
   };
 
   media.jellyfin = {
@@ -106,9 +111,15 @@ in
       };
     };
   };
-  services.sonarr = mediaService;
-  services.radarr = mediaService;
-  services.prowlarr = servarrSettings;
+  media.servarr = {
+    enable = true;
+    group = mediaGroup;
+    admin.passwordFile = config.sops.secrets."servarr/admin-password".path;
+  };
+
+  services.sonarr.enable = true;
+  services.radarr.enable = true;
+  services.prowlarr.enable = true;
 
   services.heimdash = {
     enable = true;
@@ -157,12 +168,5 @@ in
         reverse_proxy localhost:8082
       '';
     };
-  };
-
-  users.groups.${mediaGroup} = { };
-
-  systemd.services = {
-    sonarr.serviceConfig.UMask = lib.mkForce "0002";
-    radarr.serviceConfig.UMask = lib.mkForce "0002";
   };
 }
