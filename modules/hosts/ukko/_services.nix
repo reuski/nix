@@ -102,6 +102,12 @@ in
         "prowlarr.service"
       ];
     };
+    "pia/wireguard" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "piavpn.service" ];
+    };
   };
 
   media.jellyfin = {
@@ -134,6 +140,7 @@ in
   media.qbittorrent = {
     enable = true;
     group = mediaGroup;
+    wireguardConfigFile = config.sops.secrets."pia/wireguard".path;
   };
 
   services.heimdash = {

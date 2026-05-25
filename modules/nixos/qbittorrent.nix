@@ -1,4 +1,4 @@
-{ ... }:
+{ inputs, ... }:
 {
   flake.modules.nixos.qbittorrent =
     {
@@ -14,8 +14,12 @@
         mkOption
         types
         ;
+      namespace = "piavpn";
+      ns = config.vpnNamespaces.${namespace};
     in
     {
+      imports = [ inputs.vpn-confinement.nixosModules.default ];
+
       options.media.qbittorrent = {
         enable = mkOption {
           type = types.bool;
@@ -37,13 +41,25 @@
           type = types.port;
           default = 51413;
         };
-        openFirewall = mkOption {
-          type = types.bool;
-          default = true;
+        wireguardConfigFile = mkOption {
+          type = types.str;
+          description = "PIA WireGuard config (sops secret path) routing all qBittorrent traffic.";
         };
       };
 
       config = mkIf cfg.enable {
+        vpnNamespaces.${namespace} = {
+          enable = true;
+          inherit (cfg) wireguardConfigFile;
+          portMappings = [
+            {
+              from = cfg.webuiPort;
+              to = cfg.webuiPort;
+              protocol = "tcp";
+            }
+          ];
+        };
+
         services.qbittorrent = {
           enable = true;
           inherit (cfg) group webuiPort;
@@ -53,8 +69,9 @@
             Preferences = {
               General.Locale = "en";
               WebUI = {
-                Address = "127.0.0.1";
-                LocalHostAuth = false;
+                Address = "*";
+                AuthSubnetWhitelistEnabled = true;
+                AuthSubnetWhitelist = "${ns.bridgeAddress}/32";
                 HostHeaderValidation = false;
                 CSRFProtection = false;
               };
@@ -67,7 +84,24 @@
           };
         };
 
-        proxy.services.qbittorrent.port = cfg.webuiPort;
+        systemd.services = {
+          ${namespace} = {
+            wants = [ "sops-install-secrets.service" ];
+            after = [ "sops-install-secrets.service" ];
+          };
+          qbittorrent = {
+            vpnConfinement = {
+              enable = true;
+              vpnNamespace = namespace;
+            };
+            serviceConfig.UMask = mkForce "0002";
+          };
+        };
+
+        proxy.services.qbittorrent = {
+          host = ns.namespaceAddress;
+          port = cfg.webuiPort;
+        };
 
         users.groups.${cfg.group} = { };
         users.users.${config.profile.username}.extraGroups = [ cfg.group ];
@@ -75,13 +109,6 @@
         systemd.tmpfiles.rules = [
           "d ${cfg.downloadDir} 2775 qbittorrent ${cfg.group} -"
         ];
-
-        systemd.services.qbittorrent.serviceConfig.UMask = mkForce "0002";
-
-        networking.firewall = mkIf cfg.openFirewall {
-          allowedTCPPorts = [ cfg.torrentPort ];
-          allowedUDPPorts = [ cfg.torrentPort ];
-        };
       };
     };
 }
