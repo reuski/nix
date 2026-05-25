@@ -23,13 +23,23 @@ in
     port = 3000;
     settings = {
       dns = {
-        bind_hosts = [
-          "127.0.0.1"
-          localAddress
-        ];
+        bind_hosts = [ "0.0.0.0" ];
         port = 53;
-        upstream_dns = [ "https://dns.quad9.net/dns-query" ];
-        bootstrap_dns = [ "9.9.9.9" ];
+        upstream_dns = [
+          "https://dns.quad9.net/dns-query"
+          "tls://dns.quad9.net"
+        ];
+        bootstrap_dns = [
+          "9.9.9.9"
+          "149.112.112.112"
+        ];
+        allowed_clients = [
+          "127.0.0.1"
+          "192.168.1.0/24"
+        ];
+        ratelimit = 0;
+        cache_size = 67108864;
+        cache_optimistic = true;
       };
       filtering = {
         protection_enabled = true;
@@ -92,6 +102,12 @@ in
         "prowlarr.service"
       ];
     };
+    "prowlarr/indexers" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "prowlarr-configure.service" ];
+    };
   };
 
   media.jellyfin = {
@@ -115,6 +131,7 @@ in
     enable = true;
     group = mediaGroup;
     admin.passwordFile = config.sops.secrets."servarr/admin-password".path;
+    prowlarr.indexersFile = config.sops.secrets."prowlarr/indexers".path;
   };
 
   services.sonarr.enable = true;
