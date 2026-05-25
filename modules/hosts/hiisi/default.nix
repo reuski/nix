@@ -33,7 +33,6 @@ in
         home.sessionVariables.SOPS_AGE_KEY_FILE = ageKeyFile;
       };
 
-      site.autoUpgradeFlake = "github:reuski/nix/main";
       system.stateVersion = "25.11";
     };
 }

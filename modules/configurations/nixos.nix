@@ -4,33 +4,14 @@
   lib,
   ...
 }:
-let
-  channels = {
-    unstable = {
-      nixpkgs = inputs.nixpkgs;
-      home-manager = inputs.home-manager;
-    };
-    stable = {
-      nixpkgs = inputs.nixpkgs-stable;
-      home-manager = inputs.home-manager-stable;
-    };
-  };
-in
 {
   options.configurations.nixos = lib.mkOption {
     type = lib.types.lazyAttrsOf (
       lib.types.submodule {
-        options = {
-          channel = lib.mkOption {
-            type = lib.types.enum (builtins.attrNames channels);
-            default = "unstable";
-            description = "nixpkgs channel to evaluate this host against.";
-          };
-          module = lib.mkOption {
-            type = lib.types.deferredModule;
-            default = { };
-            description = "NixOS module for this configuration.";
-          };
+        options.module = lib.mkOption {
+          type = lib.types.deferredModule;
+          default = { };
+          description = "NixOS module for this configuration.";
         };
       }
     );
@@ -41,12 +22,9 @@ in
   config.flake = {
     nixosConfigurations = lib.mapAttrs (
       name: cfg:
-      let
-        channel = channels.${cfg.channel};
-      in
-      channel.nixpkgs.lib.nixosSystem {
+      inputs.nixpkgs.lib.nixosSystem {
         modules = [
-          channel.home-manager.nixosModules.home-manager
+          inputs.home-manager.nixosModules.home-manager
           {
             networking.hostName = lib.mkDefault name;
             home-manager = {
