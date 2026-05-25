@@ -49,7 +49,7 @@
       systemFilter = pkgs.writeText "jellyfin-system.jq" ''
         .EnableUPnP = false
         | .EnableRemoteAccess = false
-        | .EnableQuickConnect = false
+        | .QuickConnectAvailable = false
         | .RemoteClientBitrateLimit = 0
         | .UICulture = "en-US"
         | .MetadataCountryCode = "FI"
@@ -125,8 +125,6 @@
           printf 'Jellyfin authentication did not return a token\n' >&2
           exit 1
         fi
-
-        api_auth -X POST "$base/QuickConnect/Enabled?status=false" >/dev/null
 
         api_auth "$base/System/Configuration" \
           | jq -f ${systemFilter} \
@@ -261,7 +259,11 @@
               curl
               jq
             ];
-            unitConfig.ConditionPathExists = cfg.admin.passwordFile;
+            unitConfig = {
+              ConditionPathExists = cfg.admin.passwordFile;
+              StartLimitIntervalSec = "5min";
+              StartLimitBurst = 5;
+            };
             serviceConfig = {
               Type = "oneshot";
               LoadCredential = [ "admin-password:${cfg.admin.passwordFile}" ];
