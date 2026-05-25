@@ -98,18 +98,18 @@ in
     enable = true;
     group = mediaGroup;
     admin.passwordFile = config.sops.secrets."jellyfin/admin-password".path;
-    libraries = {
-      movies = {
-        title = "Movies";
-        collectionType = "movies";
+    libraries = [
+      {
+        name = "Movies";
+        type = "movies";
         paths = [ "/srv/media/movies" ];
-      };
-      series = {
-        title = "Series";
-        collectionType = "tvshows";
+      }
+      {
+        name = "Series";
+        type = "tvshows";
         paths = [ "/srv/media/series" ];
-      };
-    };
+      }
+    ];
   };
   media.servarr = {
     enable = true;
