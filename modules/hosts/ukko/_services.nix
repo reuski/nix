@@ -1,7 +1,6 @@
 {
   config,
   lib,
-  pkgs,
   ...
 }:
 let
@@ -18,11 +17,7 @@ in
 {
   networking.firewall = {
     allowedTCPPorts = [ 53 ];
-    allowedUDPPorts = [
-      53
-      1900
-      7359
-    ];
+    allowedUDPPorts = [ 53 ];
   };
 
   services.resolved.enable = lib.mkForce false;
@@ -87,9 +82,29 @@ in
     };
   };
 
-  services.jellyfin = {
+  sops.secrets."jellyfin/admin-password" = {
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    restartUnits = [ "jellyfin-setup.service" ];
+  };
+
+  media.jellyfin = {
     enable = true;
-    openFirewall = true;
+    group = mediaGroup;
+    admin.passwordFile = config.sops.secrets."jellyfin/admin-password".path;
+    libraries = {
+      movies = {
+        title = "Movies";
+        collectionType = "movies";
+        paths = [ "/srv/media/movies" ];
+      };
+      series = {
+        title = "Series";
+        collectionType = "tvshows";
+        paths = [ "/srv/media/series" ];
+      };
+    };
   };
   services.sonarr = mediaService;
   services.radarr = mediaService;
@@ -126,7 +141,6 @@ in
     services = {
       adguard.port = 3000;
       dashboard.domain = "ukko.home.arpa";
-      jellyfin.port = 8096;
       sonarr.port = 8989;
       radarr.port = 7878;
       prowlarr.port = 9696;
@@ -135,49 +149,19 @@ in
 
   services.caddy = {
     globalConfig = "grace_period 1m";
-    virtualHosts.":80".extraConfig = ''
-      reverse_proxy localhost:8082
-    '';
-  };
-
-  boot.kernel.sysctl = {
-    "fs.inotify.max_user_instances" = 1024;
-    "fs.inotify.max_user_watches" = 1048576;
-  };
-
-  fonts = {
-    fontconfig.enable = lib.mkForce true;
-    packages = with pkgs; [
-      liberation_ttf
-      noto-fonts
-      noto-fonts-cjk-sans
-      noto-fonts-color-emoji
-    ];
+    virtualHosts = {
+      "http://ukko.local".extraConfig = ''
+        reverse_proxy localhost:8082
+      '';
+      ":80".extraConfig = ''
+        reverse_proxy localhost:8082
+      '';
+    };
   };
 
   users.groups.${mediaGroup} = { };
-  users.users = {
-    jellyfin.extraGroups = [
-      mediaGroup
-      "render"
-      "video"
-    ];
-    ${config.profile.username}.extraGroups = [ mediaGroup ];
-  };
 
   systemd.services = {
-    jellyfin = {
-      wants = [ "network-online.target" ];
-      after = [ "network-online.target" ];
-      serviceConfig = {
-        UMask = lib.mkForce "0002";
-        SupplementaryGroups = [
-          mediaGroup
-          "render"
-          "video"
-        ];
-      };
-    };
     sonarr.serviceConfig.UMask = lib.mkForce "0002";
     radarr.serviceConfig.UMask = lib.mkForce "0002";
   };

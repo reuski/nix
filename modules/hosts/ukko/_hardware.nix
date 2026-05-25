@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   modulesPath,
   pkgs,
@@ -69,10 +68,6 @@
     pciutils
     usbutils
   ];
-
-  systemd.services.jellyfin = lib.mkIf config.services.jellyfin.enable {
-    environment.LIBVA_DRIVER_NAME = "iHD";
-  };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 }
