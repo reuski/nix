@@ -118,7 +118,7 @@
         prowlarr_url=http://127.0.0.1:${toString config.services.prowlarr.settings.server.port}
         flaresolverr_url=http://127.0.0.1:${toString config.services.flaresolverr.port}/
         config=${lib.escapeShellArg "${config.services.prowlarr.dataDir}/config.xml"}
-        tag=flaresolverr
+        indexers=$CREDENTIALS_DIRECTORY/indexers
 
         request() {
           method=$1
@@ -128,6 +128,39 @@
             --header "X-Api-Key: $api_key" \
             --header 'Content-Type: application/json' \
             "$prowlarr_url/api/v1/$path"
+        }
+
+        send() {
+          method=$1
+          path=$2
+          ${lib.getExe pkgs.curl} --fail --silent --show-error \
+            --request "$method" \
+            --header "X-Api-Key: $api_key" \
+            --header 'Content-Type: application/json' \
+            --data @- \
+            "$prowlarr_url/api/v1/$path" >/dev/null
+        }
+
+        tag_id() {
+          label=$1
+          id=$(request GET tag | ${lib.getExe pkgs.jq} -r \
+            --arg label "$label" \
+            'map(select(.label == $label)) | first | .id // empty')
+          if [ -z "$id" ]; then
+            id=$(${lib.getExe pkgs.jq} -n --arg label "$label" '{ label: $label }' | ${lib.getExe pkgs.curl} --fail --silent --show-error \
+              --request POST \
+              --header "X-Api-Key: $api_key" \
+              --header 'Content-Type: application/json' \
+              --data @- \
+              "$prowlarr_url/api/v1/tag" | ${lib.getExe pkgs.jq} -r .id)
+          fi
+          printf '%s\n' "$id"
+        }
+
+        tag_ids() {
+          ${lib.getExe pkgs.jq} -r '.tags[]?' | while IFS= read -r label; do
+            tag_id "$label"
+          done | ${lib.getExe pkgs.jq} --raw-input '.' | ${lib.getExe pkgs.jq} --slurp 'map(tonumber)'
         }
 
         ready=0
@@ -147,24 +180,15 @@
           exit 1
         fi
 
-        tag_id=$(request GET tag | ${lib.getExe pkgs.jq} -r \
-          --arg label "$tag" \
-          'map(select(.label == $label)) | first | .id // empty')
-        if [ -z "$tag_id" ]; then
-          tag_id=$(${lib.getExe pkgs.jq} -n --arg label "$tag" '{ label: $label }' | ${lib.getExe pkgs.curl} --fail --silent --show-error \
-            --request POST \
-            --header "X-Api-Key: $api_key" \
-            --header 'Content-Type: application/json' \
-            --data @- \
-            "$prowlarr_url/api/v1/tag" | ${lib.getExe pkgs.jq} -r .id)
-        fi
+        ${lib.getExe pkgs.jq} --exit-status '.indexers | type == "array"' "$indexers" >/dev/null
 
+        flaresolverr_tag_id=$(tag_id cf)
         payload=$(${lib.getExe pkgs.jq} -n \
           --arg host "$flaresolverr_url" \
           --argjson requestTimeout 60 \
-          --argjson tags "[$tag_id]" \
+          --argjson tags "[$flaresolverr_tag_id]" \
           '{
-            name: "FlareSolverr",
+            name: "FlareSolverr (CF)",
             implementationName: "FlareSolverr",
             implementation: "FlareSolverr",
             configContract: "FlareSolverrSettings",
@@ -178,20 +202,51 @@
         proxy_id=$(request GET indexerProxy | ${lib.getExe pkgs.jq} -r \
           'map(select(.implementation == "FlareSolverr")) | first | .id // empty')
         if [ -n "$proxy_id" ]; then
-          printf '%s' "$payload" | ${lib.getExe pkgs.jq} --argjson id "$proxy_id" '. + { id: $id }' | ${lib.getExe pkgs.curl} --fail --silent --show-error \
-            --request PUT \
-            --header "X-Api-Key: $api_key" \
-            --header 'Content-Type: application/json' \
-            --data @- \
-            "$prowlarr_url/api/v1/indexerProxy/$proxy_id" >/dev/null
+          printf '%s' "$payload" | ${lib.getExe pkgs.jq} --argjson id "$proxy_id" '. + { id: $id }' | send PUT "indexerProxy/$proxy_id"
         else
-          printf '%s' "$payload" | ${lib.getExe pkgs.curl} --fail --silent --show-error \
-            --request POST \
-            --header "X-Api-Key: $api_key" \
-            --header 'Content-Type: application/json' \
-            --data @- \
-            "$prowlarr_url/api/v1/indexerProxy" >/dev/null
+          printf '%s' "$payload" | send POST indexerProxy
         fi
+
+        ${lib.getExe pkgs.jq} -c '.indexers[]' "$indexers" | while IFS= read -r indexer; do
+          name=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r .name)
+          ids=$(printf '%s' "$indexer" | tag_ids)
+          current=$(request GET indexer | ${lib.getExe pkgs.jq} -c \
+            --arg name "$name" \
+            'map(select(.name == $name)) | first // empty')
+
+          if [ -n "$current" ]; then
+            id=$(printf '%s' "$current" | ${lib.getExe pkgs.jq} -r .id)
+            base=$current
+          else
+            id=
+            definition=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r '.definitionName // .implementationName')
+            base=$(request GET indexer/schema | ${lib.getExe pkgs.jq} -c \
+              --arg definition "$definition" \
+              '[.. | objects | select(.definitionName? == $definition or .implementationName? == $definition)] | first // error("indexer schema not found")')
+          fi
+
+          missing=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r \
+            --argjson base "$base" \
+            '[.fields[]?.name] - [$base.fields[]?.name] | join(", ")')
+          if [ -n "$missing" ]; then
+            printf '%s has unknown Prowlarr fields: %s\n' "$name" "$missing" >&2
+            exit 1
+          fi
+
+          payload=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} \
+            --argjson base "$base" \
+            --argjson tags "$ids" \
+            '$base as $base | . as $desired | ($desired.fields // []) as $fields | $base + $desired + {
+              tags: $tags,
+              fields: ($base.fields | map(. as $field | ([$fields[] | select(.name == $field.name)] | first) as $override | if $override == null then $field else $field + { value: $override.value } end))
+            }')
+
+          if [ -n "$id" ]; then
+            printf '%s' "$payload" | send PUT "indexer/$id"
+          else
+            printf '%s' "$payload" | send POST indexer
+          fi
+        done
       '';
     in
     {
@@ -211,6 +266,7 @@
           };
           passwordFile = mkOption { type = types.str; };
         };
+        prowlarr.indexersFile = mkOption { type = types.str; };
       };
 
       config = mkIf cfg.enable (mkMerge [
@@ -280,17 +336,20 @@
             prowlarr-configure = {
               description = "Configure Prowlarr";
               wantedBy = [ "multi-user.target" ];
+              wants = [ "sops-install-secrets.service" ];
               requires = [
                 "prowlarr.service"
                 "flaresolverr.service"
               ];
               after = [
+                "sops-install-secrets.service"
                 "prowlarr.service"
                 "flaresolverr.service"
               ];
               restartTriggers = [ prowlarrConfigure ];
               serviceConfig = {
                 Type = "oneshot";
+                LoadCredential = [ "indexers:${cfg.prowlarr.indexersFile}" ];
                 ExecStart = prowlarrConfigure;
               };
             };
