@@ -10,7 +10,11 @@
       documentation.enable = false;
       programs.command-not-found.enable = false;
       programs.nano.enable = false;
-      fonts.fontconfig.enable = false;
+      fonts = {
+        enableDefaultPackages = false;
+        packages = [ pkgs.dejavu_fonts.minimal ];
+        fontconfig.enable = true;
+      };
       xdg.icons.enable = false;
       xdg.mime.enable = false;
       xdg.sounds.enable = false;
