@@ -102,12 +102,6 @@ in
         "prowlarr.service"
       ];
     };
-    "prowlarr/indexers" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "prowlarr-configure.service" ];
-    };
   };
 
   media.jellyfin = {
@@ -131,12 +125,16 @@ in
     enable = true;
     group = mediaGroup;
     admin.passwordFile = config.sops.secrets."servarr/admin-password".path;
-    prowlarr.indexersFile = config.sops.secrets."prowlarr/indexers".path;
   };
 
   services.sonarr.enable = true;
   services.radarr.enable = true;
   services.prowlarr.enable = true;
+
+  media.qbittorrent = {
+    enable = true;
+    group = mediaGroup;
+  };
 
   services.heimdash = {
     enable = true;
@@ -161,6 +159,10 @@ in
       {
         name = "Prowlarr";
         url = "http://prowlarr.ukko.home.arpa";
+      }
+      {
+        name = "qBittorrent";
+        url = "http://qbittorrent.ukko.home.arpa";
       }
     ];
   };
