@@ -252,12 +252,11 @@
           ${config.profile.username}.extraGroups = [ cfg.group ];
         };
 
-        systemd.tmpfiles.rules =
-          [
-            "d /srv/media 2775 ${config.profile.username} ${cfg.group} -"
-            "d /var/cache/jellyfin/transcodes 0750 jellyfin ${cfg.group} -"
-          ]
-          ++ map (path: "d ${path} 2775 ${config.profile.username} ${cfg.group} -") libraryPaths;
+        systemd.tmpfiles.rules = [
+          "d /srv/media 2775 ${config.profile.username} ${cfg.group} -"
+          "d /var/cache/jellyfin/transcodes 0750 jellyfin ${cfg.group} -"
+        ]
+        ++ map (path: "d ${path} 2775 ${config.profile.username} ${cfg.group} -") libraryPaths;
 
         systemd.services = {
           jellyfin = {
