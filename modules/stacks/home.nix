@@ -20,7 +20,6 @@ in
         homeManager.git
         homeManager.cli
         homeManager.pi
-        homeManager.python
       ];
 
       home.username = config.profile.username;
@@ -35,7 +34,6 @@ in
     imports = [
       homeManager.base
       homeManager.packages
-      homeManager.development
       homeManager.xdg
       homeManager.niri
       homeManager.noctalia
@@ -45,9 +43,6 @@ in
   };
 
   flake.modules.homeManager.mac = {
-    imports = [
-      homeManager.base
-      homeManager.colima
-    ];
+    imports = [ homeManager.base ];
   };
 }

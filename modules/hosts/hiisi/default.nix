@@ -1,6 +1,6 @@
 { config, inputs, ... }:
 let
-  inherit (config.flake.modules) nixos;
+  inherit (config.flake.modules) homeManager nixos;
 in
 {
   configurations.nixos.hiisi.module =
@@ -23,6 +23,7 @@ in
       };
 
       home-manager.users.${config.profile.username} = {
+        imports = [ homeManager.dev ];
         home.file.".config/sops/age/.keep".text = "";
         home.packages = with pkgs; [
           age
