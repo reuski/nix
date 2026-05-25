@@ -137,6 +137,32 @@ in
   services.radarr.enable = true;
   services.prowlarr.enable = true;
 
+  services.home-assistant = {
+    enable = true;
+    extraComponents = [
+      "default_config"
+      "met"
+      "hue"
+      "cast"
+      "webostv"
+      "tplink"
+      "dlna_dmr"
+      "lg_thinq"
+    ];
+    config = {
+      default_config = { };
+      homeassistant.country = "FI";
+      http = {
+        server_host = [ "127.0.0.1" ];
+        use_x_forwarded_for = true;
+        trusted_proxies = [
+          "127.0.0.1"
+          "::1"
+        ];
+      };
+    };
+  };
+
   media.qbittorrent = {
     enable = true;
     group = mediaGroup;
@@ -171,6 +197,10 @@ in
         name = "qBittorrent";
         url = "http://qbittorrent.ukko.home.arpa";
       }
+      {
+        name = "Home Assistant";
+        url = "http://home.ukko.home.arpa";
+      }
     ];
   };
 
@@ -181,6 +211,7 @@ in
       sonarr.port = 8989;
       radarr.port = 7878;
       prowlarr.port = 9696;
+      home.port = 8123;
     };
   };
 
