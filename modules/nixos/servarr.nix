@@ -182,8 +182,12 @@
         ${lib.getExe pkgs.jq} --exit-status 'type == "array"' "$indexers" >/dev/null
 
         ${lib.getExe pkgs.jq} -c '.[]' "$indexers" | while IFS= read -r indexer; do
-          name=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r .name)
-          ids=$(printf '%s' "$indexer" | tag_ids)
+          name=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r '.name // empty')
+          if [ -z "$name" ]; then
+            printf 'Prowlarr indexer is missing name\n' >&2
+            exit 1
+          fi
+
           current=$(request GET indexer | ${lib.getExe pkgs.jq} -c \
             --arg name "$name" \
             'map(select(.name == $name)) | first // empty')
@@ -193,10 +197,27 @@
             base=$current
           else
             id=
-            definition=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r '.definitionName // .implementationName')
-            base=$(request GET indexer/schema | ${lib.getExe pkgs.jq} -c \
-              --arg definition "$definition" \
-              '[.. | objects | select(.definitionName? == $definition or .implementationName? == $definition)] | first // error("indexer schema not found")')
+            definition=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r '.definitionName // .implementationName // empty')
+            if [ -z "$definition" ]; then
+              printf '%s is missing definitionName or implementationName\n' "$name" >&2
+              exit 1
+            fi
+
+            base=
+            for _ in $(${lib.getExe' pkgs.coreutils "seq"} 1 120); do
+              base=$(request GET indexer/schema | ${lib.getExe pkgs.jq} -c \
+                --arg definition "$definition" \
+                '[.. | objects | select(.definitionName? == $definition or .implementationName? == $definition)] | first // empty' || true)
+              if [ -n "$base" ]; then
+                break
+              fi
+              ${lib.getExe' pkgs.coreutils "sleep"} 1
+            done
+
+            if [ -z "$base" ]; then
+              printf '%s uses unsupported Prowlarr definition: %s\n' "$name" "$definition" >&2
+              exit 1
+            fi
           fi
 
           missing=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r \
@@ -207,6 +228,7 @@
             exit 1
           fi
 
+          ids=$(printf '%s' "$indexer" | tag_ids)
           payload=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} \
             --argjson base "$base" \
             --argjson tags "$ids" \
@@ -216,9 +238,17 @@
             }')
 
           if [ -n "$id" ]; then
-            printf '%s' "$payload" | send PUT "indexer/$id"
+            printf '%s' "$payload" | ${lib.getExe pkgs.jq} --argjson id "$id" '.id = $id' | send PUT "indexer/$id?forceSave=true"
           else
-            printf '%s' "$payload" | send POST indexer
+            printf '%s' "$payload" | ${lib.getExe pkgs.jq} '.enable = false' | send POST indexer
+            id=$(request GET indexer | ${lib.getExe pkgs.jq} -r \
+              --arg name "$name" \
+              'map(select(.name == $name)) | first | .id // empty')
+            if [ -z "$id" ]; then
+              printf '%s was not created by Prowlarr\n' "$name" >&2
+              exit 1
+            fi
+            printf '%s' "$payload" | ${lib.getExe pkgs.jq} --argjson id "$id" '.id = $id' | send PUT "indexer/$id?forceSave=true"
           fi
         done
       '';
