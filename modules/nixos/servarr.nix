@@ -111,169 +111,6 @@
 
           exit 0
         '';
-
-      prowlarrConfigure = pkgs.writeShellScript "prowlarr-configure" ''
-        set -euo pipefail
-
-        prowlarr_url=http://127.0.0.1:${toString config.services.prowlarr.settings.server.port}
-        config=${lib.escapeShellArg "${config.services.prowlarr.dataDir}/config.xml"}
-        indexers=$CREDENTIALS_DIRECTORY/indexers
-
-        request() {
-          method=$1
-          path=$2
-          ${lib.getExe pkgs.curl} --fail --silent --show-error \
-            --request "$method" \
-            --header "X-Api-Key: $api_key" \
-            --header 'Content-Type: application/json' \
-            "$prowlarr_url/api/v1/$path"
-        }
-
-        send() {
-          method=$1
-          path=$2
-          response=$(${lib.getExe' pkgs.coreutils "mktemp"})
-          if ! status=$(${lib.getExe pkgs.curl} --silent --show-error \
-            --request "$method" \
-            --header "X-Api-Key: $api_key" \
-            --header 'Content-Type: application/json' \
-            --data @- \
-            --output "$response" \
-            --write-out '%{http_code}' \
-            "$prowlarr_url/api/v1/$path"); then
-            status=000
-          fi
-
-          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
-            printf 'Prowlarr %s %s returned HTTP %s\n' "$method" "$path" "$status" >&2
-            ${lib.getExe pkgs.jq} -r '
-              if type == "array" then
-                .[] | if type == "object" and has("propertyName") and has("errorMessage") then "\(.propertyName): \(.errorMessage)" else tostring end
-              elif type == "object" then
-                .message // .errorMessage // tostring
-              else
-                tostring
-              end
-            ' "$response" >&2 || ${lib.getExe' pkgs.coreutils "cat"} "$response" >&2
-            ${lib.getExe' pkgs.coreutils "rm"} -f "$response"
-            exit 1
-          fi
-
-          ${lib.getExe' pkgs.coreutils "rm"} -f "$response"
-        }
-
-        tag_id() {
-          label=$1
-          id=$(request GET tag | ${lib.getExe pkgs.jq} -r \
-            --arg label "$label" \
-            'map(select(.label == $label)) | first | .id // empty')
-          if [ -z "$id" ]; then
-            id=$(${lib.getExe pkgs.jq} -n --arg label "$label" '{ label: $label }' | ${lib.getExe pkgs.curl} --fail --silent --show-error \
-              --request POST \
-              --header "X-Api-Key: $api_key" \
-              --header 'Content-Type: application/json' \
-              --data @- \
-              "$prowlarr_url/api/v1/tag" | ${lib.getExe pkgs.jq} -r .id)
-          fi
-          printf '%s\n' "$id"
-        }
-
-        tag_ids() {
-          ${lib.getExe pkgs.jq} -r '.tags[]?' | while IFS= read -r label; do
-            tag_id "$label"
-          done | ${lib.getExe pkgs.jq} --raw-input '.' | ${lib.getExe pkgs.jq} --slurp 'map(tonumber)'
-        }
-
-        ready=0
-        for _ in $(${lib.getExe' pkgs.coreutils "seq"} 1 60); do
-          api_key=$(${xml} sel -t -v /Config/ApiKey "$config" 2>/dev/null || true)
-          if [ -n "$api_key" ] && ${lib.getExe pkgs.curl} --fail --silent --show-error \
-            --header "X-Api-Key: $api_key" \
-            "$prowlarr_url/api/v1/system/status" >/dev/null; then
-            ready=1
-            break
-          fi
-          ${lib.getExe' pkgs.coreutils "sleep"} 1
-        done
-
-        if [ "$ready" != 1 ]; then
-          printf 'Prowlarr API is not ready\n' >&2
-          exit 1
-        fi
-
-        ${lib.getExe pkgs.jq} --exit-status 'type == "array"' "$indexers" >/dev/null
-
-        ${lib.getExe pkgs.jq} -c '.[]' "$indexers" | while IFS= read -r indexer; do
-          name=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r '.name // empty')
-          if [ -z "$name" ]; then
-            printf 'Prowlarr indexer is missing name\n' >&2
-            exit 1
-          fi
-
-          current=$(request GET indexer | ${lib.getExe pkgs.jq} -c \
-            --arg name "$name" \
-            'map(select(.name == $name)) | first // empty')
-
-          if [ -n "$current" ]; then
-            id=$(printf '%s' "$current" | ${lib.getExe pkgs.jq} -r .id)
-            base=$current
-          else
-            id=
-            definition=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r '.definitionName // .implementationName // empty')
-            if [ -z "$definition" ]; then
-              printf '%s is missing definitionName or implementationName\n' "$name" >&2
-              exit 1
-            fi
-
-            base=
-            for _ in $(${lib.getExe' pkgs.coreutils "seq"} 1 120); do
-              base=$(request GET indexer/schema | ${lib.getExe pkgs.jq} -c \
-                --arg definition "$definition" \
-                '[.. | objects | select(.definitionName? == $definition or .implementationName? == $definition)] | first // empty' || true)
-              if [ -n "$base" ]; then
-                break
-              fi
-              ${lib.getExe' pkgs.coreutils "sleep"} 1
-            done
-
-            if [ -z "$base" ]; then
-              printf '%s uses unsupported Prowlarr definition: %s\n' "$name" "$definition" >&2
-              exit 1
-            fi
-          fi
-
-          missing=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} -r \
-            --argjson base "$base" \
-            '[.fields[]?.name] - [$base.fields[]?.name] | join(", ")')
-          if [ -n "$missing" ]; then
-            printf '%s has unknown Prowlarr fields: %s\n' "$name" "$missing" >&2
-            exit 1
-          fi
-
-          ids=$(printf '%s' "$indexer" | tag_ids)
-          payload=$(printf '%s' "$indexer" | ${lib.getExe pkgs.jq} \
-            --argjson base "$base" \
-            --argjson tags "$ids" \
-            '$base as $base | . as $desired | ($desired.fields // []) as $fields | $base + $desired + {
-              tags: $tags,
-              fields: ($base.fields | map(. as $field | ([$fields[] | select(.name == $field.name)] | first) as $override | if $override == null then $field else $field + { value: $override.value } end))
-            }')
-
-          if [ -n "$id" ]; then
-            printf '%s' "$payload" | ${lib.getExe pkgs.jq} --argjson id "$id" '.id = $id' | send PUT "indexer/$id?forceSave=true"
-          else
-            printf '%s' "$payload" | ${lib.getExe pkgs.jq} '.enable = false' | send POST "indexer?forceSave=true"
-            id=$(request GET indexer | ${lib.getExe pkgs.jq} -r \
-              --arg name "$name" \
-              'map(select(.name == $name)) | first | .id // empty')
-            if [ -z "$id" ]; then
-              printf '%s was not created by Prowlarr\n' "$name" >&2
-              exit 1
-            fi
-            printf '%s' "$payload" | ${lib.getExe pkgs.jq} --argjson id "$id" '.id = $id' | send PUT "indexer/$id?forceSave=true"
-          fi
-        done
-      '';
     in
     {
       options.media.servarr = {
@@ -292,79 +129,58 @@
           };
           passwordFile = mkOption { type = types.str; };
         };
-        prowlarr.indexersFile = mkOption { type = types.str; };
       };
 
-      config = mkIf cfg.enable (mkMerge [
-        {
-          services = mkMerge (
-            [
-              {
-                sonarr.group = mkDefault cfg.group;
-                radarr.group = mkDefault cfg.group;
-              }
-            ]
-            ++ mapAttrsToList (
-              name: app:
-              mkIf app.enable {
-                ${name}.settings = {
-                  app.launchBrowser = mkDefault false;
-                  auth = {
-                    method = mkDefault "Forms";
-                    required = mkDefault authenticationRequired;
-                  };
-                  log.analyticsEnabled = mkDefault false;
-                  server.bindaddress = mkDefault "127.0.0.1";
-                  update = {
-                    automatically = mkDefault false;
-                    mechanism = mkDefault "external";
-                  };
-                };
-              }
-            ) apps
-          );
-
-          users.groups.${cfg.group} = { };
-          users.users.${config.profile.username}.extraGroups = [ cfg.group ];
-
-          systemd.services = mapAttrs (
+      config = mkIf cfg.enable {
+        services = mkMerge (
+          [
+            {
+              sonarr.group = mkDefault cfg.group;
+              radarr.group = mkDefault cfg.group;
+            }
+          ]
+          ++ mapAttrsToList (
             name: app:
             mkIf app.enable {
-              wants = [ "sops-install-secrets.service" ];
-              after = [ "sops-install-secrets.service" ];
-              path = [ pkgs.coreutils ];
-              preStart = "${setupScript name app}";
-              postStart = "${cleanupScript name app}";
-              serviceConfig = {
-                LoadCredential = [ "admin-password:${cfg.admin.passwordFile}" ];
-              }
-              // optionalAttrs (name == "sonarr" || name == "radarr") {
-                UMask = mkForce "0002";
-              }
-              // optionalAttrs (name == "prowlarr") {
-                UMask = mkDefault "0077";
+              ${name}.settings = {
+                app.launchBrowser = mkDefault false;
+                auth = {
+                  method = mkDefault "Forms";
+                  required = mkDefault authenticationRequired;
+                };
+                log.analyticsEnabled = mkDefault false;
+                server.bindaddress = mkDefault "127.0.0.1";
+                update = {
+                  automatically = mkDefault false;
+                  mechanism = mkDefault "external";
+                };
               };
             }
-          ) apps;
-        }
-        (mkIf config.services.prowlarr.enable {
-          systemd.services.prowlarr-configure = {
-            description = "Configure Prowlarr";
-            wantedBy = [ "multi-user.target" ];
+          ) apps
+        );
+
+        users.groups.${cfg.group} = { };
+        users.users.${config.profile.username}.extraGroups = [ cfg.group ];
+
+        systemd.services = mapAttrs (
+          name: app:
+          mkIf app.enable {
             wants = [ "sops-install-secrets.service" ];
-            requires = [ "prowlarr.service" ];
-            after = [
-              "sops-install-secrets.service"
-              "prowlarr.service"
-            ];
-            restartTriggers = [ prowlarrConfigure ];
+            after = [ "sops-install-secrets.service" ];
+            path = [ pkgs.coreutils ];
+            preStart = "${setupScript name app}";
+            postStart = "${cleanupScript name app}";
             serviceConfig = {
-              Type = "oneshot";
-              LoadCredential = [ "indexers:${cfg.prowlarr.indexersFile}" ];
-              ExecStart = prowlarrConfigure;
+              LoadCredential = [ "admin-password:${cfg.admin.passwordFile}" ];
+            }
+            // optionalAttrs (name == "sonarr" || name == "radarr") {
+              UMask = mkForce "0002";
+            }
+            // optionalAttrs (name == "prowlarr") {
+              UMask = mkDefault "0077";
             };
-          };
-        })
-      ]);
+          }
+        ) apps;
+      };
     };
 }
