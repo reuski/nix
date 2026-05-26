@@ -266,6 +266,7 @@
             };
             serviceConfig = {
               Type = "oneshot";
+              RemainAfterExit = true;
               LoadCredential = [ "admin-password:${cfg.admin.passwordFile}" ];
               ExecStart = setupScript;
               Restart = "on-failure";
