@@ -167,11 +167,11 @@
         "zls": "zls"
       },
       "locked": {
-        "lastModified": 1779778863,
-        "narHash": "sha256-WKIfrkN7YQltCTNJ258urSfQlmYKtuygrUsctpIgrrs=",
+        "lastModified": 1779782122,
+        "narHash": "sha256-blRqHacQIGTkxHYLDGdJYGd+BSX3fkkUDmh6K5HJ1r4=",
         "owner": "reuski",
         "repo": "heimdash",
-        "rev": "6c0f405f6884549700e5d8c703c111b21b0dae46",
+        "rev": "542da59f3c05a211bb7e3d1cd22baa502c6c03c1",
         "type": "github"
       },
       "original": {
