@@ -47,13 +47,16 @@
       ];
       subtitleFontPath = "${pkgs.inter}/share/fonts";
       systemFilter = pkgs.writeText "jellyfin-system.jq" ''
-        .EnableUPnP = false
-        | .EnableRemoteAccess = false
-        | .QuickConnectAvailable = false
+        .QuickConnectAvailable = false
         | .RemoteClientBitrateLimit = 0
         | .UICulture = "en-US"
         | .MetadataCountryCode = "FI"
         | .PreferredMetadataLanguage = "en"
+      '';
+      networkFilter = pkgs.writeText "jellyfin-network.jq" ''
+        .EnableRemoteAccess = false
+        | .EnablePublishedServerUriByRequest = true
+        | .KnownProxies = [ "127.0.0.1" ]
       '';
       encodingFilter = pkgs.writeText "jellyfin-encoding.jq" ''
         .TranscodingTempPath = "/var/cache/jellyfin/transcodes"
@@ -135,6 +138,11 @@
           | jq -f ${encodingFilter} \
           > "$tmp/encoding.json"
         api_auth -X POST "$base/System/Configuration/encoding" --data-binary "@$tmp/encoding.json" >/dev/null
+
+        api_auth "$base/System/Configuration/network" \
+          | jq -f ${networkFilter} \
+          > "$tmp/network.json"
+        api_auth -X POST "$base/System/Configuration/network" --data-binary "@$tmp/network.json" >/dev/null
 
         api_auth "$base/Library/VirtualFolders" > "$tmp/folders.json"
         jq -c '.[]' ${librariesFile} | while IFS= read -r library; do
