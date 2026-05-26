@@ -108,6 +108,12 @@ in
       mode = "0400";
       restartUnits = [ "piavpn.service" ];
     };
+    "home-assistant/admin-password" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "home-assistant-setup.service" ];
+    };
   };
 
   media.jellyfin = {
@@ -137,10 +143,10 @@ in
   services.radarr.enable = true;
   services.prowlarr.enable = true;
 
-  services.home-assistant = {
+  homeAssistant = {
     enable = true;
-    extraComponents = [
-      "default_config"
+    admin.passwordFile = config.sops.secrets."home-assistant/admin-password".path;
+    components = [
       "met"
       "hue"
       "cast"
@@ -149,17 +155,13 @@ in
       "dlna_dmr"
       "lg_thinq"
     ];
-    config = {
-      default_config = { };
-      homeassistant.country = "FI";
-      http = {
-        server_host = [ "127.0.0.1" ];
-        use_x_forwarded_for = true;
-        trusted_proxies = [
-          "127.0.0.1"
-          "::1"
-        ];
-      };
+    settings.homeassistant = {
+      name = "Cell";
+      country = "FI";
+      currency = "EUR";
+      language = "en";
+      time_zone = config.profile.timeZone;
+      unit_system = "metric";
     };
   };
 
@@ -211,7 +213,6 @@ in
       sonarr.port = 8989;
       radarr.port = 7878;
       prowlarr.port = 9696;
-      home.port = 8123;
     };
   };
 

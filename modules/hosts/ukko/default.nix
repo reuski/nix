@@ -17,6 +17,7 @@ in
       nixos.jellyfin
       nixos.servarr
       nixos.qbittorrent
+      nixos.home-assistant
     ];
 
     system.stateVersion = "25.11";
