@@ -167,11 +167,11 @@
         "zls": "zls"
       },
       "locked": {
-        "lastModified": 1779782122,
-        "narHash": "sha256-blRqHacQIGTkxHYLDGdJYGd+BSX3fkkUDmh6K5HJ1r4=",
+        "lastModified": 1779801944,
+        "narHash": "sha256-U8iNfah0Fb+3ffWUud3PFEmMRwJnIjkY/wQM9GufWYA=",
         "owner": "reuski",
         "repo": "heimdash",
-        "rev": "542da59f3c05a211bb7e3d1cd22baa502c6c03c1",
+        "rev": "9f149872b1d2e817aa2f91552fdf093a7e1b1f14",
         "type": "github"
       },
       "original": {
@@ -556,11 +556,11 @@
         "systems": "systems_5"
       },
       "locked": {
-        "lastModified": 1779754603,
-        "narHash": "sha256-pHIgilXJkISxdoA7p3WF7V/vFmWJNfjTOALSLpmTL4Q=",
+        "lastModified": 1779809745,
+        "narHash": "sha256-LKC1NiBX53zKM9usiJvdbMhuaTvKrb9K0Y+bfeqKtzo=",
         "owner": "vicinaehq",
         "repo": "vicinae",
-        "rev": "e9b8e1d520d7fde5e3ab4aaff68badeeb61fc8d5",
+        "rev": "1d09126d4ad671485d7e5fd79f3e6f97da182caf",
         "type": "github"
       },
       "original": {
