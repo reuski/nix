@@ -114,6 +114,13 @@ in
       mode = "0400";
       restartUnits = [ "home-assistant-setup.service" ];
     };
+    "home-assistant/secrets.yaml" = {
+      owner = "hass";
+      group = "hass";
+      mode = "0400";
+      path = "${config.services.home-assistant.configDir}/secrets.yaml";
+      restartUnits = [ "home-assistant.service" ];
+    };
   };
 
   media.jellyfin = {
@@ -162,6 +169,9 @@ in
       language = "en";
       time_zone = config.profile.timeZone;
       unit_system = "metric";
+      latitude = "!secret latitude";
+      longitude = "!secret longitude";
+      elevation = "!secret elevation";
     };
   };
 
