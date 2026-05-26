@@ -35,15 +35,18 @@
           exit 1
         fi
 
+        code=""
         for _ in $(seq 1 300); do
-          if curl --fail --silent --show-error "$base/api/onboarding" > "$tmp/onboarding.json"; then
-            break
-          fi
-          sleep 1
+          code=$(curl --silent --output "$tmp/onboarding.json" --write-out '%{http_code}' "$base/api/onboarding" || true)
+          case "$code" in
+            200) break ;;
+            404) exit 0 ;;
+            *) sleep 1 ;;
+          esac
         done
 
-        if [ ! -s "$tmp/onboarding.json" ]; then
-          printf 'Home Assistant onboarding endpoint never became ready\n' >&2
+        if [ "$code" != "200" ]; then
+          printf 'Home Assistant onboarding endpoint not ready (last status: %s)\n' "$code" >&2
           exit 1
         fi
 
@@ -158,6 +161,7 @@
           };
           serviceConfig = {
             Type = "oneshot";
+            RemainAfterExit = true;
             LoadCredential = [ "admin-password:${cfg.admin.passwordFile}" ];
             ExecStart = setupScript;
             Restart = "on-failure";
