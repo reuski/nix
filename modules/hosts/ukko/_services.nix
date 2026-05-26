@@ -188,22 +188,27 @@ in
       {
         name = "AdGuard";
         url = "http://adguard.ukko.home.arpa";
+        check = "http://adguard.ukko.home.arpa/login.html";
       }
       {
         name = "Jellyfin";
         url = "http://jellyfin.ukko.home.arpa";
+        check = "http://jellyfin.ukko.home.arpa/System/Info/Public";
       }
       {
         name = "Sonarr";
         url = "http://sonarr.ukko.home.arpa";
+        check = "http://sonarr.ukko.home.arpa/ping";
       }
       {
         name = "Radarr";
         url = "http://radarr.ukko.home.arpa";
+        check = "http://radarr.ukko.home.arpa/ping";
       }
       {
         name = "Prowlarr";
         url = "http://prowlarr.ukko.home.arpa";
+        check = "http://prowlarr.ukko.home.arpa/ping";
       }
       {
         name = "qBittorrent";
