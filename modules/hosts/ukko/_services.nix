@@ -126,6 +126,7 @@ in
   media.jellyfin = {
     enable = true;
     group = mediaGroup;
+    openFirewall = true;
     admin.passwordFile = config.sops.secrets."jellyfin/admin-password".path;
     libraries = [
       {

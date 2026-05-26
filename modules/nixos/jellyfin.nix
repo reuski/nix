@@ -41,14 +41,9 @@
       libraryPaths = unique (concatLists (map (library: library.paths) cfg.libraries));
       libraryNames = map (library: library.name) cfg.libraries;
       librariesFile = pkgs.writeText "jellyfin-libraries.json" (builtins.toJSON cfg.libraries);
-      intelPackages = [
-        pkgs.intel-media-driver
-        pkgs.intel-compute-runtime
-      ];
       subtitleFontPath = "${pkgs.inter}/share/fonts";
       systemFilter = pkgs.writeText "jellyfin-system.jq" ''
         .QuickConnectAvailable = false
-        | .RemoteClientBitrateLimit = 0
         | .UICulture = "en-US"
         | .MetadataCountryCode = "FI"
         | .PreferredMetadataLanguage = "en"
@@ -205,13 +200,6 @@
         };
 
         proxy.services.jellyfin.port = 8096;
-
-        hardware.graphics = {
-          enable = true;
-          extraPackages = intelPackages;
-        };
-
-        environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
 
         boot.kernel.sysctl = {
           "fs.inotify.max_user_instances" = 1024;
