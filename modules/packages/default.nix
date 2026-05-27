@@ -6,7 +6,6 @@
     config.flake.overlays.python-validity
     config.flake.overlays.pi
     config.flake.overlays.zjstatus
-    config.flake.overlays.janitorr
   ];
 
   perSystem =
