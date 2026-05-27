@@ -16,6 +16,12 @@
         ;
 
       appConfig = pkgs.writeText "janitorr-application.yml" ''
+        management:
+          endpoints:
+            web:
+              exposure:
+                include: health,info
+
         application:
           dry-run: ${lib.boolToString cfg.dryRun}
           leaving-soon: 14d

@@ -136,6 +136,24 @@ in
       group = "root";
       mode = "0400";
     };
+    "prowlarr/api-key" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "heimdash.service" ];
+    };
+    "qbittorrent/password" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "heimdash.service" ];
+    };
+    "home-assistant/token" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "heimdash.service" ];
+    };
   };
 
   sops.templates."janitorr-api-keys.yml" = {
@@ -154,6 +172,14 @@ in
     group = "janitorr";
     mode = "0400";
     restartUnits = [ "janitorr.service" ];
+  };
+
+  sops.templates."heimdash-qbittorrent-credentials" = {
+    content = "${config.profile.username}:${config.sops.placeholder."qbittorrent/password"}";
+    owner = "root";
+    group = "root";
+    mode = "0400";
+    restartUnits = [ "heimdash.service" ];
   };
 
   media.jellyfin = {
@@ -226,7 +252,10 @@ in
     credentials = {
       sonarr-api-key.path = config.sops.secrets."sonarr/api-key".path;
       radarr-api-key.path = config.sops.secrets."radarr/api-key".path;
+      prowlarr-api-key.path = config.sops.secrets."prowlarr/api-key".path;
       jellyfin-api-key.path = config.sops.secrets."jellyfin/api-key".path;
+      qbittorrent-credentials.path = config.sops.templates."heimdash-qbittorrent-credentials".path;
+      home-assistant-token.path = config.sops.secrets."home-assistant/token".path;
     };
     services = [
       {
@@ -234,6 +263,19 @@ in
         url = "http://adguard.ukko.home.arpa";
         check = "http://adguard.ukko.home.arpa/login.html";
         kind = "adguard";
+      }
+      {
+        name = "Home Assistant";
+        url = "http://home.ukko.home.arpa";
+        kind = "home_assistant";
+        credential = "home-assistant-token";
+        entity = "weather.forecast_home";
+      }
+      {
+        name = "qBittorrent";
+        url = "http://qbittorrent.ukko.home.arpa";
+        kind = "qbittorrent";
+        credential = "qbittorrent-credentials";
       }
       {
         name = "Jellyfin";
@@ -261,21 +303,13 @@ in
         url = "http://prowlarr.ukko.home.arpa";
         check = "http://prowlarr.ukko.home.arpa/ping";
         kind = "prowlarr";
-      }
-      {
-        name = "qBittorrent";
-        url = "http://qbittorrent.ukko.home.arpa";
-        kind = "qbittorrent";
-      }
-      {
-        name = "Home Assistant";
-        url = "http://home.ukko.home.arpa";
-        kind = "home_assistant";
+        credential = "prowlarr-api-key";
       }
       {
         name = "Janitorr";
         url = "http://janitorr.ukko.home.arpa";
         check = "http://janitorr.ukko.home.arpa/actuator/health";
+        kind = "janitorr";
       }
     ];
   };
