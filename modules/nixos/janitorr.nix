@@ -1,7 +1,12 @@
 { ... }:
 {
   flake.modules.nixos.janitorr =
-    { config, lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.media.janitorr;
       inherit (lib)
