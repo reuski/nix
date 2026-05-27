@@ -121,6 +121,39 @@ in
       path = "${config.services.home-assistant.configDir}/secrets.yaml";
       restartUnits = [ "home-assistant.service" ];
     };
+    "janitorr/sonarr-api-key" = {
+      owner = "janitorr";
+      group = "janitorr";
+      mode = "0400";
+    };
+    "janitorr/radarr-api-key" = {
+      owner = "janitorr";
+      group = "janitorr";
+      mode = "0400";
+    };
+    "janitorr/jellyfin-api-key" = {
+      owner = "janitorr";
+      group = "janitorr";
+      mode = "0400";
+    };
+  };
+
+  sops.templates."janitorr-api-keys.yml" = {
+    content = ''
+      clients:
+        sonarr:
+          api-key: ${config.sops.placeholder."janitorr/sonarr-api-key"}
+        radarr:
+          api-key: ${config.sops.placeholder."janitorr/radarr-api-key"}
+        jellyfin:
+          api-key: ${config.sops.placeholder."janitorr/jellyfin-api-key"}
+          username: ${config.media.jellyfin.admin.name}
+          password: ${config.sops.placeholder."jellyfin/admin-password"}
+    '';
+    owner = "janitorr";
+    group = "janitorr";
+    mode = "0400";
+    restartUnits = [ "janitorr.service" ];
   };
 
   media.jellyfin = {
@@ -176,6 +209,11 @@ in
     };
   };
 
+  media.janitorr = {
+    enable = true;
+    secretsFile = config.sops.templates."janitorr-api-keys.yml".path;
+  };
+
   media.qbittorrent = {
     enable = true;
     group = mediaGroup;
@@ -218,6 +256,11 @@ in
       {
         name = "Home Assistant";
         url = "http://home.ukko.home.arpa";
+      }
+      {
+        name = "Janitorr";
+        url = "http://janitorr.ukko.home.arpa";
+        check = "http://janitorr.ukko.home.arpa/actuator/health";
       }
     ];
   };
