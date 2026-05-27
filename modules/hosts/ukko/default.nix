@@ -18,7 +18,6 @@ in
       nixos.servarr
       nixos.qbittorrent
       nixos.home-assistant
-      nixos.janitorr
     ];
 
     system.stateVersion = "25.11";

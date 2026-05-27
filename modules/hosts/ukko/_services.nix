@@ -156,24 +156,6 @@ in
     };
   };
 
-  sops.templates."janitorr-api-keys.yml" = {
-    content = ''
-      clients:
-        sonarr:
-          api-key: ${config.sops.placeholder."sonarr/api-key"}
-        radarr:
-          api-key: ${config.sops.placeholder."radarr/api-key"}
-        jellyfin:
-          api-key: ${config.sops.placeholder."jellyfin/api-key"}
-          username: ${config.media.jellyfin.admin.name}
-          password: ${config.sops.placeholder."jellyfin/admin-password"}
-    '';
-    owner = "janitorr";
-    group = "janitorr";
-    mode = "0400";
-    restartUnits = [ "janitorr.service" ];
-  };
-
   sops.templates."heimdash-qbittorrent-credentials" = {
     content = "${config.profile.username}:${config.sops.placeholder."qbittorrent/password"}";
     owner = "root";
@@ -233,11 +215,6 @@ in
       longitude = "!secret longitude";
       elevation = "!secret elevation";
     };
-  };
-
-  media.janitorr = {
-    enable = true;
-    secretsFile = config.sops.templates."janitorr-api-keys.yml".path;
   };
 
   media.qbittorrent = {
@@ -304,12 +281,6 @@ in
         check = "http://prowlarr.ukko.home.arpa/ping";
         kind = "prowlarr";
         credential = "prowlarr-api-key";
-      }
-      {
-        name = "Janitorr";
-        url = "http://janitorr.ukko.home.arpa";
-        check = "http://janitorr.ukko.home.arpa/actuator/health";
-        kind = "janitorr";
       }
     ];
   };
