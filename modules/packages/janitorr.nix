@@ -25,8 +25,12 @@ in
   flake.overlays.janitorr =
     final: _prev:
     let
-      appLayer = fetchGhcrLayer final "app-layer" "a8abd45c9dfe021e8cc1b8382c9d2d33f6f575f8d59addaf740b6160fe2d4b06" "sha256-qKvUXJ3+Ah6Mwbg4LJ0tM/b1dfjVmt2vdAthYP4tSwY=";
-      scbLayer = fetchGhcrLayer final "scb-layer" "856ce222bf03dce9f17e4e0271376b0841bbaa2e62e723c8b138cbfbc9e822f6" "sha256-hWziIr8D3Onxfk4CcTdrCEG7qi5i5yPIsTjL+8noIvY=";
+      appLayer =
+        fetchGhcrLayer final "app-layer" "a8abd45c9dfe021e8cc1b8382c9d2d33f6f575f8d59addaf740b6160fe2d4b06"
+          "sha256-qKvUXJ3+Ah6Mwbg4LJ0tM/b1dfjVmt2vdAthYP4tSwY=";
+      scbLayer =
+        fetchGhcrLayer final "scb-layer" "856ce222bf03dce9f17e4e0271376b0841bbaa2e62e723c8b138cbfbc9e822f6"
+          "sha256-hWziIr8D3Onxfk4CcTdrCEG7qi5i5yPIsTjL+8noIvY=";
     in
     {
       janitorr = final.callPackage (
