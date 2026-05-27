@@ -39,6 +39,10 @@
               10: 20d
               15: 60d
               20: 120d
+          tag-based-deletion:
+            enabled: false
+          episode-deletion:
+            enabled: false
 
         clients:
           sonarr:
