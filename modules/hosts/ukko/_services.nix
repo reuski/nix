@@ -121,19 +121,19 @@ in
       path = "${config.services.home-assistant.configDir}/secrets.yaml";
       restartUnits = [ "home-assistant.service" ];
     };
-    "janitorr/sonarr-api-key" = {
-      owner = "janitorr";
-      group = "janitorr";
+    "sonarr/api-key" = {
+      owner = "root";
+      group = "root";
       mode = "0400";
     };
-    "janitorr/radarr-api-key" = {
-      owner = "janitorr";
-      group = "janitorr";
+    "radarr/api-key" = {
+      owner = "root";
+      group = "root";
       mode = "0400";
     };
-    "janitorr/jellyfin-api-key" = {
-      owner = "janitorr";
-      group = "janitorr";
+    "jellyfin/api-key" = {
+      owner = "root";
+      group = "root";
       mode = "0400";
     };
   };
@@ -142,11 +142,11 @@ in
     content = ''
       clients:
         sonarr:
-          api-key: ${config.sops.placeholder."janitorr/sonarr-api-key"}
+          api-key: ${config.sops.placeholder."sonarr/api-key"}
         radarr:
-          api-key: ${config.sops.placeholder."janitorr/radarr-api-key"}
+          api-key: ${config.sops.placeholder."radarr/api-key"}
         jellyfin:
-          api-key: ${config.sops.placeholder."janitorr/jellyfin-api-key"}
+          api-key: ${config.sops.placeholder."jellyfin/api-key"}
           username: ${config.media.jellyfin.admin.name}
           password: ${config.sops.placeholder."jellyfin/admin-password"}
     '';
@@ -223,39 +223,54 @@ in
   services.heimdash = {
     enable = true;
     mounts = [ "/" ];
+    credentials = {
+      sonarr-api-key.path = config.sops.secrets."sonarr/api-key".path;
+      radarr-api-key.path = config.sops.secrets."radarr/api-key".path;
+      jellyfin-api-key.path = config.sops.secrets."jellyfin/api-key".path;
+    };
     services = [
       {
         name = "AdGuard";
         url = "http://adguard.ukko.home.arpa";
         check = "http://adguard.ukko.home.arpa/login.html";
+        kind = "adguard";
       }
       {
         name = "Jellyfin";
         url = "http://jellyfin.ukko.home.arpa";
         check = "http://jellyfin.ukko.home.arpa/System/Info/Public";
+        kind = "jellyfin";
+        credential = "jellyfin-api-key";
       }
       {
         name = "Sonarr";
         url = "http://sonarr.ukko.home.arpa";
         check = "http://sonarr.ukko.home.arpa/ping";
+        kind = "sonarr";
+        credential = "sonarr-api-key";
       }
       {
         name = "Radarr";
         url = "http://radarr.ukko.home.arpa";
         check = "http://radarr.ukko.home.arpa/ping";
+        kind = "radarr";
+        credential = "radarr-api-key";
       }
       {
         name = "Prowlarr";
         url = "http://prowlarr.ukko.home.arpa";
         check = "http://prowlarr.ukko.home.arpa/ping";
+        kind = "prowlarr";
       }
       {
         name = "qBittorrent";
         url = "http://qbittorrent.ukko.home.arpa";
+        kind = "qbittorrent";
       }
       {
         name = "Home Assistant";
         url = "http://home.ukko.home.arpa";
+        kind = "home_assistant";
       }
       {
         name = "Janitorr";
