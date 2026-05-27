@@ -10,7 +10,9 @@ let
       nativeBuildInputs = [
         final.curl
         final.jq
+        final.cacert
       ];
+      SSL_CERT_FILE = "${final.cacert}/etc/ssl/certs/ca-bundle.crt";
       buildCommand = ''
         token=$(curl -sf "https://ghcr.io/token?service=ghcr.io&scope=repository:schaka/janitorr:pull" | jq -r '.token')
         curl -sfL -H "Authorization: Bearer $token" \
