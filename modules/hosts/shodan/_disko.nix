@@ -32,6 +32,8 @@
                 "nixos"
                 "-m"
                 "0"
+                "-i"
+                "4096"
               ];
               mountpoint = "/";
               mountOptions = [ "noatime" ];
