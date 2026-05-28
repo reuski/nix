@@ -49,6 +49,8 @@
           dates = "weekly";
         };
 
+        nix.settings.auto-optimise-store = true;
+
         system.autoUpgrade = {
           enable = true;
           flake = "${config.site.autoUpgradeFlake}#${config.networking.hostName}";
