@@ -1,6 +1,6 @@
 { ... }:
 {
-  flake.modules.nixos.home-assistant =
+  flake.modules.nixos.hass =
     {
       config,
       lib,
