@@ -18,7 +18,7 @@ in
       nixos.audiobookshelf
       nixos.servarr
       nixos.qbittorrent
-      nixos.home-assistant
+      nixos.hass
       nixos.vaultwarden
     ];
 
