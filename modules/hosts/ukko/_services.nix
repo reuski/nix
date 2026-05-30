@@ -6,6 +6,7 @@
 let
   localAddress = "192.168.1.11";
   mediaGroup = "media";
+  tsHost = "ukko.tail2fc4c2.ts.net";
 in
 {
   networking.firewall = {
@@ -160,14 +161,29 @@ in
       mode = "0400";
       restartUnits = [ "heimdash.service" ];
     };
+    "vaultwarden/admin-token" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "heimdash.service" ];
+    };
   };
 
-  sops.templates."heimdash-qbittorrent-credentials" = {
-    content = "${config.profile.username}:${config.sops.placeholder."qbittorrent/password"}";
-    owner = "root";
-    group = "root";
-    mode = "0400";
-    restartUnits = [ "heimdash.service" ];
+  sops.templates = {
+    "heimdash-qbittorrent-credentials" = {
+      content = "${config.profile.username}:${config.sops.placeholder."qbittorrent/password"}";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "heimdash.service" ];
+    };
+    "vaultwarden-env" = {
+      content = "ADMIN_TOKEN=${config.sops.placeholder."vaultwarden/admin-token"}";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "vaultwarden.service" ];
+    };
   };
 
   media.jellyfin = {
@@ -191,8 +207,13 @@ in
   media.audiobookshelf = {
     enable = true;
     group = mediaGroup;
-    tailscaleServe = true;
     libraries = [ "/srv/media/audiobooks" ];
+  };
+
+  vaultwarden = {
+    enable = true;
+    domain = "https://${tsHost}:8222";
+    environmentFile = config.sops.templates."vaultwarden-env".path;
   };
   media.servarr = {
     enable = true;
@@ -246,6 +267,7 @@ in
       audiobookshelf-api-key.path = config.sops.secrets."audiobookshelf/api-key".path;
       qbittorrent-credentials.path = config.sops.templates."heimdash-qbittorrent-credentials".path;
       home-assistant-token.path = config.sops.secrets."home-assistant/token".path;
+      vaultwarden-admin-token.path = config.sops.secrets."vaultwarden/admin-token".path;
     };
     services = [
       {
@@ -302,7 +324,30 @@ in
         kind = "prowlarr";
         credential = "prowlarr-api-key";
       }
+      {
+        name = "Vaultwarden";
+        url = "https://${tsHost}:8222";
+        check = "http://127.0.0.1:8222/alive";
+        api = "http://127.0.0.1:8222";
+        kind = "vaultwarden";
+        credential = "vaultwarden-admin-token";
+      }
     ];
+  };
+
+  tailnet.services = {
+    dashboard = {
+      port = 8082;
+      https = 443;
+    };
+    audiobookshelf = {
+      port = 8000;
+      https = 8000;
+    };
+    vaultwarden = {
+      port = 8222;
+      https = 8222;
+    };
   };
 
   proxy = {

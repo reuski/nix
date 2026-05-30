@@ -19,6 +19,7 @@ in
       nixos.servarr
       nixos.qbittorrent
       nixos.home-assistant
+      nixos.vaultwarden
     ];
 
     system.stateVersion = "25.11";
