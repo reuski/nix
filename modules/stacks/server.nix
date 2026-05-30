@@ -14,6 +14,7 @@ in
       nixos.vim
       nixos.nix
       nixos.proxy
+      nixos.tailnet
     ];
 
     services.tailscale = {
