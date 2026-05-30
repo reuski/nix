@@ -15,6 +15,7 @@ in
       nixos.metal
       nixos.dashboard
       nixos.jellyfin
+      nixos.audiobookshelf
       nixos.servarr
       nixos.qbittorrent
       nixos.home-assistant

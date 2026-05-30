@@ -136,6 +136,12 @@ in
       group = "root";
       mode = "0400";
     };
+    "audiobookshelf/api-key" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "heimdash.service" ];
+    };
     "prowlarr/api-key" = {
       owner = "root";
       group = "root";
@@ -181,6 +187,12 @@ in
         paths = [ "/srv/media/series" ];
       }
     ];
+  };
+  media.audiobookshelf = {
+    enable = true;
+    group = mediaGroup;
+    tailscaleServe = true;
+    libraries = [ "/srv/media/audiobooks" ];
   };
   media.servarr = {
     enable = true;
@@ -231,6 +243,7 @@ in
       radarr-api-key.path = config.sops.secrets."radarr/api-key".path;
       prowlarr-api-key.path = config.sops.secrets."prowlarr/api-key".path;
       jellyfin-api-key.path = config.sops.secrets."jellyfin/api-key".path;
+      audiobookshelf-api-key.path = config.sops.secrets."audiobookshelf/api-key".path;
       qbittorrent-credentials.path = config.sops.templates."heimdash-qbittorrent-credentials".path;
       home-assistant-token.path = config.sops.secrets."home-assistant/token".path;
     };
@@ -260,6 +273,13 @@ in
         check = "http://jellyfin.ukko.home.arpa/System/Info/Public";
         kind = "jellyfin";
         credential = "jellyfin-api-key";
+      }
+      {
+        name = "Audiobookshelf";
+        url = "http://audiobookshelf.ukko.home.arpa";
+        check = "http://audiobookshelf.ukko.home.arpa/healthcheck";
+        kind = "audiobookshelf";
+        credential = "audiobookshelf-api-key";
       }
       {
         name = "Sonarr";
