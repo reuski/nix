@@ -28,7 +28,6 @@ in
 
       nixpkgs.overlays = [
         inputs.niri.overlays.niri
-        inputs.ghostty.overlays.default
       ];
 
       programs.localsend = {
