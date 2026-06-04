@@ -19,6 +19,14 @@ nix run .#update-custom
 git diff --check
 ```
 
+## Updates
+
+Rolling unstable; CI gates every change by building all hosts.
+
+- `.github/workflows/flake-lock.yml` — daily `nix flake update` + `update-custom`, auto-merges on green.
+- `.github/workflows/nix.yml` — formats + builds hosts on PR/push.
+- `system.autoUpgrade` — hosts pull `main#<host>` daily; servers reboot 04:00–06:00 on kernel change.
+
 ## Secrets
 
 Admin age key (one-time):

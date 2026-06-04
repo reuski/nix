@@ -1,15 +1,10 @@
 {
   config,
   inputs,
-  lib,
   ...
 }:
 let
   baseOverlays = [ config.flake.overlays.default ];
-  waylandOverlays = [
-    inputs.niri.overlays.niri
-    inputs.ghostty.overlays.default
-  ];
 in
 {
   perSystem =
@@ -17,7 +12,7 @@ in
     {
       _module.args.pkgs = import inputs.nixpkgs {
         inherit system;
-        overlays = baseOverlays ++ lib.optionals (lib.hasSuffix "-linux" system) waylandOverlays;
+        overlays = baseOverlays;
         config.allowUnfree = true;
       };
     };
