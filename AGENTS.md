@@ -4,21 +4,25 @@ Personal Nix flake: NixOS, nix-darwin, Home Manager.
 
 ## Shape
 
-- `flake.nix` recursively imports visible `modules/**/*.nix` via flake-parts.
+- `flake.nix` feeds `modules/` through `import-tree` into flake-parts; `/_`-prefixed paths are skipped.
 - `_*.nix` files are private host helpers (hardware, disko).
 - Reusable modules export through `flake.modules.{nixos,darwin,homeManager,generic}`.
 - `modules/configurations/` registers `configurations.{nixos,darwin}` outputs.
 - `modules/hosts/` holds real systems only: `hiisi`, `shodan`, `ukko`, `abraxas`.
 - `modules/stacks/` composes reusable stacks; per-host hardware lives in `_hardware.nix`.
+- `modules/packages/` defines overlays + custom packages; `modules/apps/` the `update-custom` app.
 - `secrets/*.yaml` is SOPS ciphertext.
 
 ## Rules
 
 - Route every feature through `flake.modules`; never import directly from `flake.nix`.
 - No `specialArgs` / `extraSpecialArgs`. Capture inputs in top-level modules.
-- Modules are small, typed, path-named, single-purpose.
+- Modules are small, typed, single-word-named, single-purpose.
 - Prefer upstream NixOS, Home Manager, and nix-darwin options over custom files or scripts.
-- Delete superseded config; no compatibility shims.
+- Delete superseded config; no compatibility shims, no fallbacks, no dead conditionals.
+- No `backupFileExtension`; installs are clean, Home Manager keeps no backups.
+- Inputs follow `nixpkgs`; rolling unstable, no version pins.
+- Servers auto-upgrade and reboot into new kernels (04:00–06:00); desktops stage for manual reboot.
 - Real hosts and supported systems only.
 - Never casually edit disko, hardware, or device paths.
 - Do not bump `system.stateVersion` or `home.stateVersion` without migration intent.

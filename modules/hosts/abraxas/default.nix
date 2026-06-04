@@ -1,7 +1,6 @@
 { config, ... }:
 let
   inherit (config.flake.modules) darwin homeManager;
-  dev = import ./_dev.nix { inherit darwin homeManager; };
 in
 {
   configurations.darwin.abraxas.module =
@@ -9,7 +8,8 @@ in
     {
       imports = [
         darwin.mac
-        dev
+        darwin.zed
+        darwin.tableplus
         ./_desktop.nix
       ];
 
@@ -19,7 +19,15 @@ in
 
       nixpkgs.hostPlatform = "aarch64-darwin";
 
-      home-manager.users.${config.profile.username}.sops.secrets.env = { };
+      home-manager.users.${config.profile.username} = {
+        imports = [
+          homeManager.dev
+          homeManager.colima
+          homeManager.postgres
+          homeManager.redis
+        ];
+        sops.secrets.env = { };
+      };
 
       system.stateVersion = 6;
     };

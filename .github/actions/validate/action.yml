@@ -1,5 +1,5 @@
 name: validate
-description: Check formatting, evaluate Nix expressions, and build smoke tests
+description: Format, build NixOS hosts, and evaluate the Darwin host
 
 runs:
   using: composite
@@ -12,26 +12,12 @@ runs:
           'find . -name "*.nix" -print0 | xargs -0 -r nixfmt'
       shell: bash
 
-    - run: nix eval --raw .#nixosConfigurations.hiisi.config.system.build.toplevel.drvPath
-      shell: bash
-
-    - run: nix eval --raw .#nixosConfigurations.shodan.config.system.build.toplevel.drvPath
-      shell: bash
-
-    - run: nix eval --raw .#nixosConfigurations.ukko.config.system.build.toplevel.drvPath
+    - run: |
+        nix build --no-link --print-build-logs \
+          .#checks.x86_64-linux.nixos-hiisi \
+          .#checks.x86_64-linux.nixos-shodan \
+          .#checks.x86_64-linux.nixos-ukko
       shell: bash
 
     - run: nix eval --raw .#darwinConfigurations.abraxas.config.system.build.toplevel.drvPath
-      shell: bash
-
-    - run: |
-        for package in helium-browser python-validity zjstatus; do
-          nix eval --raw ".#packages.x86_64-linux.$package.drvPath" >/dev/null
-        done
-      shell: bash
-
-    - run: |
-        for package in python-validity zjstatus; do
-          nix build --no-link ".#packages.x86_64-linux.$package"
-        done
       shell: bash

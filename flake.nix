@@ -9,6 +9,8 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
 
+    import-tree.url = "github:vic/import-tree";
+
     darwin = {
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -29,7 +31,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    nixos-hardware = {
+      url = "github:NixOS/nixos-hardware/master";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
 
@@ -63,29 +68,5 @@
 
   outputs =
     inputs:
-    let
-      importTree =
-        path:
-        let
-          entries = builtins.readDir path;
-          names = builtins.attrNames entries;
-          visible = builtins.filter (name: builtins.match "_.*" name == null) names;
-          importEntry =
-            name:
-            let
-              type = entries.${name};
-              entry = path + "/${name}";
-            in
-            if type == "directory" then
-              importTree entry
-            else if type == "regular" && builtins.match ".*\\.nix" name != null then
-              [ entry ]
-            else
-              [ ];
-        in
-        builtins.concatLists (map importEntry visible);
-    in
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      imports = importTree ./modules;
-    };
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
 }

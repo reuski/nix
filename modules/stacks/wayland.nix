@@ -23,17 +23,13 @@ in
         nixos.vim
         nixos.niri
         nixos.nix
+        nixos.tailscale
       ];
 
       nixpkgs.overlays = [
         inputs.niri.overlays.niri
         inputs.ghostty.overlays.default
       ];
-
-      services.tailscale = {
-        enable = true;
-        openFirewall = true;
-      };
 
       programs.localsend = {
         enable = true;

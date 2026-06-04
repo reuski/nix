@@ -15,11 +15,16 @@ in
       nixos.nix
       nixos.proxy
       nixos.tailnet
+      nixos.tailscale
     ];
 
-    services.tailscale = {
-      enable = true;
-      openFirewall = true;
+    system.autoUpgrade = {
+      allowReboot = true;
+      dates = "04:00";
+      rebootWindow = {
+        lower = "04:00";
+        upper = "06:00";
+      };
     };
   };
 }
