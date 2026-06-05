@@ -4,7 +4,6 @@
     {
       config,
       lib,
-      pkgs,
       ...
     }:
     let
@@ -21,6 +20,7 @@
 
       tls = cfg.dnsEnvironmentFile != null;
       prefix = optionalString (!tls) "http://";
+      acmeDir = "/var/lib/acme/${cfg.domain}";
 
       headers = ''
         header {
@@ -44,9 +44,7 @@
       site = "${prefix}${cfg.domain}, ${prefix}*.${cfg.domain}";
 
       tlsBlock = optionalString tls ''
-        tls {
-          dns cloudflare {env.CF_API_TOKEN}
-        }
+        tls ${acmeDir}/fullchain.pem ${acmeDir}/key.pem
       '';
 
       serviceType = types.submodule (
@@ -99,15 +97,20 @@
           allowedUDPPorts = mkIf tls [ 443 ];
         };
 
+        security.acme = mkIf tls {
+          acceptTerms = true;
+          defaults.email = config.profile.email;
+          certs.${cfg.domain} = {
+            extraDomainNames = [ "*.${cfg.domain}" ];
+            dnsProvider = "cloudflare";
+            environmentFile = cfg.dnsEnvironmentFile;
+            group = config.services.caddy.group;
+            reloadServices = [ "caddy.service" ];
+          };
+        };
+
         services.caddy = {
           enable = true;
-          email = mkIf tls config.profile.email;
-          package = mkIf tls (
-            pkgs.caddy.withPlugins {
-              plugins = [ "github.com/caddy-dns/cloudflare@v0.2.4" ];
-              hash = lib.fakeHash;
-            }
-          );
           virtualHosts.${site}.extraConfig = ''
             ${tlsBlock}
             ${routes}
@@ -117,7 +120,10 @@
           '';
         };
 
-        systemd.services.caddy.serviceConfig.EnvironmentFile = mkIf tls cfg.dnsEnvironmentFile;
+        systemd.services.caddy = mkIf tls {
+          after = [ "acme-finished-${cfg.domain}.target" ];
+          wants = [ "acme-finished-${cfg.domain}.target" ];
+        };
       };
     };
 }
