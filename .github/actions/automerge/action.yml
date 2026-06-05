@@ -1,0 +1,27 @@
+name: automerge
+description: Enable squash auto-merge on a PR, retrying transient API errors
+
+inputs:
+  pr:
+    description: Pull request number
+    required: true
+  token:
+    description: GitHub token
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        PR="${{ inputs.pr }}"
+        if [ "$(gh pr view "$PR" --json autoMergeRequest --jq '.autoMergeRequest != null')" = "true" ]; then
+          exit 0
+        fi
+        for i in 1 2 3; do
+          gh pr merge --auto --squash --delete-branch "$PR" && exit 0
+          sleep $((i * 5))
+        done
+        exit 1

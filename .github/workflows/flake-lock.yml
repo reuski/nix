@@ -13,14 +13,6 @@ permissions:
   contents: write
   pull-requests: write
 
-env:
-  NIX_CONFIG: |
-    experimental-features = nix-command flakes
-    accept-flake-config = true
-    download-buffer-size = 536870912
-    extra-substituters = https://niri.cachix.org https://noctalia.cachix.org https://vicinae.cachix.org https://ghostty.cachix.org
-    extra-trusted-public-keys = niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4= vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc= ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns=
-
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -28,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+      - uses: ./.github/actions/setup
 
       - run: nix flake update
 
@@ -47,10 +39,7 @@ jobs:
           labels: automated, flake-lock
 
       - if: steps.pr.outputs.pull-request-number != ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR="${{ steps.pr.outputs.pull-request-number }}"
-          if [ "$(gh pr view "$PR" --json autoMergeRequest --jq '.autoMergeRequest != null')" = "false" ]; then
-            gh pr merge --auto --squash --delete-branch "$PR"
-          fi
+        uses: ./.github/actions/automerge
+        with:
+          pr: ${{ steps.pr.outputs.pull-request-number }}
+          token: ${{ secrets.GITHUB_TOKEN }}
