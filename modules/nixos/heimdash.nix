@@ -1,6 +1,6 @@
 { inputs, ... }:
 {
-  flake.modules.nixos.dashboard =
+  flake.modules.nixos.heimdash =
     { config, lib, ... }:
     let
       cfg = config.services.heimdash;

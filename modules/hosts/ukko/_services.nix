@@ -256,6 +256,28 @@ in
     wireguardConfigFile = config.sops.secrets."pia/wireguard".path;
   };
 
+  services.skaldi.enable = true;
+
+  services.pulseaudio.enable = false;
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    systemWide = true;
+    pulse.enable = true;
+    raopOpenFirewall = true;
+    extraConfig.pipewire."10-raop-discover"."context.modules" = [
+      { name = "libpipewire-module-raop-discover"; }
+    ];
+  };
+
+  systemd.services.skaldi = {
+    environment.PULSE_SERVER = "unix:/run/pulse/native";
+    serviceConfig.SupplementaryGroups = lib.mkForce [
+      "audio"
+      "pipewire"
+    ];
+  };
+
   services.heimdash = {
     enable = true;
     mounts = [ "/" ];
@@ -302,6 +324,10 @@ in
         check = "http://audiobookshelf.ukko.home.arpa/healthcheck";
         kind = "audiobookshelf";
         credential = "audiobookshelf-api-key";
+      }
+      {
+        name = "Skaldi";
+        url = "http://skaldi.ukko.home.arpa";
       }
       {
         name = "Sonarr";

@@ -13,13 +13,14 @@ in
       nixos.boot
       nixos.server
       nixos.metal
-      nixos.dashboard
+      nixos.heimdash
       nixos.jellyfin
       nixos.audiobookshelf
       nixos.servarr
       nixos.qbittorrent
       nixos.hass
       nixos.vaultwarden
+      nixos.skaldi
     ];
 
     system.stateVersion = "25.11";
