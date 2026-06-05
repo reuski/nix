@@ -1,44 +1,26 @@
 { ... }:
 {
   flake.modules.nixos.proxy =
-    { config, lib, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       cfg = config.proxy;
       inherit (lib)
-        mapAttrs'
+        concatStringsSep
         mapAttrsToList
         mkIf
         mkOption
-        nameValuePair
         optionalString
         types
         unique
         ;
 
-      serviceType = types.submodule (
-        { name, ... }:
-        {
-          options = {
-            domain = mkOption {
-              type = types.str;
-              default = "${name}.${cfg.domain}";
-            };
-            listen = mkOption {
-              type = types.port;
-              default = 80;
-            };
-            host = mkOption {
-              type = types.str;
-              default = "127.0.0.1";
-            };
-            port = mkOption { type = types.port; };
-          };
-        }
-      );
-
-      address =
-        service:
-        "http://${service.domain}${optionalString (service.listen != 80) ":${toString service.listen}"}";
+      tls = cfg.dnsEnvironmentFile != null;
+      prefix = optionalString (!tls) "http://";
 
       headers = ''
         header {
@@ -49,23 +31,50 @@
         }
       '';
 
-      serviceHost =
-        _name: service:
-        nameValuePair (address service) {
-          extraConfig = ''
-            ${headers}
-            reverse_proxy ${service.host}:${toString service.port}
-          '';
-        };
+      route = name: service: ''
+        @${name} host ${service.domain}
+        handle @${name} {
+          ${headers}
+          reverse_proxy ${service.host}:${toString service.port}
+        }
+      '';
 
-      hosts = mapAttrsToList (_name: service: address service) cfg.services;
-      ports = mapAttrsToList (_name: service: service.listen) cfg.services;
+      routes = concatStringsSep "\n" (mapAttrsToList route cfg.services);
+      domains = mapAttrsToList (_name: service: service.domain) cfg.services;
+      site = "${prefix}${cfg.domain}, ${prefix}*.${cfg.domain}";
+
+      tlsBlock = optionalString tls ''
+        tls {
+          dns cloudflare {env.CF_API_TOKEN}
+        }
+      '';
+
+      serviceType = types.submodule (
+        { name, ... }:
+        {
+          options = {
+            domain = mkOption {
+              type = types.str;
+              default = "${name}.${cfg.domain}";
+            };
+            host = mkOption {
+              type = types.str;
+              default = "127.0.0.1";
+            };
+            port = mkOption { type = types.port; };
+          };
+        }
+      );
     in
     {
       options.proxy = {
         domain = mkOption {
           type = types.str;
           default = "${config.networking.hostName}.home.arpa";
+        };
+        dnsEnvironmentFile = mkOption {
+          type = types.nullOr types.path;
+          default = null;
         };
         services = mkOption {
           type = types.attrsOf serviceType;
@@ -80,17 +89,35 @@
       config = mkIf (cfg.services != { }) {
         assertions = [
           {
-            assertion = builtins.length hosts == builtins.length (unique hosts);
-            message = "proxy hosts must be unique.";
+            assertion = builtins.length domains == builtins.length (unique domains);
+            message = "proxy service domains must be unique.";
           }
         ];
 
-        networking.firewall.allowedTCPPorts = mkIf cfg.openFirewall (unique ports);
+        networking.firewall = mkIf cfg.openFirewall {
+          allowedTCPPorts = if tls then [ 80 443 ] else [ 80 ];
+          allowedUDPPorts = mkIf tls [ 443 ];
+        };
 
         services.caddy = {
           enable = true;
-          virtualHosts = mapAttrs' serviceHost cfg.services;
+          email = mkIf tls config.profile.email;
+          package = mkIf tls (
+            pkgs.caddy.withPlugins {
+              plugins = [ "github.com/caddy-dns/cloudflare@v0.2.4" ];
+              hash = lib.fakeHash;
+            }
+          );
+          virtualHosts.${site}.extraConfig = ''
+            ${tlsBlock}
+            ${routes}
+            handle {
+              respond 404
+            }
+          '';
         };
+
+        systemd.services.caddy.serviceConfig.EnvironmentFile = mkIf tls cfg.dnsEnvironmentFile;
       };
     };
 }

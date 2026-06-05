@@ -12,7 +12,7 @@
       services.heimdash.listen = lib.mkDefault "127.0.0.1:${toString port}";
 
       proxy.services = lib.mkIf cfg.enable {
-        dashboard.port = port;
+        heimdash.port = port;
       };
     };
 }

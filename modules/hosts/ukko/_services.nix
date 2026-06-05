@@ -49,12 +49,12 @@ in
         safe_search.enabled = false;
         rewrites = [
           {
-            domain = "ukko.home.arpa";
+            domain = "home.reuski.dev";
             answer = localAddress;
             enabled = true;
           }
           {
-            domain = "*.ukko.home.arpa";
+            domain = "*.home.reuski.dev";
             answer = localAddress;
             enabled = true;
           }
@@ -87,6 +87,11 @@ in
   };
 
   sops.secrets = {
+    "cloudflare/dns-token" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
     "jellyfin/admin-password" = {
       owner = "root";
       group = "root";
@@ -170,6 +175,13 @@ in
   };
 
   sops.templates = {
+    "caddy-cloudflare-env" = {
+      content = "CF_API_TOKEN=${config.sops.placeholder."cloudflare/dns-token"}";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "caddy.service" ];
+    };
     "heimdash-qbittorrent-credentials" = {
       content = "${config.profile.username}:${config.sops.placeholder."qbittorrent/password"}";
       owner = "root";
@@ -294,59 +306,59 @@ in
     services = [
       {
         name = "AdGuard";
-        url = "http://adguard.ukko.home.arpa";
-        check = "http://adguard.ukko.home.arpa/login.html";
+        url = "https://adguard.home.reuski.dev";
+        check = "https://adguard.home.reuski.dev/login.html";
         kind = "adguard";
       }
       {
         name = "Home Assistant";
-        url = "http://home.ukko.home.arpa";
+        url = "https://hass.home.reuski.dev";
         kind = "home_assistant";
         credential = "home-assistant-token";
         entity = "weather.forecast_home";
       }
       {
         name = "qBittorrent";
-        url = "http://qbittorrent.ukko.home.arpa";
+        url = "https://qbittorrent.home.reuski.dev";
         kind = "qbittorrent";
         credential = "qbittorrent-credentials";
       }
       {
         name = "Jellyfin";
-        url = "http://jellyfin.ukko.home.arpa";
-        check = "http://jellyfin.ukko.home.arpa/System/Info/Public";
+        url = "https://jellyfin.home.reuski.dev";
+        check = "https://jellyfin.home.reuski.dev/System/Info/Public";
         kind = "jellyfin";
         credential = "jellyfin-api-key";
       }
       {
         name = "Audiobookshelf";
-        url = "http://audiobookshelf.ukko.home.arpa";
-        check = "http://audiobookshelf.ukko.home.arpa/healthcheck";
+        url = "https://audiobookshelf.home.reuski.dev";
+        check = "https://audiobookshelf.home.reuski.dev/healthcheck";
         kind = "audiobookshelf";
         credential = "audiobookshelf-api-key";
       }
       {
         name = "Skaldi";
-        url = "http://skaldi.ukko.home.arpa";
+        url = "https://skaldi.home.reuski.dev";
       }
       {
         name = "Sonarr";
-        url = "http://sonarr.ukko.home.arpa";
-        check = "http://sonarr.ukko.home.arpa/ping";
+        url = "https://sonarr.home.reuski.dev";
+        check = "https://sonarr.home.reuski.dev/ping";
         kind = "sonarr";
         credential = "sonarr-api-key";
       }
       {
         name = "Radarr";
-        url = "http://radarr.ukko.home.arpa";
-        check = "http://radarr.ukko.home.arpa/ping";
+        url = "https://radarr.home.reuski.dev";
+        check = "https://radarr.home.reuski.dev/ping";
         kind = "radarr";
         credential = "radarr-api-key";
       }
       {
         name = "Prowlarr";
-        url = "http://prowlarr.ukko.home.arpa";
-        check = "http://prowlarr.ukko.home.arpa/ping";
+        url = "https://prowlarr.home.reuski.dev";
+        check = "https://prowlarr.home.reuski.dev/ping";
         kind = "prowlarr";
         credential = "prowlarr-api-key";
       }
@@ -362,39 +374,22 @@ in
   };
 
   tailnet.services = {
-    dashboard = {
-      port = 8082;
-      https = 443;
-    };
-    audiobookshelf = {
-      port = 8000;
-      https = 8000;
-    };
-    vaultwarden = {
-      port = 8222;
-      https = 8222;
-    };
+    audiobookshelf.port = 8000;
+    vaultwarden.port = 8222;
   };
 
   proxy = {
+    domain = "home.reuski.dev";
+    dnsEnvironmentFile = config.sops.templates."caddy-cloudflare-env".path;
     services = {
       adguard.port = 3000;
-      dashboard.domain = "ukko.home.arpa";
+      heimdash.domain = "home.reuski.dev";
+      home.domain = "hass.home.reuski.dev";
       sonarr.port = 8989;
       radarr.port = 7878;
       prowlarr.port = 9696;
     };
   };
 
-  services.caddy = {
-    globalConfig = "grace_period 1m";
-    virtualHosts = {
-      "http://ukko.local".extraConfig = ''
-        reverse_proxy localhost:8082
-      '';
-      ":80".extraConfig = ''
-        reverse_proxy localhost:8082
-      '';
-    };
-  };
+  services.caddy.globalConfig = "grace_period 1m";
 }
