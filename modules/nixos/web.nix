@@ -136,6 +136,10 @@
           default = [ ];
         };
         repo = mkOption { type = repoOption; };
+        extraConfig = mkOption {
+          type = types.lines;
+          default = "";
+        };
         install = mkOption {
           type = types.lines;
           default = bunInstall;
@@ -483,6 +487,7 @@
           ${site.domain}.extraConfig = ''
             encode zstd gzip
             ${headers}
+            ${site.extraConfig}
             root * ${siteRoot name}
             file_server
           '';
@@ -495,6 +500,7 @@
           ${service.domain}.extraConfig = ''
             encode zstd gzip
             ${headers}
+            ${service.extraConfig}
             reverse_proxy 127.0.0.1:${toString service.port}
           '';
         }

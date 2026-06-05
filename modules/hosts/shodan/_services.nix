@@ -10,6 +10,10 @@
       domain = "reuski.dev";
       aliases = [ "www.reuski.dev" ];
       repo = "https://github.com/reuski/reuski.dev.git";
+      extraConfig = ''
+        @atprotoDid path /.well-known/atproto-did
+        respond @atprotoDid "did:plc:igxk22uwwycyvrhxxwz2zevj" 200
+      '';
     };
 
     services = {
