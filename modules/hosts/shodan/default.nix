@@ -12,7 +12,9 @@ in
         ./_hardware.nix
         nixos.server
         nixos.web
+        inputs.tangled.nixosModules.knot
         ./_services.nix
+        ./_knot.nix
       ];
 
       networking = {

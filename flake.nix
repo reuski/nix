@@ -58,6 +58,8 @@
     vpn-confinement.url = "github:Maroka-chan/VPN-Confinement";
 
     ghostty.url = "github:ghostty-org/ghostty";
+
+    tangled.url = "git+https://tangled.org/tangled.org/core";
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);
