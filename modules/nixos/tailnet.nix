@@ -21,16 +21,22 @@
 
       tailscale = getExe' config.services.tailscale.package "tailscale";
 
-      serviceType = types.submodule {
-        options = {
-          host = mkOption {
-            type = types.str;
-            default = "127.0.0.1";
+      serviceType = types.submodule (
+        { config, ... }:
+        {
+          options = {
+            host = mkOption {
+              type = types.str;
+              default = "127.0.0.1";
+            };
+            port = mkOption { type = types.port; };
+            https = mkOption {
+              type = types.port;
+              default = config.port;
+            };
           };
-          port = mkOption { type = types.port; };
-          https = mkOption { type = types.port; };
-        };
-      };
+        }
+      );
 
       serveLines = mapAttrsToList (
         _name: service:
