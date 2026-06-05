@@ -175,12 +175,12 @@ in
   };
 
   sops.templates = {
-    "caddy-cloudflare-env" = {
-      content = "CF_API_TOKEN=${config.sops.placeholder."cloudflare/dns-token"}";
+    "acme-cloudflare-env" = {
+      content = "CF_DNS_API_TOKEN=${config.sops.placeholder."cloudflare/dns-token"}";
       owner = "root";
       group = "root";
       mode = "0400";
-      restartUnits = [ "caddy.service" ];
+      restartUnits = [ "acme-home.reuski.dev.service" ];
     };
     "heimdash-qbittorrent-credentials" = {
       content = "${config.profile.username}:${config.sops.placeholder."qbittorrent/password"}";
@@ -380,7 +380,7 @@ in
 
   proxy = {
     domain = "home.reuski.dev";
-    dnsEnvironmentFile = config.sops.templates."caddy-cloudflare-env".path;
+    dnsEnvironmentFile = config.sops.templates."acme-cloudflare-env".path;
     services = {
       adguard.port = 3000;
       heimdash.domain = "home.reuski.dev";
