@@ -93,7 +93,14 @@
         ];
 
         networking.firewall = mkIf cfg.openFirewall {
-          allowedTCPPorts = if tls then [ 80 443 ] else [ 80 ];
+          allowedTCPPorts =
+            if tls then
+              [
+                80
+                443
+              ]
+            else
+              [ 80 ];
           allowedUDPPorts = mkIf tls [ 443 ];
         };
 
