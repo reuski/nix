@@ -75,7 +75,8 @@ in
       };
 
       stateVolume =
-        c: optional (c.stateDir != null && c.stateDir.mount != null) "${c.stateDir.path}:${c.stateDir.mount}";
+        c:
+        optional (c.stateDir != null && c.stateDir.mount != null) "${c.stateDir.path}:${c.stateDir.mount}";
     in
     {
       imports = [ nixos.podman ];
