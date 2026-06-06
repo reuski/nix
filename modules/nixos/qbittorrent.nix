@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 {
   flake.modules.nixos.qbittorrent =
     {
@@ -8,106 +8,87 @@
     }:
     let
       cfg = config.media.qbittorrent;
+      media = config.media;
+      quadlet = config.virtualisation.quadlet;
       inherit (lib)
-        mkForce
         mkIf
         mkOption
         types
         ;
-      namespace = "piavpn";
-      ns = config.vpnNamespaces.${namespace};
+      port = toString cfg.webuiPort;
     in
     {
-      imports = [ inputs.vpn-confinement.nixosModules.default ];
-
       options.media.qbittorrent = {
         enable = mkOption {
           type = types.bool;
           default = false;
         };
-        group = mkOption {
-          type = types.str;
-          default = "media";
+        webuiPort = mkOption {
+          type = types.port;
+          default = 8080;
         };
         downloadDir = mkOption {
           type = types.str;
           default = "/srv/media/torrents";
         };
-        webuiPort = mkOption {
-          type = types.port;
-          default = 8080;
-        };
-        torrentPort = mkOption {
-          type = types.port;
-          default = 51413;
-        };
-        wireguardConfigFile = mkOption {
+        environmentFile = mkOption {
           type = types.str;
-          description = "PIA WireGuard config (sops secret path) routing all qBittorrent traffic.";
+          description = "gluetun PIA credentials env file (OPENVPN_USER/OPENVPN_PASSWORD), sops secret path.";
         };
       };
 
       config = mkIf cfg.enable {
-        vpnNamespaces.${namespace} = {
-          enable = true;
-          inherit (cfg) wireguardConfigFile;
-          portMappings = [
-            {
-              from = cfg.webuiPort;
-              to = cfg.webuiPort;
-              protocol = "tcp";
-            }
-          ];
-        };
+        virtualisation.quadlet = {
+          pods.vpn.podConfig.publishPorts = [ "127.0.0.1:${port}:${port}" ];
 
-        services.qbittorrent = {
-          enable = true;
-          inherit (cfg) group webuiPort;
-          torrentingPort = cfg.torrentPort;
-          serverConfig = {
-            LegalNotice.Accepted = true;
-            Preferences = {
-              General.Locale = "en";
-              WebUI = {
-                Address = "*";
-                AuthSubnetWhitelistEnabled = true;
-                AuthSubnetWhitelist = "${ns.bridgeAddress}/32";
-                HostHeaderValidation = false;
-                CSRFProtection = false;
+          containers.gluetun = {
+            containerConfig = {
+              image = "ghcr.io/qdm12/gluetun:latest";
+              name = "gluetun";
+              pod = quadlet.pods.vpn.ref;
+              addCapabilities = [ "NET_ADMIN" ];
+              devices = [ "/dev/net/tun" ];
+              autoUpdate = "registry";
+              environments = {
+                VPN_SERVICE_PROVIDER = "private internet access";
+                VPN_TYPE = "wireguard";
+                VPN_PORT_FORWARDING = "on";
+                FIREWALL_OUTBOUND_SUBNETS = "192.168.1.0/24";
+                TZ = config.profile.timeZone;
               };
+              environmentFiles = [ cfg.environmentFile ];
+              volumes = [ "/var/lib/gluetun:/gluetun" ];
             };
-            BitTorrent.Session = {
-              DefaultSavePath = cfg.downloadDir;
-              TempPath = "${cfg.downloadDir}/.incomplete";
-              TempPathEnabled = true;
+          };
+
+          containers.qbittorrent = {
+            containerConfig = {
+              image = "lscr.io/linuxserver/qbittorrent:latest";
+              name = "qbittorrent";
+              pod = quadlet.pods.vpn.ref;
+              autoUpdate = "registry";
+              environments = media.containerEnv // {
+                WEBUI_PORT = port;
+              };
+              volumes = [
+                "/var/lib/qbittorrent:/config"
+                "${media.libraryDir}:${media.libraryDir}"
+              ];
+            };
+            unitConfig = {
+              After = [ "gluetun.service" ];
+              Requires = [ "gluetun.service" ];
+              BindsTo = [ "gluetun.service" ];
             };
           };
         };
 
-        systemd.services = {
-          ${namespace} = {
-            wants = [ "sops-install-secrets.service" ];
-            after = [ "sops-install-secrets.service" ];
-          };
-          qbittorrent = {
-            vpnConfinement = {
-              enable = true;
-              vpnNamespace = namespace;
-            };
-            serviceConfig.UMask = mkForce "0002";
-          };
-        };
-
-        proxy.services.qbittorrent = {
-          host = ns.namespaceAddress;
-          port = cfg.webuiPort;
-        };
-
-        users.groups.${cfg.group} = { };
-        users.users.${config.profile.username}.extraGroups = [ cfg.group ];
+        proxy.services.qbittorrent.port = cfg.webuiPort;
 
         systemd.tmpfiles.rules = [
-          "d ${cfg.downloadDir} 2775 qbittorrent ${cfg.group} -"
+          "d /var/lib/gluetun 0750 ${media.user} ${media.group} -"
+          "d /var/lib/qbittorrent 0755 ${media.user} ${media.group} -"
+          "d ${cfg.downloadDir} 2775 ${media.user} ${media.group} -"
         ];
       };
     };

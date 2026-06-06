@@ -19,6 +19,8 @@ Personal Nix flake: NixOS, nix-darwin, Home Manager.
 - No `specialArgs` / `extraSpecialArgs`. Capture inputs in top-level modules.
 - Modules are small, typed, single-word-named, single-purpose.
 - Prefer upstream NixOS, Home Manager, and nix-darwin options over custom files or scripts.
+- For services without native modules, prefer upstream containers over custom packages.
+- Run containers through shared Podman + quadlet-nix modules; no ad-hoc container systemd units.
 - Delete superseded config; no compatibility shims, no fallbacks, no dead conditionals.
 - No `backupFileExtension`; installs are clean, Home Manager keeps no backups.
 - Inputs follow `nixpkgs`; rolling unstable, no version pins.
