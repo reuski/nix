@@ -436,6 +436,22 @@
         "type": "github"
       }
     },
+    "python-validity": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1749554890,
+        "narHash": "sha256-RflX7e6nd11pSg8mh3mjZiVGNUSdox/SKXHR4W+PhMs=",
+        "owner": "uunicorn",
+        "repo": "python-validity",
+        "rev": "a6bbc21dce7b8b3c3cd92378a0b2579a2fb45920",
+        "type": "github"
+      },
+      "original": {
+        "owner": "uunicorn",
+        "repo": "python-validity",
+        "type": "github"
+      }
+    },
     "quadlet-nix": {
       "locked": {
         "lastModified": 1779658505,
@@ -465,6 +481,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs_2",
         "noctalia": "noctalia",
+        "python-validity": "python-validity",
         "quadlet-nix": "quadlet-nix",
         "skaldi": "skaldi",
         "sops-nix": "sops-nix",

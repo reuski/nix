@@ -29,19 +29,20 @@
       };
 
       config = mkIf cfg.enable {
-        quadlets = mapAttrs (name: app: {
-          image = "lscr.io/linuxserver/${name}:latest";
-          identity = true;
-          inherit (app) port;
-          stateDir.path = "/var/lib/${name}";
-          volumes = [ "${media.libraryDir}:${media.libraryDir}" ];
-        }) apps
-        // {
-          flaresolverr = {
-            image = "ghcr.io/flaresolverr/flaresolverr:latest";
-            environment.LOG_LEVEL = "info";
+        quadlets =
+          mapAttrs (name: app: {
+            image = "lscr.io/linuxserver/${name}:latest";
+            identity = true;
+            inherit (app) port;
+            stateDir.path = "/var/lib/${name}";
+            volumes = [ "${media.libraryDir}:${media.libraryDir}" ];
+          }) apps
+          // {
+            flaresolverr = {
+              image = "ghcr.io/flaresolverr/flaresolverr:latest";
+              environment.LOG_LEVEL = "info";
+            };
           };
-        };
       };
     };
 }
