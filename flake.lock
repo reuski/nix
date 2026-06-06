@@ -639,11 +639,11 @@
         "systems": "systems_4"
       },
       "locked": {
-        "lastModified": 1780711864,
-        "narHash": "sha256-cbVkWCHqavYrKLXPHiuymJQs8sySheOAHaygm53/YPg=",
+        "lastModified": 1780761017,
+        "narHash": "sha256-EYYVSvvNGzkHx/m/QjTX65MbRpzCJSW3ZGW0WclumsI=",
         "owner": "vicinaehq",
         "repo": "vicinae",
-        "rev": "3cdd98381111d752274f200f7a124dc0e3b577d9",
+        "rev": "bc7fe7a7dbc444bc601be841715ebcef34e12eb2",
         "type": "github"
       },
       "original": {
