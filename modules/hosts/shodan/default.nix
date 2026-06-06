@@ -11,6 +11,7 @@ in
         ./_disko.nix
         ./_hardware.nix
         nixos.server
+        nixos.tiny
         nixos.web
         ./_services.nix
       ];
@@ -24,13 +25,6 @@ in
         DHCP = lib.mkForce "ipv4";
         IPv6PrivacyExtensions = false;
       };
-
-      zramSwap.memoryPercent = lib.mkForce 100;
-      services.journald.extraConfig = lib.mkForce ''
-        SystemMaxUse=100M
-        RuntimeMaxUse=50M
-        MaxRetentionSec=2week
-      '';
 
       system.stateVersion = "25.11";
     };

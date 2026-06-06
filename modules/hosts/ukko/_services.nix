@@ -227,7 +227,7 @@ in
   };
   media.servarr.enable = true;
 
-  homeAssistant.enable = true;
+  hass.enable = true;
 
   media.qbittorrent = {
     enable = true;

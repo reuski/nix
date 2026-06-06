@@ -7,32 +7,25 @@
       ...
     }:
     let
-      cfg = config.homeAssistant;
+      cfg = config.hass;
       inherit (lib) mkIf mkOption types;
-      port = 8123;
-      dataDir = "/var/lib/home-assistant";
     in
     {
-      options.homeAssistant.enable = mkOption {
+      options.hass.enable = mkOption {
         type = types.bool;
         default = false;
       };
 
       config = mkIf cfg.enable {
-        virtualisation.quadlet.containers.home-assistant.containerConfig = {
+        quadlets.hass = {
           image = "ghcr.io/home-assistant/home-assistant:stable";
-          name = "home-assistant";
-          networks = [ "host" ];
-          autoUpdate = "registry";
-          environments.TZ = config.profile.timeZone;
-          volumes = [ "${dataDir}:/config" ];
+          port = 8123;
+          stateDir = {
+            path = "/var/lib/home-assistant";
+            owner = "root";
+            group = "root";
+          };
         };
-
-        proxy.services.hass.port = port;
-
-        systemd.tmpfiles.rules = [
-          "d ${dataDir} 0750 root root -"
-        ];
       };
     };
 }

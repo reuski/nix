@@ -13,6 +13,7 @@ in
       nixos.boot
       nixos.server
       nixos.metal
+      nixos.quadlets
       nixos.heimdash
       nixos.media
       nixos.jellyfin

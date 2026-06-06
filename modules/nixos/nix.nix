@@ -16,8 +16,8 @@
       nix.nixPath = [ ];
 
       nix.settings = {
-        max-jobs = "auto";
-        cores = 0;
+        max-jobs = lib.mkDefault "auto";
+        cores = lib.mkDefault 0;
         builders-use-substitutes = true;
         connect-timeout = 5;
         experimental-features = [
@@ -34,8 +34,8 @@
 
       nix.gc = {
         automatic = true;
-        dates = "weekly";
-        options = "--delete-older-than 7d";
+        dates = lib.mkDefault "weekly";
+        options = lib.mkDefault "--delete-older-than 7d";
       };
 
       nix.optimise = {
