@@ -98,21 +98,17 @@ in
       mode = "0400";
       restartUnits = [ "jellyfin-setup.service" ];
     };
-    "servarr/admin-password" = {
+    "pia/username" = {
       owner = "root";
       group = "root";
       mode = "0400";
-      restartUnits = [
-        "sonarr.service"
-        "radarr.service"
-        "prowlarr.service"
-      ];
+      restartUnits = [ "gluetun.service" ];
     };
-    "pia/wireguard" = {
+    "pia/password" = {
       owner = "root";
       group = "root";
       mode = "0400";
-      restartUnits = [ "piavpn.service" ];
+      restartUnits = [ "gluetun.service" ];
     };
     "home-assistant/admin-password" = {
       owner = "root";
@@ -131,16 +127,19 @@ in
       owner = "root";
       group = "root";
       mode = "0400";
+      restartUnits = [ "heimdash.service" ];
     };
     "radarr/api-key" = {
       owner = "root";
       group = "root";
       mode = "0400";
+      restartUnits = [ "heimdash.service" ];
     };
     "jellyfin/api-key" = {
       owner = "root";
       group = "root";
       mode = "0400";
+      restartUnits = [ "heimdash.service" ];
     };
     "audiobookshelf/api-key" = {
       owner = "root";
@@ -196,6 +195,16 @@ in
       mode = "0400";
       restartUnits = [ "vaultwarden.service" ];
     };
+    "pia-gluetun-env" = {
+      content = ''
+        OPENVPN_USER=${config.sops.placeholder."pia/username"}
+        OPENVPN_PASSWORD=${config.sops.placeholder."pia/password"}
+      '';
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "gluetun.service" ];
+    };
   };
 
   media.jellyfin = {
@@ -222,20 +231,14 @@ in
     libraries = [ "/srv/media/audiobooks" ];
   };
 
+  media.maintainerr.enable = true;
+
   vaultwarden = {
     enable = true;
     domain = "https://${tsHost}:8222";
     environmentFile = config.sops.templates."vaultwarden-env".path;
   };
-  media.servarr = {
-    enable = true;
-    group = mediaGroup;
-    admin.passwordFile = config.sops.secrets."servarr/admin-password".path;
-  };
-
-  services.sonarr.enable = true;
-  services.radarr.enable = true;
-  services.prowlarr.enable = true;
+  media.servarr.enable = true;
 
   homeAssistant = {
     enable = true;
@@ -264,8 +267,7 @@ in
 
   media.qbittorrent = {
     enable = true;
-    group = mediaGroup;
-    wireguardConfigFile = config.sops.secrets."pia/wireguard".path;
+    environmentFile = config.sops.templates."pia-gluetun-env".path;
   };
 
   services.skaldi.enable = true;
@@ -331,6 +333,11 @@ in
         credential = "jellyfin-api-key";
       }
       {
+        name = "Maintainerr";
+        url = "https://maintainerr.home.reuski.dev";
+        check = "https://maintainerr.home.reuski.dev/api/health/ready";
+      }
+      {
         name = "Audiobookshelf";
         url = "https://audiobookshelf.home.reuski.dev";
         check = "https://audiobookshelf.home.reuski.dev/healthcheck";
@@ -385,9 +392,6 @@ in
       adguard.port = 3000;
       heimdash.domain = "home.reuski.dev";
       home.domain = "hass.home.reuski.dev";
-      sonarr.port = 8989;
-      radarr.port = 7878;
-      prowlarr.port = 9696;
     };
   };
 

@@ -14,8 +14,10 @@ in
       nixos.server
       nixos.metal
       nixos.heimdash
+      nixos.media
       nixos.jellyfin
       nixos.audiobookshelf
+      nixos.maintainerr
       nixos.servarr
       nixos.qbittorrent
       nixos.hass

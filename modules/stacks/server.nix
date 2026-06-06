@@ -13,6 +13,7 @@ in
       nixos.headless
       nixos.vim
       nixos.nix
+      nixos.podman
       nixos.proxy
       nixos.tailnet
       nixos.tailscale

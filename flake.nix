@@ -60,7 +60,10 @@
 
     vicinae.url = "github:vicinaehq/vicinae";
 
-    vpn-confinement.url = "github:Maroka-chan/VPN-Confinement";
+    quadlet-nix = {
+      url = "github:SEIAROTg/quadlet-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     ghostty.url = "github:ghostty-org/ghostty";
   };
