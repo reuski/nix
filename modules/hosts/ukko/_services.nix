@@ -110,19 +110,6 @@ in
       mode = "0400";
       restartUnits = [ "gluetun.service" ];
     };
-    "home-assistant/admin-password" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "home-assistant-setup.service" ];
-    };
-    "home-assistant/secrets.yaml" = {
-      owner = "hass";
-      group = "hass";
-      mode = "0400";
-      path = "${config.services.home-assistant.configDir}/secrets.yaml";
-      restartUnits = [ "home-assistant.service" ];
-    };
     "sonarr/api-key" = {
       owner = "root";
       group = "root";
@@ -240,30 +227,7 @@ in
   };
   media.servarr.enable = true;
 
-  homeAssistant = {
-    enable = true;
-    admin.passwordFile = config.sops.secrets."home-assistant/admin-password".path;
-    components = [
-      "met"
-      "hue"
-      "cast"
-      "webostv"
-      "tplink"
-      "dlna_dmr"
-      "lg_thinq"
-    ];
-    settings.homeassistant = {
-      name = "Cell";
-      country = "FI";
-      currency = "EUR";
-      language = "en";
-      time_zone = config.profile.timeZone;
-      unit_system = "metric";
-      latitude = "!secret latitude";
-      longitude = "!secret longitude";
-      elevation = "!secret elevation";
-    };
-  };
+  homeAssistant.enable = true;
 
   media.qbittorrent = {
     enable = true;
@@ -391,7 +355,6 @@ in
     services = {
       adguard.port = 3000;
       heimdash.domain = "home.reuski.dev";
-      home.domain = "hass.home.reuski.dev";
     };
   };
 
