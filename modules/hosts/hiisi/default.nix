@@ -33,6 +33,6 @@ in
         home.sessionVariables.SOPS_AGE_KEY_FILE = ageKeyFile;
       };
 
-      system.stateVersion = "25.11";
+      system.stateVersion = config.system.nixos.release;
     };
 }

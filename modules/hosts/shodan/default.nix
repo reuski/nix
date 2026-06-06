@@ -4,7 +4,7 @@ let
 in
 {
   configurations.nixos.shodan.module =
-    { lib, ... }:
+    { config, lib, ... }:
     {
       imports = [
         inputs.disko.nixosModules.disko
@@ -26,6 +26,6 @@ in
         IPv6PrivacyExtensions = false;
       };
 
-      system.stateVersion = "25.11";
+      system.stateVersion = config.system.nixos.release;
     };
 }
