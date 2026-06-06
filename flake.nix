@@ -66,6 +66,11 @@
     };
 
     ghostty.url = "github:ghostty-org/ghostty";
+
+    python-validity = {
+      url = "github:uunicorn/python-validity";
+      flake = false;
+    };
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);

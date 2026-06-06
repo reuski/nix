@@ -42,20 +42,9 @@
           update_version "$latest" "$file" "$url_template"
         }
 
-        update_tag() {
-          local repo="$1" file="$2" url_template="$3" latest
-
-          latest=$(curl -fsSL "https://api.github.com/repos/$repo/tags?per_page=1" | jq -r '.[0].name')
-          update_version "$latest" "$file" "$url_template"
-        }
-
         update_release "imputnet/helium-linux" \
           "modules/packages/helium.nix" \
           "https://github.com/imputnet/helium-linux/releases/download/{version}/helium-{version}-x86_64_linux.tar.xz"
-
-        update_tag "uunicorn/python-validity" \
-          "modules/packages/validity.nix" \
-          "https://github.com/uunicorn/python-validity/archive/refs/tags/{version}.tar.gz"
 
         update_release "dj95/zjstatus" \
           "modules/packages/zjstatus.nix" \
