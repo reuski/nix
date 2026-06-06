@@ -6,7 +6,9 @@
       imports = [ inputs.quadlet-nix.nixosModules.quadlet ];
 
       virtualisation.quadlet = {
-        enable = lib.mkDefault (config.virtualisation.quadlet.containers != { });
+        enable = lib.mkDefault (
+          config.virtualisation.quadlet.containers != { } || config.virtualisation.quadlet.pods != { }
+        );
         autoUpdate.enable = lib.mkDefault true;
       };
     };

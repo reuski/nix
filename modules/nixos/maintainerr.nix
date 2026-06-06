@@ -11,7 +11,6 @@
       media = config.media;
       inherit (lib) mkIf mkOption types;
       port = 6246;
-      dataDir = "/var/lib/maintainerr";
     in
     {
       options.media.maintainerr.enable = mkOption {
@@ -20,25 +19,19 @@
       };
 
       config = mkIf cfg.enable {
-        virtualisation.quadlet.containers.maintainerr.containerConfig = {
+        quadlets.maintainerr = {
           image = "ghcr.io/maintainerr/maintainerr:latest";
-          name = "maintainerr";
-          networks = [ "host" ];
-          autoUpdate = "registry";
           user = "${toString media.uid}:${toString media.gid}";
-          environments = {
-            TZ = config.profile.timeZone;
+          inherit port;
+          environment = {
             UI_HOSTNAME = "127.0.0.1";
             UI_PORT = toString port;
           };
-          volumes = [ "${dataDir}:/opt/data:rw" ];
+          stateDir = {
+            path = "/var/lib/maintainerr";
+            mount = "/opt/data";
+          };
         };
-
-        proxy.services.maintainerr.port = port;
-
-        systemd.tmpfiles.rules = [
-          "d ${dataDir} 0750 ${media.user} ${media.group} -"
-        ];
       };
     };
 }

@@ -14,7 +14,7 @@
           };
           swap = {
             priority = 2;
-            size = "2G";
+            size = "1G";
             content = {
               type = "swap";
               discardPolicy = "both";
@@ -33,7 +33,7 @@
                 "-m"
                 "0"
                 "-i"
-                "4096"
+                "8192"
               ];
               mountpoint = "/";
               mountOptions = [ "noatime" ];
