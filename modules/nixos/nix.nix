@@ -56,10 +56,5 @@
         randomizedDelaySec = "45min";
         persistent = true;
       };
-
-      systemd.services.nixos-upgrade.serviceConfig = {
-        Restart = "on-failure";
-        RestartSec = "5min";
-      };
     };
 }

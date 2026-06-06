@@ -63,12 +63,14 @@
 
       services.resolved = {
         enable = true;
-        dnssec = "allow-downgrade";
-        dnsovertls = "opportunistic";
-        fallbackDns = [
-          "1.1.1.1#cloudflare-dns.com"
-          "9.9.9.9#dns.quad9.net"
-        ];
+        settings.Resolve = {
+          DNSSEC = "allow-downgrade";
+          DNSOverTLS = "opportunistic";
+          FallbackDNS = [
+            "1.1.1.1#cloudflare-dns.com"
+            "9.9.9.9#dns.quad9.net"
+          ];
+        };
       };
       services.fstrim.enable = true;
       services.timesyncd.enable = true;
@@ -116,7 +118,6 @@
       environment.systemPackages = with pkgs; [
         curl
         dnsutils
-        ghostty.terminfo
         git
         jq
         lsof
