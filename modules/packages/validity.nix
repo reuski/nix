@@ -1,25 +1,24 @@
-{ ... }:
+{ inputs, ... }:
 {
   flake.overlays.python-validity = final: _prev: {
     python-validity = final.callPackage (
       {
         lib,
         python3Packages,
-        fetchurl,
         gobject-introspection,
         wrapGAppsNoGuiHook,
         innoextract,
       }:
 
-      python3Packages.buildPythonPackage rec {
+      let
+        d = inputs.python-validity.lastModifiedDate;
+      in
+      python3Packages.buildPythonPackage {
         pname = "python-validity";
-        version = "0.15";
+        version = "0-unstable-${lib.substring 0 4 d}-${lib.substring 4 2 d}-${lib.substring 6 2 d}";
         pyproject = true;
 
-        src = fetchurl {
-          url = "https://github.com/uunicorn/python-validity/archive/refs/tags/${version}.tar.gz";
-          hash = "sha256-2rBWclhIAoXec/vxlwnXXiDlyrxmJKLavWpP/eYNWMY=";
-        };
+        src = inputs.python-validity;
 
         nativeBuildInputs = [
           gobject-introspection
