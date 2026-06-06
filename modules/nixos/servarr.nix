@@ -30,31 +30,32 @@
       };
 
       config = mkIf cfg.enable {
-        virtualisation.quadlet.containers = mapAttrs (name: _: {
-          containerConfig = {
-            image = "lscr.io/linuxserver/${name}:latest";
-            inherit name;
-            networks = [ "host" ];
-            autoUpdate = "registry";
-            environments = media.containerEnv;
-            volumes = [
-              "/var/lib/${name}:/config"
-              "${media.libraryDir}:${media.libraryDir}"
-            ];
-          };
-        }) apps
-        // {
-          flaresolverr.containerConfig = {
-            image = "ghcr.io/flaresolverr/flaresolverr:latest";
-            name = "flaresolverr";
-            networks = [ "host" ];
-            autoUpdate = "registry";
-            environments = {
-              TZ = config.profile.timeZone;
-              LOG_LEVEL = "info";
+        virtualisation.quadlet.containers =
+          mapAttrs (name: _: {
+            containerConfig = {
+              image = "lscr.io/linuxserver/${name}:latest";
+              inherit name;
+              networks = [ "host" ];
+              autoUpdate = "registry";
+              environments = media.containerEnv;
+              volumes = [
+                "/var/lib/${name}:/config"
+                "${media.libraryDir}:${media.libraryDir}"
+              ];
+            };
+          }) apps
+          // {
+            flaresolverr.containerConfig = {
+              image = "ghcr.io/flaresolverr/flaresolverr:latest";
+              name = "flaresolverr";
+              networks = [ "host" ];
+              autoUpdate = "registry";
+              environments = {
+                TZ = config.profile.timeZone;
+                LOG_LEVEL = "info";
+              };
             };
           };
-        };
 
         proxy.services = mapAttrs (_: app: { inherit (app) port; }) apps;
 
