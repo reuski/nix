@@ -20,7 +20,6 @@
       };
 
       config = mkIf cfg.enable {
-        # No linuxserver.io image exists for maintainerr; ghcr is upstream's own.
         virtualisation.quadlet.containers.maintainerr.containerConfig = {
           image = "ghcr.io/maintainerr/maintainerr:latest";
           name = "maintainerr";
