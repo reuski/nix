@@ -76,9 +76,9 @@
               ];
             };
             unitConfig = {
-              After = [ "gluetun.service" ];
-              Requires = [ "gluetun.service" ];
-              BindsTo = [ "gluetun.service" ];
+              After = [ quadlet.containers.gluetun.ref ];
+              Requires = [ quadlet.containers.gluetun.ref ];
+              BindsTo = [ quadlet.containers.gluetun.ref ];
             };
           };
         };
