@@ -495,11 +495,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780654396,
-        "narHash": "sha256-+4dEVT5UD6w8ObrhldjEL5m+P3HkYCuSoCPxBwhNWSw=",
+        "lastModified": 1780831852,
+        "narHash": "sha256-jsZDR97LGw+w+UMWHVk3fxNY/+6eCBa4FLSrlInFRQ8=",
         "owner": "reuski",
         "repo": "skaldi",
-        "rev": "6faabcd2d2fe22332e72658f4661dc69fad7735c",
+        "rev": "66a0914acf7a3f538ba624e6cabdbb6222668bb0",
         "type": "github"
       },
       "original": {
@@ -639,11 +639,11 @@
         "systems": "systems_4"
       },
       "locked": {
-        "lastModified": 1780793030,
-        "narHash": "sha256-0sbiSfboFg04dVWIo27xchmgLsINslYYuQHHIl9pn0c=",
+        "lastModified": 1780824051,
+        "narHash": "sha256-8tCEqoiZ0dtF6phXnA49S/7cZfXOcMGrGf60nq0b0cg=",
         "owner": "vicinaehq",
         "repo": "vicinae",
-        "rev": "28f39cb5288de43d67d6ba0e6c09776f1e2d4654",
+        "rev": "d9fd7a17544c01b504fb166f9e8afd1d69858844",
         "type": "github"
       },
       "original": {
