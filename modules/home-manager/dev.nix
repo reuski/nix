@@ -1,7 +1,7 @@
 { ... }:
 {
   flake.modules.homeManager.dev =
-    { pkgs, ... }:
+    { lib, pkgs, ... }:
     let
       isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
       biomeStack = [
@@ -22,6 +22,7 @@
     {
       home.packages = with pkgs; [
         delve
+        gh
         go
         golangci-lint
         govulncheck
@@ -50,6 +51,11 @@
         ];
 
         userSettings = {
+          agent_servers.pi = {
+            type = "custom";
+            command = lib.getExe pkgs.pi-acp;
+          };
+
           theme = "0x96f Theme";
           icon_theme = "Bearded Icon Theme";
           ui_font_size = 16;
@@ -87,7 +93,6 @@
             tool_permissions.default = "allow";
             notify_when_agent_waiting = "never";
             enable_feedback = false;
-            default_profile = "write";
           };
 
           telemetry = {

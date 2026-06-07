@@ -1,10 +1,12 @@
 { ... }:
 {
-  flake.modules.darwin.apps =
-    { config, pkgs, ... }:
-    {
-      services.tailscale.enable = true;
+  flake.modules.darwin.apps = {
+    services.tailscale.enable = true;
 
-      home-manager.users.${config.profile.username}.home.packages = [ pkgs.localsend ];
-    };
+    homebrew.casks = [
+      "firefox@developer-edition"
+      "localsend"
+      "signal"
+    ];
+  };
 }

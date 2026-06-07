@@ -1,7 +1,7 @@
 { ... }:
 {
   flake.modules.homeManager.pi =
-    { lib, pkgs, ... }:
+    { pkgs, ... }:
     let
       json = pkgs.formats.json { };
     in
@@ -10,15 +10,6 @@
         pi-coding-agent
         pi-acp
       ];
-
-      programs.zed-editor.userSettings = {
-        agent_servers.pi = {
-          type = "custom";
-          command = lib.getExe pkgs.pi-acp;
-          args = [ ];
-          env = { };
-        };
-      };
 
       home.file.".pi/agent/AGENTS.md".text = ''
         # Operational Directives
