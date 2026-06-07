@@ -21,7 +21,7 @@
         show_release_notes false
 
         plugins {
-            zjstatus location="file:${pkgs.zjstatus}/share/zellij/plugins/zjstatus.wasm" {
+            zjstatus location="file:${pkgs.zellijPlugins.zjstatus}" {
                 color_bg     "${gruvbox.bg0}"
                 color_fg     "${gruvbox.fg1}"
                 color_red    "${gruvbox.red}"
