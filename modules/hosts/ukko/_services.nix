@@ -184,8 +184,10 @@ in
     };
     "pia-gluetun-env" = {
       content = ''
-        OPENVPN_USER=${config.sops.placeholder."pia/username"}
-        OPENVPN_PASSWORD=${config.sops.placeholder."pia/password"}
+        PIA_USER=${config.sops.placeholder."pia/username"}
+        PIA_PASS=${config.sops.placeholder."pia/password"}
+        VPN_PORT_FORWARDING_USERNAME=${config.sops.placeholder."pia/username"}
+        VPN_PORT_FORWARDING_PASSWORD=${config.sops.placeholder."pia/password"}
       '';
       owner = "root";
       group = "root";

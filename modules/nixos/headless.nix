@@ -119,6 +119,7 @@
         curl
         dnsutils
         git
+        ghostty.terminfo
         jq
         lsof
         ncurses
