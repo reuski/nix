@@ -41,7 +41,9 @@
 
       routes = concatStringsSep "\n" (mapAttrsToList route cfg.services);
       domains = mapAttrsToList (_name: service: service.domain) cfg.services;
-      endpoints = mapAttrsToList (_name: service: "${service.host}:${toString service.port}") cfg.services;
+      endpoints = mapAttrsToList (
+        _name: service: "${service.host}:${toString service.port}"
+      ) cfg.services;
       site = "${prefix}${cfg.domain}, ${prefix}*.${cfg.domain}";
 
       tlsBlock = optionalString tls ''
