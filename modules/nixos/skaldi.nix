@@ -4,7 +4,7 @@
     { config, lib, ... }:
     let
       cfg = config.services.skaldi;
-      port = 8080;
+      port = 8083;
     in
     {
       imports = [ inputs.skaldi.nixosModules.default ];
