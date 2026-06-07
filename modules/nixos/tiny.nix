@@ -36,7 +36,6 @@
         MaxRetentionSec=2week
       '';
 
-      system.autoUpgrade.operation = "boot";
       systemd.services.nixos-upgrade.preStart = ''
         ${journalctl} --vacuum-size=50M
         ${nixCollectGarbage} --delete-old
