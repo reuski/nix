@@ -15,6 +15,8 @@ in
         nixos.boot
         nixos.server
         nixos.metal
+        nixos.proxy
+        nixos.tailnet
         nixos.quadlets
         nixos.heimdash
         nixos.media

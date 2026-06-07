@@ -9,10 +9,10 @@ in
       imports = [
         generic.profile
         nixos.nixpkgs
-        nixos.cache
+        nixos.cachix
         nixos.common
         nixos.boot
-        nixos.network
+        nixos.networkmanager
         nixos.secrets
         nixos.users
         nixos.locale
@@ -20,7 +20,6 @@ in
         nixos.graphics
         nixos.power
         nixos.fonts
-        nixos.vim
         nixos.niri
         nixos.nix
         nixos.tailscale

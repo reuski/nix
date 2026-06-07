@@ -11,12 +11,8 @@
       };
 
       users.users.${config.profile.username} = {
-        isNormalUser = true;
-        description = config.profile.fullName;
-        home = config.profile.homeDirectory;
         hashedPasswordFile = config.sops.secrets."users/${config.profile.username}/password".path;
         extraGroups = [
-          "wheel"
           "networkmanager"
           "video"
         ];
