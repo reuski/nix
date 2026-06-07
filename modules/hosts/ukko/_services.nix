@@ -233,6 +233,7 @@ in
 
   media.qbittorrent = {
     enable = true;
+    region = "ro";
     environmentFile = config.sops.templates."pia-gluetun-env".path;
   };
 

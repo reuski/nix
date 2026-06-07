@@ -22,31 +22,6 @@
         url = "https://raw.githubusercontent.com/pia-foss/manual-connections/master/ca.rsa.4096.crt";
         hash = "sha256-Mumx0UM+qXYU8qFMbjWOP1fAVwzJ9rLugSaZumlsZqs=";
       };
-      gluetunRun = lib.concatStringsSep " " [
-        (getExe pkgs.podman)
-        "run"
-        "--name gluetun"
-        "--replace"
-        "--rm"
-        "--cgroups=split"
-        "--sdnotify=conmon"
-        "-d"
-        "--device /dev/net/tun"
-        "--cap-add net_admin"
-        "--volume /var/lib/gluetun:/gluetun"
-        "--volume /run/gluetun/wireguard:/gluetun/wireguard:ro"
-        "--label io.containers.autoupdate=registry"
-        "--env FIREWALL_OUTBOUND_SUBNETS=192.168.1.0/24"
-        "--env TZ=${config.profile.timeZone}"
-        "--env VPN_PORT_FORWARDING=on"
-        ''--env "VPN_PORT_FORWARDING_PROVIDER=private internet access"''
-        "--env VPN_SERVICE_PROVIDER=custom"
-        "--env VPN_TYPE=wireguard"
-        "--env-file ${cfg.environmentFile}"
-        "--env-file /run/gluetun/pia-wireguard.env"
-        "--pod vpn"
-        "ghcr.io/qdm12/gluetun:latest"
-      ];
       piaWireguardConfig = pkgs.writeShellApplication {
         name = "pia-wireguard-config";
         runtimeInputs = with pkgs; [
@@ -195,13 +170,7 @@
 
         proxy.services.qbittorrent.port = cfg.webuiPort;
 
-        systemd.services.gluetun.serviceConfig = {
-          ExecStart = lib.mkForce [
-            ""
-            gluetunRun
-          ];
-          ExecStartPre = getExe piaWireguardConfig;
-        };
+        systemd.services.gluetun.serviceConfig.ExecStartPre = getExe piaWireguardConfig;
 
         systemd.tmpfiles.rules = [
           "d /var/lib/gluetun 0750 ${media.user} ${media.group} -"
