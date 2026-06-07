@@ -1,6 +1,6 @@
 { ... }:
 {
-  flake.modules.nixos.network = {
+  flake.modules.nixos.networkmanager = {
     networking.networkmanager = {
       enable = true;
       wifi.backend = "iwd";
@@ -12,7 +12,6 @@
     networking.nftables.enable = true;
 
     services.resolved.enable = true;
-    services.timesyncd.enable = true;
 
     systemd.services.NetworkManager-wait-online.enable = false;
   };

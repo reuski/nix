@@ -9,6 +9,7 @@
     }:
     let
       cfg = config.media.jellyfin;
+      mediaGroup = config.media.group;
       inherit (lib)
         concatLists
         mkIf
@@ -164,10 +165,6 @@
           type = types.bool;
           default = false;
         };
-        group = mkOption {
-          type = types.str;
-          default = "media";
-        };
         openFirewall = mkOption {
           type = types.bool;
           default = false;
@@ -195,7 +192,7 @@
 
         services.jellyfin = {
           enable = true;
-          group = cfg.group;
+          group = mediaGroup;
           openFirewall = cfg.openFirewall;
         };
 
@@ -206,20 +203,16 @@
           "fs.inotify.max_user_watches" = 1048576;
         };
 
-        users.groups.${cfg.group} = { };
-        users.users = {
-          jellyfin.extraGroups = [
-            cfg.group
-            "render"
-            "video"
-          ];
-          ${config.profile.username}.extraGroups = [ cfg.group ];
-        };
+        users.users.jellyfin.extraGroups = [
+          mediaGroup
+          "render"
+          "video"
+        ];
 
         systemd.tmpfiles.rules = [
-          "d /var/cache/jellyfin/transcodes 0750 jellyfin ${cfg.group} -"
+          "d /var/cache/jellyfin/transcodes 0750 jellyfin ${mediaGroup} -"
         ]
-        ++ map (path: "d ${path} 2775 ${config.profile.username} ${cfg.group} -") libraryPaths;
+        ++ map (path: "d ${path} 2775 ${config.profile.username} ${mediaGroup} -") libraryPaths;
 
         systemd.services = {
           jellyfin = {
@@ -229,7 +222,7 @@
             serviceConfig = {
               UMask = lib.mkForce "0002";
               SupplementaryGroups = [
-                cfg.group
+                mediaGroup
                 "render"
                 "video"
               ];

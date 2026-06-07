@@ -5,7 +5,6 @@
 }:
 let
   localAddress = "192.168.1.11";
-  mediaGroup = "media";
   tsHost = "ukko.tail2fc4c2.ts.net";
 in
 {
@@ -198,7 +197,6 @@ in
 
   media.jellyfin = {
     enable = true;
-    group = mediaGroup;
     openFirewall = true;
     admin.passwordFile = config.sops.secrets."jellyfin/admin-password".path;
     libraries = [
@@ -216,7 +214,6 @@ in
   };
   media.audiobookshelf = {
     enable = true;
-    group = mediaGroup;
     libraries = [ "/srv/media/audiobooks" ];
   };
 

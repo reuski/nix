@@ -8,13 +8,14 @@ in
       generic.profile
       nixos.nixpkgs
       nixos.common
+      nixos.networkd
+      nixos.ssh
+      nixos.hardening
+      nixos.headless
       nixos.locale
       nixos.secrets
-      nixos.headless
       nixos.vim
       nixos.nix
-      nixos.proxy
-      nixos.tailnet
       nixos.tailscale
     ];
 

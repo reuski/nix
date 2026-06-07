@@ -8,7 +8,7 @@ Personal Nix flake: NixOS, nix-darwin, Home Manager.
 - Reusable code exports as `flake.modules.{nixos,darwin,homeManager,generic}.<name>` — one module per file, named for the option it owns.
 - `modules/configurations/` lifts those into `configurations.{nixos,darwin}` → flake outputs + per-system `checks`.
 - `modules/hosts/<host>/` — real systems only (`hiisi` laptop, `shodan` VPS, `ukko` home server, `abraxas` Mac); `_*.nix` are that host's private hardware/disko/service helpers, imported by its `default.nix`.
-- `modules/stacks/` composes modules into roles (`server`, `wayland`, …); `modules/packages/` = overlays + custom pkgs; `modules/apps/` = the `update-custom` app.
+- `modules/stacks/` composes modules into roles (`server`, `wayland`, …); `modules/packages/` = overlays + custom pkgs.
 - `secrets/*.yaml` = SOPS ciphertext.
 
 ## Rules

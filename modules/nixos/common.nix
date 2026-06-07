@@ -1,7 +1,7 @@
 { ... }:
 {
   flake.modules.nixos.common =
-    { pkgs, ... }:
+    { config, pkgs, ... }:
     {
       boot.kernelPackages = pkgs.linuxPackages_latest;
       boot.tmp.cleanOnBoot = true;
@@ -14,8 +14,23 @@
 
       systemd.oomd.enable = true;
 
+      services.fstrim.enable = true;
+      services.timesyncd.enable = true;
+
+      services.journald.extraConfig = ''
+        SystemMaxUse=500M
+        RuntimeMaxUse=100M
+        MaxRetentionSec=1month
+      '';
+
       users.mutableUsers = false;
       users.users.root.hashedPassword = "!";
+      users.users.${config.profile.username} = {
+        isNormalUser = true;
+        description = config.profile.fullName;
+        home = config.profile.homeDirectory;
+        extraGroups = [ "wheel" ];
+      };
 
       security.sudo.enable = false;
       security.sudo-rs = {
