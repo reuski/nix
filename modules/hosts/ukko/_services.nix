@@ -139,7 +139,7 @@ in
       mode = "0400";
       restartUnits = [ "heimdash.service" ];
     };
-    "qbittorrent/password" = {
+    "qbittorrent/api-key" = {
       owner = "root";
       group = "root";
       mode = "0400";
@@ -166,13 +166,6 @@ in
       group = "root";
       mode = "0400";
       restartUnits = [ "acme-home.reuski.dev.service" ];
-    };
-    "heimdash-qbittorrent-credentials" = {
-      content = "${config.profile.username}:${config.sops.placeholder."qbittorrent/password"}";
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
     };
     "vaultwarden-env" = {
       content = "ADMIN_TOKEN=${config.sops.placeholder."vaultwarden/admin-token"}";
@@ -265,7 +258,7 @@ in
       prowlarr-api-key.path = config.sops.secrets."prowlarr/api-key".path;
       jellyfin-api-key.path = config.sops.secrets."jellyfin/api-key".path;
       audiobookshelf-api-key.path = config.sops.secrets."audiobookshelf/api-key".path;
-      qbittorrent-credentials.path = config.sops.templates."heimdash-qbittorrent-credentials".path;
+      qbittorrent-api-key.path = config.sops.secrets."qbittorrent/api-key".path;
       home-assistant-token.path = config.sops.secrets."home-assistant/token".path;
       vaultwarden-admin-token.path = config.sops.secrets."vaultwarden/admin-token".path;
     };
@@ -274,11 +267,13 @@ in
         name = "AdGuard";
         url = "https://adguard.home.reuski.dev";
         check = "https://adguard.home.reuski.dev/login.html";
+        api = "http://127.0.0.1:3000";
         kind = "adguard";
       }
       {
         name = "Home Assistant";
         url = "https://hass.home.reuski.dev";
+        api = "http://127.0.0.1:8123";
         kind = "home_assistant";
         credential = "home-assistant-token";
         entity = "weather.forecast_home";
@@ -286,13 +281,15 @@ in
       {
         name = "qBittorrent";
         url = "https://qbittorrent.home.reuski.dev";
+        api = "http://127.0.0.1:8080";
         kind = "qbittorrent";
-        credential = "qbittorrent-credentials";
+        credential = "qbittorrent-api-key";
       }
       {
         name = "Jellyfin";
         url = "https://jellyfin.home.reuski.dev";
         check = "https://jellyfin.home.reuski.dev/System/Info/Public";
+        api = "http://127.0.0.1:8096";
         kind = "jellyfin";
         credential = "jellyfin-api-key";
       }
@@ -300,11 +297,14 @@ in
         name = "Maintainerr";
         url = "https://maintainerr.home.reuski.dev";
         check = "https://maintainerr.home.reuski.dev/api/health/ready";
+        api = "http://127.0.0.1:6246";
+        kind = "maintainerr";
       }
       {
         name = "Audiobookshelf";
         url = "https://audiobookshelf.home.reuski.dev";
         check = "https://audiobookshelf.home.reuski.dev/healthcheck";
+        api = "http://127.0.0.1:8000";
         kind = "audiobookshelf";
         credential = "audiobookshelf-api-key";
       }
@@ -316,6 +316,7 @@ in
         name = "Sonarr";
         url = "https://sonarr.home.reuski.dev";
         check = "https://sonarr.home.reuski.dev/ping";
+        api = "http://127.0.0.1:8989";
         kind = "sonarr";
         credential = "sonarr-api-key";
       }
@@ -323,6 +324,7 @@ in
         name = "Radarr";
         url = "https://radarr.home.reuski.dev";
         check = "https://radarr.home.reuski.dev/ping";
+        api = "http://127.0.0.1:7878";
         kind = "radarr";
         credential = "radarr-api-key";
       }
@@ -330,6 +332,7 @@ in
         name = "Prowlarr";
         url = "https://prowlarr.home.reuski.dev";
         check = "https://prowlarr.home.reuski.dev/ping";
+        api = "http://127.0.0.1:9696";
         kind = "prowlarr";
         credential = "prowlarr-api-key";
       }
