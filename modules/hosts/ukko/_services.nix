@@ -168,6 +168,12 @@ in
       mode = "0400";
       restartUnits = [ "valheim.service" ];
     };
+    "calibre/credentials" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "heimdash.service" ];
+    };
   };
 
   sops.templates = {
@@ -295,6 +301,7 @@ in
       qbittorrent-api-key.path = config.sops.secrets."qbittorrent/api-key".path;
       home-assistant-token.path = config.sops.secrets."home-assistant/token".path;
       vaultwarden-admin-token.path = config.sops.secrets."vaultwarden/admin-token".path;
+      calibre-credentials.path = config.sops.secrets."calibre/credentials".path;
     };
     services = [
       {
@@ -349,11 +356,16 @@ in
       {
         name = "Calibre";
         url = "https://calibre.home.reuski.dev";
+        api = "http://127.0.0.1:8084";
+        kind = "calibre";
+        credential = "calibre-credentials";
       }
       {
         name = "Valheim";
         url = "https://valheim.home.reuski.dev";
         check = "https://valheim.home.reuski.dev/health";
+        api = "http://127.0.0.1:2459";
+        kind = "valheim";
       }
       {
         name = "Sonarr";
