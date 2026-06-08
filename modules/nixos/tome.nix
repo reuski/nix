@@ -9,7 +9,7 @@
     let
       cfg = config.media.tome;
       inherit (lib) mkIf mkOption types;
-      port = 3000;
+      port = 3001;
     in
     {
       options.media.tome = {
@@ -37,6 +37,7 @@
           identity = true;
           inherit port;
           environment = {
+            PORT = toString port;
             CALIBRE_DB_PATH = "/calibre/metadata.db";
             NEXT_PUBLIC_BASE_URL = "https://tome.${config.proxy.domain}";
           };
