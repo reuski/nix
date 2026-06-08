@@ -12,12 +12,15 @@
         cores = 1;
         min-free = 512 * 1024 * 1024;
         max-free = 2048 * 1024 * 1024;
+        auto-optimise-store = lib.mkForce false;
       };
 
       nix.gc = {
-        dates = "daily";
+        dates = "03:00";
         options = "--delete-old";
       };
+
+      nix.optimise.automatic = lib.mkForce false;
 
       nix.daemonIOSchedClass = "idle";
 
@@ -36,9 +39,16 @@
         MaxRetentionSec=2week
       '';
 
-      systemd.services.nixos-upgrade.preStart = ''
-        ${journalctl} --vacuum-size=50M
-        ${nixCollectGarbage} --delete-old
-      '';
+      systemd.services.nixos-upgrade = {
+        preStart = ''
+          ${journalctl} --vacuum-size=50M
+          ${nixCollectGarbage} --delete-old
+        '';
+
+        serviceConfig = {
+          Nice = 19;
+          IOSchedulingClass = "idle";
+        };
+      };
     };
 }
