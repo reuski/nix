@@ -4,7 +4,7 @@ let
 in
 {
   flake.modules.darwin.mac =
-    { config, pkgs, ... }:
+    { config, ... }:
     {
       imports = [
         generic.profile
@@ -14,16 +14,12 @@ in
         darwin.system
         darwin.fonts
         darwin.apps
+        darwin.tailscale
         darwin.homebrew
         darwin.secrets
       ];
 
       home-manager.users.${config.profile.username} = {
-        home.packages = with pkgs; [
-          age
-          sops
-          ssh-to-age
-        ];
         imports = [
           homeManager.mac
           homeManager.llama

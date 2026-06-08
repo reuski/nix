@@ -7,6 +7,8 @@
       copyCommand = if pkgs.stdenv.hostPlatform.isDarwin then "pbcopy" else "wl-copy";
     in
     {
+      home.packages = [ pkgs.zellij ];
+
       xdg.configFile."zellij/config.kdl".text = ''
         theme "gruvbox-dark"
         default_layout "main"
