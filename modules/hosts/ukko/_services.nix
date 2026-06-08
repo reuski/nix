@@ -212,6 +212,8 @@ in
 
   media.maintainerr.enable = true;
 
+  media.calibre.enable = true;
+
   vaultwarden = {
     enable = true;
     domain = "https://${tsHost}:8222";
@@ -310,6 +312,10 @@ in
       {
         name = "Skaldi";
         url = "https://skaldi.home.reuski.dev";
+      }
+      {
+        name = "Calibre";
+        url = "https://calibre.home.reuski.dev";
       }
       {
         name = "Sonarr";
