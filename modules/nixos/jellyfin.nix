@@ -212,7 +212,7 @@
         systemd.tmpfiles.rules = [
           "d /var/cache/jellyfin/transcodes 0750 jellyfin ${mediaGroup} -"
         ]
-        ++ map (path: "d ${path} 2775 ${config.profile.username} ${mediaGroup} -") libraryPaths;
+        ++ map (path: "d ${path} 2775 ${config.media.user} ${mediaGroup} -") libraryPaths;
 
         systemd.services = {
           jellyfin = {
