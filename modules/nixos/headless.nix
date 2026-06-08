@@ -16,12 +16,12 @@
       xdg.sounds.enable = false;
       system.disableInstallerTools = true;
 
+      environment.enableAllTerminfo = true;
       environment.defaultPackages = [ ];
       environment.systemPackages = with pkgs; [
         curl
         dnsutils
         git
-        ghostty.terminfo
         jq
         lsof
         ncurses

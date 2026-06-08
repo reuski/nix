@@ -26,6 +26,7 @@
           shell-integration = "fish";
           clipboard-read = "allow";
           clipboard-write = "allow";
+          shell-integration-features = "ssh-terminfo,ssh-env,sudo";
         };
       };
     };
