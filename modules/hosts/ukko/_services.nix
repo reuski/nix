@@ -57,6 +57,11 @@ in
             answer = localAddress;
             enabled = true;
           }
+          {
+            domain = "valheim.reuski.dev";
+            answer = localAddress;
+            enabled = true;
+          }
         ];
       };
       filters = [
@@ -248,6 +253,12 @@ in
     world = "Lintukoto";
     crossplay = false;
     environmentFile = config.sops.templates."valheim-env".path;
+  };
+
+  services.cloudflare-dyndns = {
+    enable = true;
+    apiTokenFile = config.sops.secrets."cloudflare/dns-token".path;
+    domains = [ "valheim.reuski.dev" ];
   };
 
   services.skaldi.enable = true;
