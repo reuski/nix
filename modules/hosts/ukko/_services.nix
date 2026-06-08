@@ -238,6 +238,8 @@ in
 
   media.calibre.enable = true;
 
+  media.tome.enable = true;
+
   vaultwarden = {
     enable = true;
     domain = "https://${tsHost}:8222";
@@ -359,6 +361,11 @@ in
         api = "http://127.0.0.1:8084";
         kind = "calibre";
         credential = "calibre-credentials";
+      }
+      {
+        name = "Tome";
+        url = "https://tome.home.reuski.dev";
+        check = "https://tome.home.reuski.dev";
       }
       {
         name = "Valheim";
