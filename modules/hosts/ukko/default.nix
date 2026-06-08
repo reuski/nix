@@ -23,6 +23,7 @@ in
         nixos.jellyfin
         nixos.audiobookshelf
         nixos.calibre
+        nixos.tome
         nixos.maintainerr
         nixos.servarr
         nixos.qbittorrent
