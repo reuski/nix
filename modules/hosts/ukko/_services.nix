@@ -157,6 +157,12 @@ in
       mode = "0400";
       restartUnits = [ "heimdash.service" ];
     };
+    "valheim/password" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "valheim.service" ];
+    };
   };
 
   sops.templates = {
@@ -173,6 +179,13 @@ in
       group = "root";
       mode = "0400";
       restartUnits = [ "vaultwarden.service" ];
+    };
+    "valheim-env" = {
+      content = "PASSWORD=${config.sops.placeholder."valheim/password"}";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "valheim.service" ];
     };
     "pia-gluetun-env" = {
       content = ''
@@ -227,6 +240,14 @@ in
     enable = true;
     region = "ro";
     environmentFile = config.sops.templates."pia-gluetun-env".path;
+  };
+
+  media.valheim = {
+    enable = true;
+    name = "Lintukoto";
+    world = "Lintukoto";
+    crossplay = false;
+    environmentFile = config.sops.templates."valheim-env".path;
   };
 
   services.skaldi.enable = true;

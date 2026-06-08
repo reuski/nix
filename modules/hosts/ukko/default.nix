@@ -28,6 +28,7 @@ in
         nixos.qbittorrent
         nixos.hass
         nixos.vaultwarden
+        nixos.valheim
         nixos.skaldi
       ];
 
