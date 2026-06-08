@@ -57,6 +57,11 @@ in
             type = types.attrsOf types.str;
             default = { };
           };
+          environmentFiles = mkOption {
+            type = types.listOf types.str;
+            default = [ ];
+            description = "Env files merged into the container, e.g. sops-provided secrets.";
+          };
           volumes = mkOption {
             type = types.listOf types.str;
             default = [ ];
@@ -96,6 +101,7 @@ in
             autoUpdate = "registry";
             environments =
               (if c.identity then media.containerEnv else { TZ = config.profile.timeZone; }) // c.environment;
+            inherit (c) environmentFiles;
             volumes = stateVolume c ++ c.volumes;
           }
           // optionalAttrs (c.user != null) { inherit (c) user; };
