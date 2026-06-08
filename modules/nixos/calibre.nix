@@ -12,7 +12,7 @@
       media = config.media;
       inherit (lib) mkIf mkOption types;
 
-      webPort = 8083;
+      webPort = 8084;
     in
     {
       options.media.calibre = {
