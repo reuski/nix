@@ -244,7 +244,6 @@ in
   systemd.services.skaldi = {
     environment.PULSE_SERVER = "unix:/run/pulse/native";
     serviceConfig.SupplementaryGroups = lib.mkForce [
-      "audio"
       "pipewire"
     ];
   };
