@@ -9,7 +9,12 @@
     let
       cfg = config.media.valheim;
       media = config.media;
-      inherit (lib) mkIf mkOption types;
+      inherit (lib)
+        mkIf
+        mkOption
+        optionalAttrs
+        types
+        ;
       stateDir = "/var/lib/valheim";
       bool = b: if b then "1" else "0";
     in
@@ -39,6 +44,11 @@
           type = types.bool;
           default = true;
         };
+        statusPort = mkOption {
+          type = types.nullOr types.port;
+          default = null;
+          description = "Enable the huginn HTTP status server on this port and reverse-proxy it.";
+        };
         environmentFile = mkOption {
           type = types.str;
           description = "sops env file providing PASSWORD=<server password>.";
@@ -64,6 +74,9 @@
             AUTO_BACKUP_ON_UPDATE = "1";
             AUTO_BACKUP_ON_SHUTDOWN = "1";
             AUTO_BACKUP_PAUSE_WITH_NO_PLAYERS = "1";
+          }
+          // optionalAttrs (cfg.statusPort != null) {
+            HTTP_PORT = toString cfg.statusPort;
           };
           environmentFiles = [ cfg.environmentFile ];
           volumes = [
@@ -71,7 +84,8 @@
             "${stateDir}/server:/home/steam/valheim"
             "${stateDir}/backups:/home/steam/backups"
           ];
-        };
+        }
+        // optionalAttrs (cfg.statusPort != null) { port = cfg.statusPort; };
 
         networking.firewall.allowedUDPPorts = [
           cfg.port

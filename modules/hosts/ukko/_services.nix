@@ -252,6 +252,7 @@ in
     name = "Lintukoto";
     world = "Lintukoto";
     crossplay = false;
+    statusPort = 2459;
     environmentFile = config.sops.templates."valheim-env".path;
   };
 
@@ -348,6 +349,11 @@ in
       {
         name = "Calibre";
         url = "https://calibre.home.reuski.dev";
+      }
+      {
+        name = "Valheim";
+        url = "https://valheim.home.reuski.dev";
+        check = "https://valheim.home.reuski.dev/health";
       }
       {
         name = "Sonarr";
