@@ -21,6 +21,11 @@
         radarr.port = 7878;
         prowlarr.port = 9696;
       };
+
+      rootFolders = [
+        "${media.libraryDir}/movies"
+        "${media.libraryDir}/series"
+      ];
     in
     {
       options.media.servarr.enable = mkOption {
@@ -43,6 +48,8 @@
               environment.LOG_LEVEL = "info";
             };
           };
+
+        systemd.tmpfiles.rules = map (dir: "d ${dir} 2775 ${media.user} ${media.group} -") rootFolders;
       };
     };
 }

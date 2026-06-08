@@ -42,7 +42,7 @@
         users.users.audiobookshelf.extraGroups = [ mediaGroup ];
 
         systemd.tmpfiles.rules = map (
-          path: "d ${path} 2775 ${config.profile.username} ${mediaGroup} -"
+          path: "d ${path} 2775 ${config.media.user} ${mediaGroup} -"
         ) cfg.libraries;
 
         systemd.services.audiobookshelf.serviceConfig.UMask = "0002";
