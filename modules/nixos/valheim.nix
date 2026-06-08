@@ -47,7 +47,7 @@
 
       config = mkIf cfg.enable {
         quadlets.valheim = {
-          image = "mbround18/valheim:3";
+          image = "docker.io/mbround18/valheim:3";
           environment = {
             NAME = cfg.name;
             WORLD = cfg.world;
