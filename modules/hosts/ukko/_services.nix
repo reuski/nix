@@ -431,6 +431,11 @@ in
         credential = "radarr-api-key";
       }
       {
+        name = "Lidarr";
+        url = "https://lidarr.home.reuski.dev";
+        check = "https://lidarr.home.reuski.dev/ping";
+      }
+      {
         name = "Prowlarr";
         url = "https://prowlarr.home.reuski.dev";
         check = "https://prowlarr.home.reuski.dev/ping";

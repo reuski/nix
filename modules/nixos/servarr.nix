@@ -19,12 +19,14 @@
       apps = {
         sonarr.port = 8989;
         radarr.port = 7878;
+        lidarr.port = 8686;
         prowlarr.port = 9696;
       };
 
       rootFolders = [
         "${media.libraryDir}/movies"
         "${media.libraryDir}/series"
+        "${media.libraryDir}/music"
       ];
     in
     {
