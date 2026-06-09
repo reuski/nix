@@ -174,6 +174,15 @@ in
       mode = "0400";
       restartUnits = [ "heimdash.service" ];
     };
+    "navidrome/admin-password" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [
+        "navidrome.service"
+        "skaldi.service"
+      ];
+    };
   };
 
   sops.templates = {
@@ -197,6 +206,13 @@ in
       group = "root";
       mode = "0400";
       restartUnits = [ "valheim.service" ];
+    };
+    "navidrome-env" = {
+      content = "ND_DEVAUTOCREATEADMINPASSWORD=${config.sops.placeholder."navidrome/admin-password"}";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "navidrome.service" ];
     };
     "pia-gluetun-env" = {
       content = ''
@@ -232,6 +248,10 @@ in
   media.audiobookshelf = {
     enable = true;
     libraries = [ "/srv/media/audiobooks" ];
+  };
+  media.navidrome = {
+    enable = true;
+    environmentFile = config.sops.templates."navidrome-env".path;
   };
 
   media.maintainerr.enable = true;
@@ -272,6 +292,13 @@ in
   };
 
   services.skaldi.enable = true;
+  services.skaldi.settings.opensubsonic = {
+    enabled = true;
+    library_id = "navidrome";
+    base_url = "http://127.0.0.1:4533";
+    username = "admin";
+    token_file = "/run/credentials/skaldi.service/opensubsonic-token";
+  };
 
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
@@ -289,6 +316,9 @@ in
     environment.PULSE_SERVER = "unix:/run/pulse/native";
     serviceConfig.SupplementaryGroups = lib.mkForce [
       "pipewire"
+    ];
+    serviceConfig.LoadCredential = [
+      "opensubsonic-token:${config.sops.secrets."navidrome/admin-password".path}"
     ];
   };
 
@@ -359,6 +389,11 @@ in
         kind = "skaldi";
       }
       {
+        name = "Navidrome";
+        url = "https://navidrome.home.reuski.dev";
+        check = "https://navidrome.home.reuski.dev";
+      }
+      {
         name = "Calibre";
         url = "https://calibre.home.reuski.dev";
         api = "http://127.0.0.1:8084";
@@ -417,6 +452,7 @@ in
   tailnet.services = {
     audiobookshelf.port = 8000;
     vaultwarden.port = 8222;
+    navidrome.port = 4533;
   };
 
   proxy = {
