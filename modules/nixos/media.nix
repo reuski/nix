@@ -8,7 +8,24 @@
     }:
     let
       cfg = config.media;
-      inherit (lib) mkOption types;
+      inherit (lib) mapAttrsToList mkOption types;
+
+      directoryType = types.submodule {
+        options = {
+          mode = mkOption {
+            type = types.str;
+            default = "2775";
+          };
+          owner = mkOption {
+            type = types.str;
+            default = cfg.user;
+          };
+          group = mkOption {
+            type = types.str;
+            default = cfg.group;
+          };
+        };
+      };
     in
     {
       options.media = {
@@ -43,6 +60,11 @@
           };
           description = "Shared identity environment for linuxserver.io media containers.";
         };
+        directories = mkOption {
+          type = types.attrsOf directoryType;
+          default = { };
+          description = "Directories created via tmpfiles, owned by the media identity by default.";
+        };
       };
 
       config = {
@@ -54,9 +76,11 @@
         };
         users.users.${config.profile.username}.extraGroups = [ cfg.group ];
 
-        systemd.tmpfiles.rules = [
-          "d ${cfg.libraryDir} 2775 ${cfg.user} ${cfg.group} -"
-        ];
+        media.directories.${cfg.libraryDir} = { };
+
+        systemd.tmpfiles.rules = mapAttrsToList (
+          path: d: "d ${path} ${d.mode} ${d.owner} ${d.group} -"
+        ) cfg.directories;
       };
     };
 }

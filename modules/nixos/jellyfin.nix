@@ -12,6 +12,7 @@
       mediaGroup = config.media.group;
       inherit (lib)
         concatLists
+        genAttrs
         mkIf
         mkOption
         types
@@ -209,10 +210,13 @@
           "video"
         ];
 
-        systemd.tmpfiles.rules = [
-          "d /var/cache/jellyfin/transcodes 0750 jellyfin ${mediaGroup} -"
-        ]
-        ++ map (path: "d ${path} 2775 ${config.media.user} ${mediaGroup} -") libraryPaths;
+        media.directories = {
+          "/var/cache/jellyfin/transcodes" = {
+            mode = "0750";
+            owner = "jellyfin";
+          };
+        }
+        // genAttrs libraryPaths (_: { });
 
         systemd.services = {
           jellyfin = {

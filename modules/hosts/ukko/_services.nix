@@ -6,6 +6,28 @@
 let
   localAddress = "192.168.1.11";
   tsHost = "ukko.tail2fc4c2.ts.net";
+  inherit (lib) optionalAttrs;
+
+  card =
+    key:
+    {
+      name,
+      kind,
+      checkPath ? null,
+      credential ? null,
+      entity ? null,
+    }:
+    let
+      p = config.proxy.services.${key};
+      url = "https://${p.domain}";
+    in
+    {
+      inherit name url kind;
+      api = "http://${p.host}:${toString p.port}";
+    }
+    // optionalAttrs (checkPath != null) { check = "${url}${checkPath}"; }
+    // optionalAttrs (credential != null) { inherit credential; }
+    // optionalAttrs (entity != null) { inherit entity; };
 in
 {
   networking.firewall = {
@@ -249,18 +271,18 @@ in
       {
         name = "Movies";
         type = "movies";
-        paths = [ "/srv/media/movies" ];
+        paths = [ "${config.media.libraryDir}/movies" ];
       }
       {
         name = "Series";
         type = "tvshows";
-        paths = [ "/srv/media/series" ];
+        paths = [ "${config.media.libraryDir}/series" ];
       }
     ];
   };
   media.audiobookshelf = {
     enable = true;
-    libraries = [ "/srv/media/audiobooks" ];
+    libraries = [ "${config.media.libraryDir}/audiobooks" ];
   };
   media.navidrome = {
     enable = true;
@@ -288,7 +310,7 @@ in
     environmentFile = config.sops.templates."pia-gluetun-env".path;
   };
 
-  media.valheim = {
+  valheim = {
     enable = true;
     name = "Lintukoto";
     world = "Lintukoto";
@@ -352,118 +374,88 @@ in
       navidrome-credentials.path = config.sops.templates."navidrome-heimdash-credentials".path;
     };
     services = [
-      {
+      (card "adguard" {
         name = "AdGuard";
-        url = "https://adguard.home.reuski.dev";
-        check = "https://adguard.home.reuski.dev/login.html";
-        api = "http://127.0.0.1:3000";
         kind = "adguard";
-      }
-      {
+        checkPath = "/login.html";
+      })
+      (card "hass" {
         name = "Home Assistant";
-        url = "https://hass.home.reuski.dev";
-        api = "http://127.0.0.1:8123";
         kind = "home_assistant";
         credential = "home-assistant-token";
         entity = "weather.forecast_home";
-      }
-      {
+      })
+      (card "qbittorrent" {
         name = "qBittorrent";
-        url = "https://qbittorrent.home.reuski.dev";
-        api = "http://127.0.0.1:8080";
         kind = "qbittorrent";
         credential = "qbittorrent-api-key";
-      }
-      {
+      })
+      (card "jellyfin" {
         name = "Jellyfin";
-        url = "https://jellyfin.home.reuski.dev";
-        check = "https://jellyfin.home.reuski.dev/System/Info/Public";
-        api = "http://127.0.0.1:8096";
         kind = "jellyfin";
+        checkPath = "/System/Info/Public";
         credential = "jellyfin-api-key";
-      }
-      {
+      })
+      (card "maintainerr" {
         name = "Maintainerr";
-        url = "https://maintainerr.home.reuski.dev";
-        check = "https://maintainerr.home.reuski.dev/api/health/ready";
-        api = "http://127.0.0.1:6246";
         kind = "maintainerr";
-      }
-      {
+        checkPath = "/api/health/ready";
+      })
+      (card "audiobookshelf" {
         name = "Audiobookshelf";
-        url = "https://audiobookshelf.home.reuski.dev";
-        check = "https://audiobookshelf.home.reuski.dev/healthcheck";
-        api = "http://127.0.0.1:8000";
         kind = "audiobookshelf";
+        checkPath = "/healthcheck";
         credential = "audiobookshelf-api-key";
-      }
-      {
+      })
+      (card "skaldi" {
         name = "Skaldi";
-        url = "https://skaldi.home.reuski.dev";
-        api = "http://127.0.0.1:8083";
         kind = "skaldi";
-      }
-      {
+      })
+      (card "navidrome" {
         name = "Navidrome";
-        url = "https://navidrome.home.reuski.dev";
-        check = "https://navidrome.home.reuski.dev";
-        api = "http://127.0.0.1:4533";
         kind = "navidrome";
+        checkPath = "";
         credential = "navidrome-credentials";
-      }
-      {
+      })
+      (card "calibre" {
         name = "Calibre";
-        url = "https://calibre.home.reuski.dev";
-        api = "http://127.0.0.1:8084";
         kind = "calibre";
         credential = "calibre-credentials";
-      }
-      {
+      })
+      (card "tome" {
         name = "Tome";
-        url = "https://tome.home.reuski.dev";
-        check = "https://tome.home.reuski.dev";
-        api = "http://127.0.0.1:3001";
         kind = "tome";
-      }
-      {
+        checkPath = "";
+      })
+      (card "valheim" {
         name = "Valheim";
-        url = "https://valheim.home.reuski.dev";
-        check = "https://valheim.home.reuski.dev/health";
-        api = "http://127.0.0.1:2459";
         kind = "valheim";
-      }
-      {
+        checkPath = "/health";
+      })
+      (card "sonarr" {
         name = "Sonarr";
-        url = "https://sonarr.home.reuski.dev";
-        check = "https://sonarr.home.reuski.dev/ping";
-        api = "http://127.0.0.1:8989";
         kind = "sonarr";
+        checkPath = "/ping";
         credential = "sonarr-api-key";
-      }
-      {
+      })
+      (card "radarr" {
         name = "Radarr";
-        url = "https://radarr.home.reuski.dev";
-        check = "https://radarr.home.reuski.dev/ping";
-        api = "http://127.0.0.1:7878";
         kind = "radarr";
+        checkPath = "/ping";
         credential = "radarr-api-key";
-      }
-      {
+      })
+      (card "lidarr" {
         name = "Lidarr";
-        url = "https://lidarr.home.reuski.dev";
-        check = "https://lidarr.home.reuski.dev/ping";
-        api = "http://127.0.0.1:8686";
         kind = "lidarr";
+        checkPath = "/ping";
         credential = "lidarr-api-key";
-      }
-      {
+      })
+      (card "prowlarr" {
         name = "Prowlarr";
-        url = "https://prowlarr.home.reuski.dev";
-        check = "https://prowlarr.home.reuski.dev/ping";
-        api = "http://127.0.0.1:9696";
         kind = "prowlarr";
+        checkPath = "/ping";
         credential = "prowlarr-api-key";
-      }
+      })
       {
         name = "Vaultwarden";
         url = "https://${tsHost}:8222";

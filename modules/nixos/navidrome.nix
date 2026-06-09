@@ -43,9 +43,7 @@
 
         users.users.navidrome.extraGroups = [ media.group ];
 
-        systemd.tmpfiles.rules = [
-          "d ${cfg.musicFolder} 2775 ${media.user} ${media.group} -"
-        ];
+        media.directories.${cfg.musicFolder} = { };
 
         proxy.services.navidrome.port = port;
       };

@@ -10,6 +10,7 @@
       cfg = config.media.audiobookshelf;
       mediaGroup = config.media.group;
       inherit (lib)
+        genAttrs
         mkIf
         mkOption
         types
@@ -41,9 +42,7 @@
 
         users.users.audiobookshelf.extraGroups = [ mediaGroup ];
 
-        systemd.tmpfiles.rules = map (
-          path: "d ${path} 2775 ${config.media.user} ${mediaGroup} -"
-        ) cfg.libraries;
+        media.directories = genAttrs cfg.libraries (_: { });
 
         systemd.services.audiobookshelf.serviceConfig.UMask = "0002";
       };
