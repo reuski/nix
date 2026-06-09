@@ -10,6 +10,7 @@
       cfg = config.media.servarr;
       media = config.media;
       inherit (lib)
+        genAttrs
         mapAttrs
         mkIf
         mkOption
@@ -51,7 +52,7 @@
             };
           };
 
-        systemd.tmpfiles.rules = map (dir: "d ${dir} 2775 ${media.user} ${media.group} -") rootFolders;
+        media.directories = genAttrs rootFolders (_: { });
       };
     };
 }

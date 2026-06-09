@@ -7,8 +7,7 @@
       ...
     }:
     let
-      cfg = config.media.valheim;
-      media = config.media;
+      cfg = config.valheim;
       inherit (lib)
         mkIf
         mkOption
@@ -19,7 +18,7 @@
       bool = b: if b then "1" else "0";
     in
     {
-      options.media.valheim = {
+      options.valheim = {
         enable = mkOption {
           type = types.bool;
           default = false;
@@ -93,11 +92,11 @@
           (cfg.port + 2)
         ];
 
-        systemd.tmpfiles.rules = [
-          "d ${stateDir} 0750 ${media.user} ${media.group} -"
-          "d ${stateDir}/saves 0750 ${media.user} ${media.group} -"
-          "d ${stateDir}/server 0750 ${media.user} ${media.group} -"
-          "d ${stateDir}/backups 0750 ${media.user} ${media.group} -"
+        systemd.tmpfiles.rules = map (dir: "d ${dir} 0750 root root -") [
+          stateDir
+          "${stateDir}/saves"
+          "${stateDir}/server"
+          "${stateDir}/backups"
         ];
       };
     };

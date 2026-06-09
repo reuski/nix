@@ -11,9 +11,10 @@ in
       inherit (lib)
         filterAttrs
         mapAttrs
-        mapAttrsToList
+        mapAttrs'
         mkIf
         mkOption
+        nameValuePair
         optional
         optionalAttrs
         types
@@ -109,8 +110,8 @@ in
 
         proxy.services = mapAttrs (_: c: { inherit (c) port; }) (filterAttrs (_: c: c.port != null) cfg);
 
-        systemd.tmpfiles.rules = mapAttrsToList (
-          _: c: "d ${c.stateDir.path} ${c.stateDir.mode} ${c.stateDir.owner} ${c.stateDir.group} -"
+        media.directories = mapAttrs' (
+          _: c: nameValuePair c.stateDir.path { inherit (c.stateDir) mode owner group; }
         ) (filterAttrs (_: c: c.stateDir != null) cfg);
       };
     };

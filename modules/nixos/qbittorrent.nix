@@ -104,7 +104,8 @@
         };
         downloadDir = mkOption {
           type = types.str;
-          default = "/srv/media/torrents";
+          default = "${media.libraryDir}/torrents";
+          description = "Torrent download/seed dir; under libraryDir so it shares the media filesystem (hardlinks) and relocates with it.";
         };
         environmentFile = mkOption {
           type = types.str;
@@ -158,7 +159,7 @@
               };
               volumes = [
                 "/var/lib/qbittorrent:/config"
-                "${media.libraryDir}:${media.libraryDir}"
+                "${cfg.downloadDir}:${cfg.downloadDir}"
               ];
             };
             unitConfig = {
@@ -173,11 +174,11 @@
 
         systemd.services.gluetun.serviceConfig.ExecStartPre = getExe piaWireguardConfig;
 
-        systemd.tmpfiles.rules = [
-          "d /var/lib/gluetun 0750 ${media.user} ${media.group} -"
-          "d /var/lib/qbittorrent 0755 ${media.user} ${media.group} -"
-          "d ${cfg.downloadDir} 2775 ${media.user} ${media.group} -"
-        ];
+        media.directories = {
+          "/var/lib/gluetun".mode = "0750";
+          "/var/lib/qbittorrent".mode = "0755";
+          ${cfg.downloadDir} = { };
+        };
       };
     };
 }

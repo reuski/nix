@@ -27,9 +27,7 @@
       };
 
       config = mkIf cfg.enable {
-        systemd.tmpfiles.rules = [
-          "d ${cfg.library} 2775 ${media.user} ${media.group} -"
-        ];
+        media.directories.${cfg.library} = { };
 
         systemd.services.calibre-init = {
           requiredBy = [ "calibre-web.service" ];
