@@ -260,6 +260,7 @@ in
     name = "Lintukoto";
     world = "Lintukoto";
     crossplay = false;
+    public = true;
     statusPort = 2459;
     environmentFile = config.sops.templates."valheim-env".path;
   };
@@ -354,6 +355,8 @@ in
       {
         name = "Skaldi";
         url = "https://skaldi.home.reuski.dev";
+        api = "http://127.0.0.1:8083";
+        kind = "skaldi";
       }
       {
         name = "Calibre";
@@ -366,6 +369,8 @@ in
         name = "Tome";
         url = "https://tome.home.reuski.dev";
         check = "https://tome.home.reuski.dev";
+        api = "http://127.0.0.1:3001";
+        kind = "tome";
       }
       {
         name = "Valheim";
