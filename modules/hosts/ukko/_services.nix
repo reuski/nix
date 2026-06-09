@@ -126,6 +126,12 @@ in
       mode = "0400";
       restartUnits = [ "heimdash.service" ];
     };
+    "lidarr/api-key" = {
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "heimdash.service" ];
+    };
     "jellyfin/api-key" = {
       owner = "root";
       group = "root";
@@ -213,6 +219,13 @@ in
       group = "root";
       mode = "0400";
       restartUnits = [ "navidrome.service" ];
+    };
+    "navidrome-heimdash-credentials" = {
+      content = "admin:${config.sops.placeholder."navidrome/admin-password"}";
+      owner = "root";
+      group = "root";
+      mode = "0400";
+      restartUnits = [ "heimdash.service" ];
     };
     "pia-gluetun-env" = {
       content = ''
@@ -328,6 +341,7 @@ in
     credentials = {
       sonarr-api-key.path = config.sops.secrets."sonarr/api-key".path;
       radarr-api-key.path = config.sops.secrets."radarr/api-key".path;
+      lidarr-api-key.path = config.sops.secrets."lidarr/api-key".path;
       prowlarr-api-key.path = config.sops.secrets."prowlarr/api-key".path;
       jellyfin-api-key.path = config.sops.secrets."jellyfin/api-key".path;
       audiobookshelf-api-key.path = config.sops.secrets."audiobookshelf/api-key".path;
@@ -335,6 +349,7 @@ in
       home-assistant-token.path = config.sops.secrets."home-assistant/token".path;
       vaultwarden-admin-token.path = config.sops.secrets."vaultwarden/admin-token".path;
       calibre-credentials.path = config.sops.secrets."calibre/credentials".path;
+      navidrome-credentials.path = config.sops.templates."navidrome-heimdash-credentials".path;
     };
     services = [
       {
@@ -392,6 +407,9 @@ in
         name = "Navidrome";
         url = "https://navidrome.home.reuski.dev";
         check = "https://navidrome.home.reuski.dev";
+        api = "http://127.0.0.1:4533";
+        kind = "navidrome";
+        credential = "navidrome-credentials";
       }
       {
         name = "Calibre";
@@ -434,6 +452,9 @@ in
         name = "Lidarr";
         url = "https://lidarr.home.reuski.dev";
         check = "https://lidarr.home.reuski.dev/ping";
+        api = "http://127.0.0.1:8686";
+        kind = "lidarr";
+        credential = "lidarr-api-key";
       }
       {
         name = "Prowlarr";
