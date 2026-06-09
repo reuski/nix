@@ -22,6 +22,7 @@ in
         nixos.media
         nixos.jellyfin
         nixos.audiobookshelf
+        nixos.navidrome
         nixos.calibre
         nixos.tome
         nixos.maintainerr
