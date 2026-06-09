@@ -9,7 +9,7 @@
     }:
     let
       wpctl = lib.getExe' pkgs.wireplumber "wpctl";
-      noctaliaShell = lib.getExe' pkgs.noctalia-shell "noctalia-shell";
+      noctaliaShell = lib.getExe pkgs.noctalia;
       noctalia =
         cmd:
         [
