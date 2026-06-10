@@ -20,7 +20,6 @@ in
         domain = "reuski.dev";
       };
 
-      # Small VPS: one build at a time so a memory-heavy local build can't OOM.
       nix.settings.max-jobs = 1;
 
       systemd.network.networks."10-wan".networkConfig = {

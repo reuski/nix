@@ -23,7 +23,6 @@ in
 
       boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
 
-      # Keep the nightly on-box upgrade build from starving running services.
       nix.daemonIOSchedClass = "idle";
       systemd.services.nixos-upgrade.serviceConfig = {
         Nice = 19;
