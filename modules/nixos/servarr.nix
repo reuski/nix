@@ -7,15 +7,9 @@
       ...
     }:
     let
-      cfg = config.media.servarr;
+      cfg = config.servarr;
       media = config.media;
-      inherit (lib)
-        genAttrs
-        mapAttrs
-        mkIf
-        mkOption
-        types
-        ;
+      inherit (lib) genAttrs mapAttrs mkEnableOption mkIf;
 
       apps = {
         sonarr.port = 8989;
@@ -31,10 +25,7 @@
       ];
     in
     {
-      options.media.servarr.enable = mkOption {
-        type = types.bool;
-        default = false;
-      };
+      options.servarr.enable = mkEnableOption "the servarr media stack";
 
       config = mkIf cfg.enable {
         quadlets =

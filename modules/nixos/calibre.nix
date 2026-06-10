@@ -8,18 +8,15 @@
       ...
     }:
     let
-      cfg = config.media.calibre;
+      cfg = config.calibre;
       media = config.media;
-      inherit (lib) mkIf mkOption types;
+      inherit (lib) mkEnableOption mkIf mkOption types;
 
       webPort = 8084;
     in
     {
-      options.media.calibre = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-        };
+      options.calibre = {
+        enable = mkEnableOption "Calibre-Web";
         library = mkOption {
           type = types.str;
           default = "${media.libraryDir}/books";

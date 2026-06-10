@@ -1,4 +1,4 @@
-{ config, inputs, ... }:
+{ config, ... }:
 let
   inherit (config.flake.modules) generic homeManager nixos;
 in
@@ -10,7 +10,7 @@ in
         generic.profile
         nixos.nixpkgs
         nixos.cachix
-        nixos.common
+        nixos.base
         nixos.boot
         nixos.networkmanager
         nixos.secrets
@@ -21,22 +21,26 @@ in
         nixos.power
         nixos.fonts
         nixos.niri
+        nixos.localsend
         nixos.nix
         nixos.tailscale
       ];
-
-      nixpkgs.overlays = [
-        inputs.niri.overlays.niri
-      ];
-
-      programs.localsend = {
-        enable = true;
-        openFirewall = true;
-      };
 
       home-manager.users.${config.profile.username} = {
         imports = [ homeManager.wayland ];
         profile = config.profile;
       };
     };
+
+  flake.modules.homeManager.wayland = {
+    imports = [
+      homeManager.base
+      homeManager.packages
+      homeManager.xdg
+      homeManager.niri
+      homeManager.noctalia
+      homeManager.vicinae
+      homeManager.gtk
+    ];
+  };
 }

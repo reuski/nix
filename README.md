@@ -21,7 +21,7 @@ git diff --check
 
 ## Updates
 
-Rolling unstable; CI gates every change by building all hosts.
+Rolling unstable; CI gates every change by building the NixOS hosts and evaluating the darwin host.
 
 - `.github/workflows/flake-lock.yml` — daily `nix flake update` + `nix-update helium-browser`, auto-merges on green.
 - `.github/workflows/nix.yml` — formats + builds hosts on PR/push.

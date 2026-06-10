@@ -8,11 +8,12 @@
       ...
     }:
     let
-      cfg = config.media.jellyfin;
+      cfg = config.jellyfin;
       mediaGroup = config.media.group;
       inherit (lib)
         concatLists
         genAttrs
+        mkEnableOption
         mkIf
         mkOption
         types
@@ -161,11 +162,8 @@
       '';
     in
     {
-      options.media.jellyfin = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-        };
+      options.jellyfin = {
+        enable = mkEnableOption "Jellyfin";
         openFirewall = mkOption {
           type = types.bool;
           default = false;
@@ -187,7 +185,7 @@
         assertions = [
           {
             assertion = builtins.length libraryNames == builtins.length (unique libraryNames);
-            message = "media.jellyfin library names must be unique.";
+            message = "jellyfin library names must be unique.";
           }
         ];
 

@@ -7,10 +7,11 @@
       ...
     }:
     let
-      cfg = config.media.audiobookshelf;
+      cfg = config.audiobookshelf;
       mediaGroup = config.media.group;
       inherit (lib)
         genAttrs
+        mkEnableOption
         mkIf
         mkOption
         types
@@ -19,11 +20,8 @@
       port = 8000;
     in
     {
-      options.media.audiobookshelf = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-        };
+      options.audiobookshelf = {
+        enable = mkEnableOption "Audiobookshelf";
         libraries = mkOption {
           type = types.listOf types.str;
           default = [ ];

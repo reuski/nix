@@ -9,6 +9,7 @@
     let
       cfg = config.valheim;
       inherit (lib)
+        mkEnableOption
         mkIf
         mkOption
         optionalAttrs
@@ -19,10 +20,7 @@
     in
     {
       options.valheim = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-        };
+        enable = mkEnableOption "the Valheim dedicated server";
         name = mkOption {
           type = types.str;
           default = "Valheim";

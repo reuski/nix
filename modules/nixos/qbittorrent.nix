@@ -8,11 +8,12 @@
       ...
     }:
     let
-      cfg = config.media.qbittorrent;
+      cfg = config.qbittorrent;
       media = config.media;
       quadlet = config.virtualisation.quadlet;
       inherit (lib)
         getExe
+        mkEnableOption
         mkIf
         mkOption
         types
@@ -93,11 +94,8 @@
       };
     in
     {
-      options.media.qbittorrent = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-        };
+      options.qbittorrent = {
+        enable = mkEnableOption "qBittorrent behind the PIA VPN pod";
         webuiPort = mkOption {
           type = types.port;
           default = 8080;
