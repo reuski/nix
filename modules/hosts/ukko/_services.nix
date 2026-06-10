@@ -123,18 +123,23 @@ in
       "skaldi.service"
     ];
   }
-  // lib.genAttrs [
-    "audiobookshelf/api-key"
-    "calibre/credentials"
-    "home-assistant/token"
-    "jellyfin/api-key"
-    "lidarr/api-key"
-    "prowlarr/api-key"
-    "qbittorrent/api-key"
-    "radarr/api-key"
-    "sonarr/api-key"
-    "vaultwarden/admin-token"
-  ] (_: { restartUnits = [ "heimdash.service" ]; });
+  //
+    lib.genAttrs
+      [
+        "audiobookshelf/api-key"
+        "calibre/credentials"
+        "home-assistant/token"
+        "jellyfin/api-key"
+        "lidarr/api-key"
+        "prowlarr/api-key"
+        "qbittorrent/api-key"
+        "radarr/api-key"
+        "sonarr/api-key"
+        "vaultwarden/admin-token"
+      ]
+      (_: {
+        restartUnits = [ "heimdash.service" ];
+      });
 
   sops.templates = {
     "acme-cloudflare-env" = {

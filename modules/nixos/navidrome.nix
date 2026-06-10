@@ -9,7 +9,12 @@
     let
       cfg = config.navidrome;
       media = config.media;
-      inherit (lib) mkEnableOption mkIf mkOption types;
+      inherit (lib)
+        mkEnableOption
+        mkIf
+        mkOption
+        types
+        ;
 
       port = 4533;
     in

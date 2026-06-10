@@ -8,7 +8,12 @@
     }:
     let
       cfg = config.tome;
-      inherit (lib) mkEnableOption mkIf mkOption types;
+      inherit (lib)
+        mkEnableOption
+        mkIf
+        mkOption
+        types
+        ;
       port = 3001;
     in
     {
