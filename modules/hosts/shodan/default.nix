@@ -11,7 +11,6 @@ in
         ./_disko.nix
         ./_hardware.nix
         nixos.server
-        nixos.tiny
         nixos.web
         ./_services.nix
       ];
@@ -20,6 +19,9 @@ in
         hostName = "shodan";
         domain = "reuski.dev";
       };
+
+      # Small VPS: one build at a time so a memory-heavy local build can't OOM.
+      nix.settings.max-jobs = 1;
 
       systemd.network.networks."10-wan".networkConfig = {
         DHCP = lib.mkForce "ipv4";
