@@ -7,16 +7,13 @@
       ...
     }:
     let
-      cfg = config.media.maintainerr;
+      cfg = config.maintainerr;
       media = config.media;
-      inherit (lib) mkIf mkOption types;
+      inherit (lib) mkEnableOption mkIf;
       port = 6246;
     in
     {
-      options.media.maintainerr.enable = mkOption {
-        type = types.bool;
-        default = false;
-      };
+      options.maintainerr.enable = mkEnableOption "Maintainerr";
 
       config = mkIf cfg.enable {
         quadlets.maintainerr = {

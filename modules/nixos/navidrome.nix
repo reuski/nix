@@ -7,18 +7,15 @@
       ...
     }:
     let
-      cfg = config.media.navidrome;
+      cfg = config.navidrome;
       media = config.media;
-      inherit (lib) mkIf mkOption types;
+      inherit (lib) mkEnableOption mkIf mkOption types;
 
       port = 4533;
     in
     {
-      options.media.navidrome = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-        };
+      options.navidrome = {
+        enable = mkEnableOption "Navidrome";
         musicFolder = mkOption {
           type = types.str;
           default = "${media.libraryDir}/music";

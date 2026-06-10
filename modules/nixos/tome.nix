@@ -7,19 +7,16 @@
       ...
     }:
     let
-      cfg = config.media.tome;
-      inherit (lib) mkIf mkOption types;
+      cfg = config.tome;
+      inherit (lib) mkEnableOption mkIf mkOption types;
       port = 3001;
     in
     {
-      options.media.tome = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-        };
+      options.tome = {
+        enable = mkEnableOption "Tome";
         calibreLibrary = mkOption {
           type = types.str;
-          default = config.media.calibre.library;
+          default = config.calibre.library;
           description = "Calibre library mounted read-write so Tome can sync progress back to metadata.db.";
         };
       };
@@ -27,8 +24,8 @@
       config = mkIf cfg.enable {
         assertions = [
           {
-            assertion = config.media.calibre.enable;
-            message = "media.tome requires media.calibre.enable for the shared library.";
+            assertion = config.calibre.enable;
+            message = "tome requires calibre.enable for the shared library.";
           }
         ];
 

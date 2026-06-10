@@ -113,140 +113,48 @@ in
   };
 
   sops.secrets = {
-    "cloudflare/dns-token" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-    };
-    "jellyfin/admin-password" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "jellyfin-setup.service" ];
-    };
-    "pia/username" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "gluetun.service" ];
-    };
-    "pia/password" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "gluetun.service" ];
-    };
-    "sonarr/api-key" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
-    };
-    "radarr/api-key" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
-    };
-    "lidarr/api-key" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
-    };
-    "jellyfin/api-key" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
-    };
-    "audiobookshelf/api-key" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
-    };
-    "prowlarr/api-key" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
-    };
-    "qbittorrent/api-key" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
-    };
-    "home-assistant/token" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
-    };
-    "vaultwarden/admin-token" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
-    };
-    "valheim/password" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "valheim.service" ];
-    };
-    "calibre/credentials" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [ "heimdash.service" ];
-    };
-    "navidrome/admin-password" = {
-      owner = "root";
-      group = "root";
-      mode = "0400";
-      restartUnits = [
-        "navidrome.service"
-        "skaldi.service"
-      ];
-    };
-  };
+    "cloudflare/dns-token" = { };
+    "jellyfin/admin-password".restartUnits = [ "jellyfin-setup.service" ];
+    "pia/username".restartUnits = [ "gluetun.service" ];
+    "pia/password".restartUnits = [ "gluetun.service" ];
+    "valheim/password".restartUnits = [ "valheim.service" ];
+    "navidrome/admin-password".restartUnits = [
+      "navidrome.service"
+      "skaldi.service"
+    ];
+  }
+  // lib.genAttrs [
+    "audiobookshelf/api-key"
+    "calibre/credentials"
+    "home-assistant/token"
+    "jellyfin/api-key"
+    "lidarr/api-key"
+    "prowlarr/api-key"
+    "qbittorrent/api-key"
+    "radarr/api-key"
+    "sonarr/api-key"
+    "vaultwarden/admin-token"
+  ] (_: { restartUnits = [ "heimdash.service" ]; });
 
   sops.templates = {
     "acme-cloudflare-env" = {
       content = "CF_DNS_API_TOKEN=${config.sops.placeholder."cloudflare/dns-token"}";
-      owner = "root";
-      group = "root";
-      mode = "0400";
       restartUnits = [ "acme-home.reuski.dev.service" ];
     };
     "vaultwarden-env" = {
       content = "ADMIN_TOKEN=${config.sops.placeholder."vaultwarden/admin-token"}";
-      owner = "root";
-      group = "root";
-      mode = "0400";
       restartUnits = [ "vaultwarden.service" ];
     };
     "valheim-env" = {
       content = "PASSWORD=${config.sops.placeholder."valheim/password"}";
-      owner = "root";
-      group = "root";
-      mode = "0400";
       restartUnits = [ "valheim.service" ];
     };
     "navidrome-env" = {
       content = "ND_DEVAUTOCREATEADMINPASSWORD=${config.sops.placeholder."navidrome/admin-password"}";
-      owner = "root";
-      group = "root";
-      mode = "0400";
       restartUnits = [ "navidrome.service" ];
     };
     "navidrome-heimdash-credentials" = {
       content = "admin:${config.sops.placeholder."navidrome/admin-password"}";
-      owner = "root";
-      group = "root";
-      mode = "0400";
       restartUnits = [ "heimdash.service" ];
     };
     "pia-gluetun-env" = {
@@ -256,14 +164,11 @@ in
         VPN_PORT_FORWARDING_USERNAME=${config.sops.placeholder."pia/username"}
         VPN_PORT_FORWARDING_PASSWORD=${config.sops.placeholder."pia/password"}
       '';
-      owner = "root";
-      group = "root";
-      mode = "0400";
       restartUnits = [ "gluetun.service" ];
     };
   };
 
-  media.jellyfin = {
+  jellyfin = {
     enable = true;
     openFirewall = true;
     admin.passwordFile = config.sops.secrets."jellyfin/admin-password".path;
@@ -280,31 +185,31 @@ in
       }
     ];
   };
-  media.audiobookshelf = {
+  audiobookshelf = {
     enable = true;
     libraries = [ "${config.media.libraryDir}/audiobooks" ];
   };
-  media.navidrome = {
+  navidrome = {
     enable = true;
     environmentFile = config.sops.templates."navidrome-env".path;
   };
 
-  media.maintainerr.enable = true;
+  maintainerr.enable = true;
 
-  media.calibre.enable = true;
+  calibre.enable = true;
 
-  media.tome.enable = true;
+  tome.enable = true;
 
   vaultwarden = {
     enable = true;
     domain = "https://${tsHost}:8222";
     environmentFile = config.sops.templates."vaultwarden-env".path;
   };
-  media.servarr.enable = true;
+  servarr.enable = true;
 
   hass.enable = true;
 
-  media.qbittorrent = {
+  qbittorrent = {
     enable = true;
     region = "ro";
     environmentFile = config.sops.templates."pia-gluetun-env".path;

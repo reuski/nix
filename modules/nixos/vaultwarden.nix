@@ -9,6 +9,7 @@
     let
       cfg = config.vaultwarden;
       inherit (lib)
+        mkEnableOption
         mkIf
         mkOption
         types
@@ -16,10 +17,7 @@
     in
     {
       options.vaultwarden = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-        };
+        enable = mkEnableOption "Vaultwarden";
         domain = mkOption { type = types.str; };
         port = mkOption {
           type = types.port;

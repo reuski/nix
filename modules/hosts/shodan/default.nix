@@ -15,10 +15,7 @@ in
         ./_services.nix
       ];
 
-      networking = {
-        hostName = "shodan";
-        domain = "reuski.dev";
-      };
+      networking.domain = "reuski.dev";
 
       nix.settings.max-jobs = 1;
 

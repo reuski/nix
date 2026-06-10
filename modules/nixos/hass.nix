@@ -9,7 +9,7 @@
     }:
     let
       cfg = config.hass;
-      inherit (lib) mkIf mkOption types;
+      inherit (lib) mkEnableOption mkIf;
       configuration = pkgs.writeText "home-assistant-configuration.yaml" ''
         default_config:
 
@@ -28,10 +28,7 @@
       '';
     in
     {
-      options.hass.enable = mkOption {
-        type = types.bool;
-        default = false;
-      };
+      options.hass.enable = mkEnableOption "Home Assistant";
 
       config = mkIf cfg.enable {
         quadlets.hass = {

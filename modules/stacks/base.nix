@@ -28,20 +28,4 @@ in
 
       programs.home-manager.enable = true;
     };
-
-  flake.modules.homeManager.wayland = {
-    imports = [
-      homeManager.base
-      homeManager.packages
-      homeManager.xdg
-      homeManager.niri
-      homeManager.noctalia
-      homeManager.vicinae
-      homeManager.gtk
-    ];
-  };
-
-  flake.modules.homeManager.mac = {
-    imports = [ homeManager.base ];
-  };
 }
