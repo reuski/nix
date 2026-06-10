@@ -10,7 +10,12 @@
     let
       cfg = config.calibre;
       media = config.media;
-      inherit (lib) mkEnableOption mkIf mkOption types;
+      inherit (lib)
+        mkEnableOption
+        mkIf
+        mkOption
+        types
+        ;
 
       webPort = 8084;
     in

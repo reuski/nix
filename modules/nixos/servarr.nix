@@ -9,7 +9,12 @@
     let
       cfg = config.servarr;
       media = config.media;
-      inherit (lib) genAttrs mapAttrs mkEnableOption mkIf;
+      inherit (lib)
+        genAttrs
+        mapAttrs
+        mkEnableOption
+        mkIf
+        ;
 
       apps = {
         sonarr.port = 8989;
