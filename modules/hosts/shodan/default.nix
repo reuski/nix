@@ -11,7 +11,6 @@ in
         ./_disko.nix
         ./_hardware.nix
         nixos.server
-        nixos.tiny
         nixos.web
         ./_services.nix
       ];
@@ -20,6 +19,8 @@ in
         hostName = "shodan";
         domain = "reuski.dev";
       };
+
+      nix.settings.max-jobs = 1;
 
       systemd.network.networks."10-wan".networkConfig = {
         DHCP = lib.mkForce "ipv4";
