@@ -10,7 +10,7 @@ in
         generic.profile
         nixos.nixpkgs
         nixos.cachix
-        nixos.base
+        nixos.core
         nixos.boot
         nixos.networkmanager
         nixos.secrets
