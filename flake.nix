@@ -12,7 +12,7 @@
     import-tree.url = "github:vic/import-tree";
 
     darwin = {
-      url = "github:LnL7/nix-darwin";
+      url = "github:nix-darwin/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

@@ -1,20 +1,20 @@
 # reuski/nix
 
+Dendritic flake (flake-parts + import-tree) for all personal systems. Structure and module rules: [AGENTS.md](AGENTS.md).
+
 ## Hosts
 
-| Host      | Role    | Notes                  |
-| --------- | ------- | ---------------------- |
-| `hiisi`   | Wayland | Laptop, primary deploy |
-| `shodan`  | Server  | VPS, web apps          |
-| `ukko`    | Server  | Home server, wired LAN |
-| `abraxas` | Mac     | MacBook, dev env       |
+| Host      | Stack     | System           | Notes                                  |
+| --------- | --------- | ---------------- | -------------------------------------- |
+| `hiisi`   | `wayland` | `x86_64-linux`   | ThinkPad laptop, primary deploy        |
+| `shodan`  | `server`  | `x86_64-linux`   | VPS, public web apps                   |
+| `ukko`    | `server`  | `x86_64-linux`   | Home server: media, containers, DNS    |
+| `abraxas` | `mac`     | `aarch64-darwin` | MacBook, dev env                       |
 
-## Check
+## Validate
 
 ```sh
 nix fmt
-nix flake update
-nix run nixpkgs#nix-update -- helium-browser --flake --url https://github.com/imputnet/helium-linux --override-filename modules/packages/helium.nix
 nix flake check
 git diff --check
 ```
@@ -26,6 +26,13 @@ Rolling unstable; CI gates every change by building the NixOS hosts and evaluati
 - `.github/workflows/flake-lock.yml` — daily `nix flake update` + `nix-update helium-browser`, auto-merges on green.
 - `.github/workflows/nix.yml` — formats + builds hosts on PR/push.
 - `system.autoUpgrade` — hosts pull `main#<host>` daily; servers reboot 04:00–06:00 on kernel change.
+
+Manual equivalent of the daily lane:
+
+```sh
+nix flake update
+nix run nixpkgs#nix-update -- helium-browser --flake --url https://github.com/imputnet/helium-linux --override-filename modules/packages/helium.nix
+```
 
 ## Secrets
 

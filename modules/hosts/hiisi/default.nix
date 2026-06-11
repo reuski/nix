@@ -4,10 +4,7 @@ let
 in
 {
   configurations.nixos.hiisi.module =
-    { config, pkgs, ... }:
-    let
-      ageKeyFile = "${config.profile.homeDirectory}/.config/sops/age/keys.txt";
-    in
+    { config, ... }:
     {
       imports = [
         inputs.disko.nixosModules.disko
@@ -22,16 +19,10 @@ in
         owner = config.profile.username;
       };
 
-      home-manager.users.${config.profile.username} = {
-        imports = [ homeManager.dev ];
-        home.file.".config/sops/age/.keep".text = "";
-        home.packages = with pkgs; [
-          age
-          sops
-          ssh-to-age
-        ];
-        home.sessionVariables.SOPS_AGE_KEY_FILE = ageKeyFile;
-      };
+      home-manager.users.${config.profile.username}.imports = [
+        homeManager.dev
+        homeManager.secrets
+      ];
 
       system.stateVersion = config.system.nixos.release;
     };
