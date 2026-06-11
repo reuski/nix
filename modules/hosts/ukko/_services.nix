@@ -84,6 +84,11 @@ in
             answer = localAddress;
             enabled = true;
           }
+          {
+            domain = "mumble.reuski.dev";
+            answer = localAddress;
+            enabled = true;
+          }
         ];
       };
       filters = [
@@ -118,6 +123,7 @@ in
     "pia/username".restartUnits = [ "gluetun.service" ];
     "pia/password".restartUnits = [ "gluetun.service" ];
     "valheim/password".restartUnits = [ "valheim.service" ];
+    "mumble/password".restartUnits = [ "murmur.service" ];
     "navidrome/admin-password".restartUnits = [
       "navidrome.service"
       "skaldi.service"
@@ -153,6 +159,10 @@ in
     "valheim-env" = {
       content = "PASSWORD=${config.sops.placeholder."valheim/password"}";
       restartUnits = [ "valheim.service" ];
+    };
+    "mumble-env" = {
+      content = "MUMBLE_PASSWORD=${config.sops.placeholder."mumble/password"}";
+      restartUnits = [ "murmur.service" ];
     };
     "navidrome-env" = {
       content = "ND_DEVAUTOCREATEADMINPASSWORD=${config.sops.placeholder."navidrome/admin-password"}";
@@ -230,10 +240,18 @@ in
     environmentFile = config.sops.templates."valheim-env".path;
   };
 
+  mumble = {
+    enable = true;
+    environmentFile = config.sops.templates."mumble-env".path;
+  };
+
   services.cloudflare-dyndns = {
     enable = true;
     apiTokenFile = config.sops.secrets."cloudflare/dns-token".path;
-    domains = [ "valheim.reuski.dev" ];
+    domains = [
+      "valheim.reuski.dev"
+      "mumble.reuski.dev"
+    ];
   };
 
   services.skaldi.enable = true;

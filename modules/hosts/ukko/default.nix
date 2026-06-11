@@ -31,6 +31,7 @@ in
         nixos.hass
         nixos.vaultwarden
         nixos.valheim
+        nixos.mumble
         nixos.skaldi
       ];
 
