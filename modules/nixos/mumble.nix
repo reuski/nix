@@ -8,7 +8,12 @@
     }:
     let
       cfg = config.mumble;
-      inherit (lib) mkEnableOption mkIf mkOption types;
+      inherit (lib)
+        mkEnableOption
+        mkIf
+        mkOption
+        types
+        ;
     in
     {
       options.mumble = {
