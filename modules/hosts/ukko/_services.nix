@@ -80,6 +80,16 @@ in
             enabled = true;
           }
           {
+            domain = "router.home.reuski.dev";
+            answer = "192.168.1.1";
+            enabled = true;
+          }
+          {
+            domain = "wifi.home.reuski.dev";
+            answer = "192.168.1.2";
+            enabled = true;
+          }
+          {
             domain = "valheim.reuski.dev";
             answer = localAddress;
             enabled = true;
@@ -360,6 +370,12 @@ in
         kind = "valheim";
         checkPath = "/health";
       })
+      {
+        name = "Mumble";
+        url = "mumble://mumble.reuski.dev";
+        api = "udp://127.0.0.1:64738";
+        kind = "mumble";
+      }
       (card "sonarr" {
         name = "Sonarr";
         kind = "sonarr";
