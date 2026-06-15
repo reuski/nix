@@ -33,7 +33,10 @@ in
         nixos.valheim
         nixos.mumble
         nixos.skaldi
+        nixos.deploy
       ];
+
+      deploy.targets = [ "shodan" ];
 
       system.stateVersion = config.system.nixos.release;
     };

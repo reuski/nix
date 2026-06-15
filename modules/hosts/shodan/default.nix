@@ -17,7 +17,9 @@ in
 
       networking.domain = "reuski.dev";
 
-      nix.settings.max-jobs = 1;
+      system.autoUpgrade.enable = lib.mkForce false;
+
+      services.tailscale.extraSetFlags = [ "--ssh" ];
 
       systemd.network.networks."10-wan".networkConfig = {
         DHCP = lib.mkForce "ipv4";
