@@ -27,7 +27,7 @@
                 --refresh --option tarball-ttl 0
             }
             deploy || deploy
-            ssh $NIX_SSHOPTS "root@${host}" '
+            ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes "root@${host}" '
               booted=$(readlink /run/booted-system/{kernel,initrd,kernel-modules})
               built=$(readlink /run/current-system/{kernel,initrd,kernel-modules})
               [ "$booted" = "$built" ] || systemctl reboot
