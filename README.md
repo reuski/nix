@@ -6,7 +6,8 @@ Dendritic flake (flake-parts + import-tree) for all personal systems. Structure 
 
 | Host      | Stack     | System           | Notes                                  |
 | --------- | --------- | ---------------- | -------------------------------------- |
-| `hiisi`   | `wayland` | `x86_64-linux`   | ThinkPad laptop, primary deploy        |
+| `hiisi`   | `laptop`  | `x86_64-linux`   | ThinkPad laptop, primary deploy        |
+| `sampo`   | `desktop` | `x86_64-linux`   | Gaming desktop, Plasma 6, RTX 3090     |
 | `shodan`  | `server`  | `x86_64-linux`   | VPS, public web apps                   |
 | `ukko`    | `server`  | `x86_64-linux`   | Home server: media, containers, DNS    |
 | `abraxas` | `mac`     | `aarch64-darwin` | MacBook, dev env                       |

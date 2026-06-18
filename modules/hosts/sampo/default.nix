@@ -3,16 +3,16 @@ let
   inherit (config.flake.modules) homeManager nixos;
 in
 {
-  configurations.nixos.hiisi.module =
+  configurations.nixos.sampo.module =
     { config, ... }:
     {
       imports = [
         inputs.disko.nixosModules.disko
         ./_disko.nix
-        inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480
         ./_hardware.nix
-        nixos.laptop
-        ./_desktop.nix
+        nixos.desktop
+        nixos.gaming
+        ./_audio.nix
       ];
 
       sops.secrets.env = {

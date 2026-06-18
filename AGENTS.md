@@ -7,10 +7,11 @@ Personal Nix flake: NixOS, nix-darwin, Home Manager. Dendritic — flake-parts +
 - `flake.nix` → `import-tree` loads all of `modules/` into flake-parts; `_`-prefixed paths are skipped.
 - Reusable code exports as `flake.modules.{nixos,darwin,homeManager,generic}.<name>` — one module per file, named for the option it owns (`jellyfin.nix` → `options.jellyfin`).
 - `modules/configurations/` lifts `configurations.{nixos,darwin}` into flake outputs + per-system `checks` — CI builds exactly these.
-- `modules/hosts/<host>/` — real systems only: `hiisi` (Wayland laptop), `shodan` (VPS), `ukko` (home server), `abraxas` (Mac). `_*.nix` are that host's private hardware/disko/network/service wiring, imported by its `default.nix`.
+- `modules/hosts/<host>/` — real systems only: `hiisi` (Niri laptop), `sampo` (Plasma gaming desktop), `shodan` (VPS), `ukko` (home server), `abraxas` (Mac). `_*.nix` are that host's private hardware/disko/network/service wiring, imported by its `default.nix`.
 - `modules/stacks/` — roles, one per file, pure composition (imports only); a role may export the same name across classes:
   - `server.nix` → `nixos.server`: headless server; its settings live in the `nixos.headless` leaf (LTS kernel, trimmed closure, auto-upgrade + reboot).
-  - `wayland.nix` → `nixos.wayland` + `homeManager.wayland`: Linux workstation.
+  - `laptop.nix` → `nixos.laptop` + `homeManager.laptop`: Niri laptop; compositor via `nixos.niri`/`homeManager.niri`, plus `nixos.power` (upower, PPD, networkmanager wifi).
+  - `desktop.nix` → `nixos.desktop` + `homeManager.desktop`: Plasma 6 desktop; compositor via `nixos.plasma` leaf; gaming is host-opt-in via `nixos.gaming` (Steam, gamemode, gamescope, 32-bit). No power/wifi laptop-isms.
   - `mac.nix` → `darwin.mac`: Darwin workstation; system config via nix-darwin, GUI apps via Homebrew, user env via the same `homeManager.base`.
   - `base.nix` → `homeManager.base`: CLI/home every user env gets; `nixos.core` (`modules/nixos/core.nix`) is the OS-level leaf every NixOS host imports.
 - `modules/generic/` — cross-class modules: `profile` (identity: user, locale, keyboard, colors) and `editor` (shared vimrc consumed by both `nixos.vim` and `homeManager.vim`).
