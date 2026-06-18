@@ -7,104 +7,52 @@
       enable = true;
 
       settings = {
-        bar = {
+        shell = {
+          font_family = "Hack Nerd Font Propo";
+          corner_radius_scale = 0.5;
+          polkit_agent = true;
+        };
+
+        theme = { mode = "dark"; source = "builtin"; builtin = "Gruvbox"; };
+
+        # Niri spawns swaybg at startup (modules/home-manager/niri.nix).
+        wallpaper.enabled = false;
+
+        bar.main = {
           position = "top";
-          density = "compact";
-          backgroundOpacity = 0.92;
-          widgets = {
-            left = [
-              {
-                id = "ActiveWindow";
-                showIcon = true;
-                maxWidth = 320;
-              }
-              {
-                id = "MediaMini";
-                maxWidth = 220;
-              }
-            ];
-            center = [
-              {
-                id = "Workspace";
-                hideUnoccupied = true;
-                labelMode = "index";
-              }
-            ];
-            right = [
-              { id = "Tray"; }
-              { id = "WiFi"; }
-              { id = "Volume"; }
-              {
-                id = "Battery";
-                alwaysShowPercentage = true;
-                warningThreshold = 20;
-              }
-              {
-                id = "ControlCenter";
-                useDistroLogo = true;
-              }
-            ];
-          };
-        };
-
-        colorSchemes = {
-          darkMode = true;
-          predefinedScheme = "Gruvbox";
-        };
-
-        general = {
-          radiusRatio = 0.2;
-          compactLockScreen = true;
-          lockOnSuspend = false;
-          autoStartAuth = true;
-          allowPasswordWithFprintd = true;
-          showChangelogOnStartup = false;
+          background_opacity = 0.92;
+          margin_h = 0;
+          margin_v = 0;
+          radius = 0;
+          shadow = false;
+          start = [ "workspaces" ];
+          center = [ "clock" ];
+          end = [ "volume" "battery" "control-center" ];
         };
 
         idle = {
-          enabled = true;
-          lockTimeout = 0;
-          screenOffTimeout = 180;
-          suspendTimeout = 900;
-          fadeDuration = 1;
+          pre_action_fade_seconds = 1.0;
+          behavior."screen-off" = {
+            enabled = true;
+            timeout = 180;
+            command = "noctalia:dpms-off";
+            resume_command = "noctalia:dpms-on";
+          };
+          behavior.suspend = {
+            enabled = true;
+            timeout = 900;
+            command = "noctalia:session suspend";
+          };
         };
 
-        location = {
-          weatherEnabled = false;
-        };
-
-        controlCenter = {
-          cards = [
-            {
-              enabled = false;
-              id = "profile-card";
-            }
-            {
-              enabled = true;
-              id = "shortcuts-card";
-            }
-            {
-              enabled = true;
-              id = "audio-card";
-            }
-            {
-              enabled = false;
-              id = "brightness-card";
-            }
-            {
-              enabled = false;
-              id = "weather-card";
-            }
-            {
-              enabled = true;
-              id = "media-sysmon-card";
-            }
-          ];
-        };
-
-        ui.fontDefault = "Hack Nerd Font Propo";
-
-        wallpaper.enabled = false;
+        control_center.shortcuts = [
+          { type = "wifi"; }
+          { type = "bluetooth"; }
+          { type = "nightlight"; }
+          { type = "notification"; }
+          { type = "power_profile"; }
+          { type = "session"; }
+        ];
       };
     };
   };

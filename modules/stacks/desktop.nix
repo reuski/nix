@@ -12,6 +12,7 @@ in
         nixos.cachix
         nixos.core
         nixos.boot
+        nixos.metal
         nixos.networkmanager
         nixos.secrets
         nixos.users
