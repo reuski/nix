@@ -108,14 +108,4 @@
       };
     };
   };
-
-  fileSystems."/mnt/storage" = {
-    device = "/dev/disk/by-uuid/bf826347-362f-40c7-9a26-3b81b35a5d59";
-    fsType = "btrfs";
-    options = [
-      "nofail"
-      "compress=zstd"
-      "noatime"
-    ];
-  };
 }

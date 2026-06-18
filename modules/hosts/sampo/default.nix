@@ -13,6 +13,7 @@ in
         nixos.desktop
         nixos.gaming
         ./_audio.nix
+        ./_desktop.nix
       ];
 
       sops.secrets.env = {
