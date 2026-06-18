@@ -1,15 +1,28 @@
 { ... }:
 {
   flake.modules.homeManager.pi =
-    { pkgs, ... }:
+    { pkgs, lib, ... }:
     let
       json = pkgs.formats.json { };
+      piPackages = [
+        "npm:pi-web-access"
+        "npm:context-mode"
+        "npm:pi-mcp-adapter"
+        "npm:pi-subagents"
+      ];
     in
     {
       home.packages = with pkgs; [
         pi-coding-agent
         pi-acp
+        mcp-nixos
       ];
+
+      home.activation.piPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        for pkg in ${lib.concatStringsSep " " piPackages}; do
+          [ -d "$HOME/.pi/agent/npm/''${pkg#npm:}" ] || run ${lib.getExe' pkgs.pi-coding-agent "pi"} install "$pkg" || true
+        done
+      '';
 
       home.file.".pi/agent/AGENTS.md".text = ''
         # Operational Directives
@@ -37,6 +50,7 @@
       '';
 
       home.file.".pi/agent/settings.json".source = json.generate "pi-settings.json" {
+        packages = piPackages;
         terminal.showImages = false;
         hideThinkingBlock = true;
         quietStartup = true;
@@ -72,13 +86,21 @@
         enabledModels = [
           "openai-codex/gpt-5.5"
           "moonshot/kimi-k2.6"
-          "zai/glm-5.1"
+          "zai/glm-5.2"
           "deepseek/deepseek-v4-pro"
           "local/local"
         ];
         markdown.codeBlockIndent = "  ";
         defaultProvider = "local";
         defaultModel = "local";
+      };
+
+      home.file.".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
+        mcpServers.nixos = {
+          command = lib.getExe' pkgs.mcp-nixos "mcp-nixos";
+          lifecycle = "lazy";
+          idleTimeout = 10;
+        };
       };
 
       home.file.".pi/agent/models.json".source = json.generate "pi-models.json" {
