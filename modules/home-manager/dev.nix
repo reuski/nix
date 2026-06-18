@@ -27,6 +27,8 @@
         golangci-lint
         govulncheck
         python314
+        ruff
+        ty
         uv
         zig
       ];
@@ -39,6 +41,29 @@
       programs.zed-editor = {
         enable = true;
         package = if isDarwin then null else pkgs.zed-editor;
+
+        userTasks = [
+          {
+            label = "bun run file";
+            command = "bun";
+            args = [ "run" "$ZED_FILE" ];
+          }
+          {
+            label = "bun test";
+            command = "bun";
+            args = [ "test" ];
+          }
+          {
+            label = "bun test file";
+            command = "bun";
+            args = [ "test" "$ZED_FILE" ];
+          }
+          {
+            label = "bun dev";
+            command = "bun";
+            args = [ "run" "dev" ];
+          }
+        ];
 
         extensions = [
           "0x96f"
@@ -66,6 +91,7 @@
           cli_default_open_behavior = "existing_window";
           remove_trailing_whitespace_on_save = true;
           ensure_final_newline_on_save = true;
+          format_on_save = "on";
 
           project_panel = rightDock;
           collaboration_panel = rightDock;
@@ -102,6 +128,8 @@
 
           lsp = {
             biome.settings.require_config_file = true;
+            ty.binary.path = lib.getExe pkgs.ty;
+            ruff.binary.path = lib.getExe pkgs.ruff;
             gopls.settings = {
               gofumpt = true;
               staticcheck = true;
@@ -165,6 +193,15 @@
               "css"
               "tailwindcss-language-server"
             ];
+            Python = {
+              language_servers = [
+                "ty"
+                "ruff"
+                "!pyright"
+                "!pylsp"
+              ];
+              formatter.language_server.name = "ruff";
+            };
             Go = {
               tab_size = 4;
               language_servers = [ "gopls" ];
