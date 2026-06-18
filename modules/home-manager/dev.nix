@@ -46,7 +46,10 @@
           {
             label = "bun run file";
             command = "bun";
-            args = [ "run" "$ZED_FILE" ];
+            args = [
+              "run"
+              "$ZED_FILE"
+            ];
           }
           {
             label = "bun test";
@@ -56,12 +59,18 @@
           {
             label = "bun test file";
             command = "bun";
-            args = [ "test" "$ZED_FILE" ];
+            args = [
+              "test"
+              "$ZED_FILE"
+            ];
           }
           {
             label = "bun dev";
             command = "bun";
-            args = [ "run" "dev" ];
+            args = [
+              "run"
+              "dev"
+            ];
           }
         ];
 
