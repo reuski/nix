@@ -16,7 +16,8 @@ runs:
         nix build --no-link --print-build-logs \
           .#checks.x86_64-linux.nixos-hiisi \
           .#checks.x86_64-linux.nixos-shodan \
-          .#checks.x86_64-linux.nixos-ukko
+          .#checks.x86_64-linux.nixos-ukko \
+          .#checks.x86_64-linux.nixos-sampo
       shell: bash
 
     - run: nix eval --raw .#darwinConfigurations.abraxas.config.system.build.toplevel.drvPath

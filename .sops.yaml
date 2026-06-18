@@ -32,3 +32,8 @@ creation_rules:
       - age:
           - *abraxas
           - *hiisi
+  - path_regex: secrets/sampo\.yaml$
+    key_groups:
+      - age:
+          - *abraxas
+          - *hiisi

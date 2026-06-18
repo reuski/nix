@@ -3,7 +3,7 @@ let
   inherit (config.flake.modules) generic homeManager nixos;
 in
 {
-  flake.modules.nixos.wayland =
+  flake.modules.nixos.laptop =
     { config, ... }:
     {
       imports = [
@@ -36,12 +36,12 @@ in
       };
 
       home-manager.users.${config.profile.username} = {
-        imports = [ homeManager.wayland ];
+        imports = [ homeManager.laptop ];
         profile = config.profile;
       };
     };
 
-  flake.modules.homeManager.wayland = {
+  flake.modules.homeManager.laptop = {
     imports = [
       homeManager.base
       homeManager.packages
