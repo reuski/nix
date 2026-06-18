@@ -2,7 +2,7 @@ keys:
   - &abraxas age13n73mqgs2sgwqavprmn80djncc2pzpexxqe53f8jsxq4sadlnd3qcw5esf
   - &shodan age170wzd3m4kld0ctatf0ul0y8p6hlfdphzeyex0ascrw7cqaeqwa6sy786tr
   - &ukko age16y8dgerdxamh9z9da4alwahtw5fyac45djxmd3r7p0yeg8nk0v0qhmu50a
-  - &hiisi age19wsx4zq7qccfssx2kejzsqply2l3pw7a23ghs5dmktdwgstpsudq02atz0
+  - &hiisi age1mkmxes0zkqk0ucepftduka4c9l40qwcfku7mpuzh3tqvjnlxlsrq5vwrcn
 
 creation_rules:
   - path_regex: secrets/users\.yaml$
