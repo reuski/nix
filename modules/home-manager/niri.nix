@@ -65,7 +65,18 @@
 
         hotkey-overlay.skip-at-startup = true;
 
-        spawn-at-startup = [ { command = [ noctaliaShell ]; } ];
+        spawn-at-startup = [
+          { command = [ noctaliaShell ]; }
+          {
+            command = [
+              (lib.getExe pkgs.swaybg)
+              "--image"
+              "${config.home.homeDirectory}/Pictures/Wallpapers/${config.wallpaper.primary}.png"
+              "--mode"
+              "fill"
+            ];
+          }
+        ];
 
         binds = {
           "Mod+Return".action.spawn = lib.getExe pkgs.ghostty;
