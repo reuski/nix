@@ -17,7 +17,10 @@
     "sd_mod"
     "uas"
   ];
-  boot.kernelModules = [ "kvm-intel" ];
+  boot.kernelModules = [
+    "kvm-intel"
+    "ntsync"
+  ];
 
   boot.kernelPackages = lib.mkForce pkgs.linuxPackages_zen;
   boot.kernelParams = [
@@ -39,6 +42,8 @@
 
   services.fwupd.enable = true;
 
+  hardware.graphics.extraPackages = [ pkgs.nvidia-vaapi-driver ];
+
   services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
@@ -51,6 +56,12 @@
   environment.sessionVariables = {
     __GL_GSYNC_ALLOWED = "1";
     __GL_VRR_ALLOWED = "1";
+    __GL_SHADER_DISK_CACHE = "1";
+    __GL_SHADER_DISK_CACHE_SIZE = "12000000000";
+    __GL_SHADER_DISK_CACHE_SKIP_CLEANUP = "1";
+    __GL_MaxFramesAllowed = "1";
+    LIBVA_DRIVER_NAME = "nvidia";
+    NVD_BACKEND = "direct";
   };
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
