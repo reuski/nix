@@ -144,6 +144,10 @@
                 "/run/gluetun/wireguard:/gluetun/wireguard:ro"
               ];
             };
+            unitConfig = {
+              After = [ "adguardhome.service" ];
+              Wants = [ "adguardhome.service" ];
+            };
           };
 
           containers.qbittorrent = {
