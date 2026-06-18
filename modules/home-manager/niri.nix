@@ -14,8 +14,7 @@
         cmd:
         [
           noctaliaShell
-          "ipc"
-          "call"
+          "msg"
         ]
         ++ (lib.splitString " " cmd);
     in
@@ -165,7 +164,7 @@
             "5%-"
           ];
 
-          "Mod+Shift+E".action.spawn = noctalia "sessionMenu toggle";
+          "Mod+Shift+E".action.spawn = noctalia "panel-toggle session";
           "Mod+Shift+Q".action.quit = [ ];
         };
       };
