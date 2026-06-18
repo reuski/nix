@@ -19,7 +19,7 @@
   ];
   boot.kernelModules = [ "kvm-intel" ];
 
-  boot.kernelPackages = pkgs.linuxPackages_zen;
+  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_zen;
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
@@ -45,7 +45,6 @@
     modesetting.enable = true;
     open = true;
     powerManagement.enable = true;
-    powerManagement.fineGrained = false;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
 
