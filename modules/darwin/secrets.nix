@@ -8,7 +8,11 @@ in
     {
       home-manager.users.${config.profile.username} = {
         imports = [ homeManager.secrets ];
-        sops.defaultSopsFile = ../../secrets + "/${config.networking.hostName}.yaml";
+        sops.defaultSopsFile =
+          let
+            hostFile = ../../secrets + "/${config.networking.hostName}.yaml";
+          in
+          if builtins.pathExists hostFile then hostFile else ../../secrets/env.yaml;
       };
     };
 }
