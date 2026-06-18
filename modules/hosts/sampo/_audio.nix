@@ -54,6 +54,6 @@
     reaper-reapack-extension
     yabridge
     yabridgectl
-    wineWowPackages.staging
+    wineWow64Packages.staging
   ];
 }
