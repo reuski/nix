@@ -38,11 +38,6 @@
         options = lib.mkDefault "--delete-older-than 7d";
       };
 
-      nix.optimise = {
-        automatic = true;
-        dates = "weekly";
-      };
-
       system.autoUpgrade = {
         enable = true;
         flake = "github:reuski/nix/main#${config.networking.hostName}";

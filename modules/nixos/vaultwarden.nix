@@ -41,7 +41,6 @@
             DOMAIN = cfg.domain;
             SIGNUPS_ALLOWED = false;
             INVITATIONS_ALLOWED = true;
-            SIGNUPS_VERIFY = false;
             SHOW_PASSWORD_HINT = false;
           };
         };

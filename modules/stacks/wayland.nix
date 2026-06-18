@@ -17,14 +17,23 @@ in
         nixos.users
         nixos.locale
         nixos.audio
-        nixos.graphics
         nixos.power
         nixos.fonts
         nixos.niri
-        nixos.localsend
         nixos.nix
-        nixos.tailscale
       ];
+
+      hardware.graphics.enable = true;
+
+      programs.localsend = {
+        enable = true;
+        openFirewall = true;
+      };
+
+      services.tailscale = {
+        enable = true;
+        openFirewall = true;
+      };
 
       home-manager.users.${config.profile.username} = {
         imports = [ homeManager.wayland ];

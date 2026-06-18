@@ -26,7 +26,7 @@
         enable = true;
         wait-online.anyInterface = true;
         networks."10-wan" = {
-          matchConfig.Name = "en* eth* ens*";
+          matchConfig.Name = "en* eth*";
           networkConfig = {
             DHCP = "yes";
             IPv6AcceptRA = true;
