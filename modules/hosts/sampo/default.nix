@@ -16,6 +16,7 @@ in
       ];
 
       sops.secrets.env = {
+        sopsFile = ../../../secrets/env.yaml;
         owner = config.profile.username;
       };
 

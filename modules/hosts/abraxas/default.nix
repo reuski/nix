@@ -26,7 +26,7 @@ in
           homeManager.postgres
           homeManager.redis
         ];
-        sops.secrets.env = { };
+        sops.secrets.env.sopsFile = ../../../secrets/env.yaml;
       };
 
       system.stateVersion = 6;

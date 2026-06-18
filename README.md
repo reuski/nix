@@ -60,8 +60,9 @@ ssh-keygen -t ed25519 -N "" -C "$HOST" -f "$KEYDIR/ssh_host_ed25519_key"
 ssh-to-age -i "$KEYDIR/ssh_host_ed25519_key.pub"  # → .sops.yaml
 
 sops updatekeys --yes secrets/users.yaml
-sops updatekeys --yes "secrets/$HOST.yaml"
-git add .sops.yaml secrets/users.yaml "secrets/$HOST.yaml"
+sops updatekeys --yes secrets/env.yaml                          # shared user API keys (workstations)
+[ -f "secrets/$HOST.yaml" ] && sops updatekeys --yes "secrets/$HOST.yaml"  # host-only secrets (servers)
+git add -A .sops.yaml secrets/
 git commit -m "onboard $HOST"
 ```
 
@@ -128,8 +129,9 @@ mkdir -p "$HOSTDIR"
 age-keygen -o "$HOSTDIR/keys.txt"   # → .sops.yaml
 
 sops updatekeys --yes secrets/users.yaml
-sops updatekeys --yes "secrets/$HOST.yaml"
-git add .sops.yaml secrets/users.yaml "secrets/$HOST.yaml"
+sops updatekeys --yes secrets/env.yaml                          # shared user API keys (workstations)
+[ -f "secrets/$HOST.yaml" ] && sops updatekeys --yes "secrets/$HOST.yaml"  # host-only secrets (servers)
+git add -A .sops.yaml secrets/
 git commit -m "onboard $HOST"
 ```
 
