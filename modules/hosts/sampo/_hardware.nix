@@ -34,7 +34,7 @@
 
   services.scx = {
     enable = true;
-    scheduler = "scx_bpfland";
+    scheduler = "scx_lavd";
   };
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
