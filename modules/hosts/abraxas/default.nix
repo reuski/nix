@@ -22,6 +22,7 @@ in
       home-manager.users.${config.profile.username} = {
         imports = [
           homeManager.dev
+          homeManager.llama
           homeManager.colima
           homeManager.postgres
           homeManager.redis
