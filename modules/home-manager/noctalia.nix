@@ -13,7 +13,11 @@
           polkit_agent = true;
         };
 
-        theme = { mode = "dark"; source = "builtin"; builtin = "Gruvbox"; };
+        theme = {
+          mode = "dark";
+          source = "builtin";
+          builtin = "Gruvbox";
+        };
 
         # Niri spawns swaybg at startup (modules/home-manager/niri.nix).
         wallpaper.enabled = false;
@@ -27,7 +31,11 @@
           shadow = false;
           start = [ "workspaces" ];
           center = [ "clock" ];
-          end = [ "volume" "battery" "control-center" ];
+          end = [
+            "volume"
+            "battery"
+            "control-center"
+          ];
         };
 
         idle = {
