@@ -23,7 +23,9 @@
 
       cudaEnv = lib.optionalString (!isDarwin) ''
         export CUDACXX="${cudatoolkit}/bin/nvcc"
-        export LD_LIBRARY_PATH="/run/opengl-driver/lib:${lib.makeLibraryPath [ cudatoolkit ]}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export LD_LIBRARY_PATH="/run/opengl-driver/lib:${
+          lib.makeLibraryPath [ cudatoolkit ]
+        }''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
       '';
 
       llama = pkgs.writeShellApplication {
