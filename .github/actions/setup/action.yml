@@ -4,6 +4,20 @@ description: Install Nix with the project's CI configuration and binary caches
 runs:
   using: composite
   steps:
+    - name: Free disk space
+      shell: bash
+      run: |
+        df -h /
+        sudo rm -rf \
+          /usr/share/dotnet \
+          /usr/local/lib/android \
+          /usr/local/.ghcup \
+          /opt/ghc \
+          /opt/hostedtoolcache
+        sudo docker system prune -af --volumes >/dev/null 2>&1 || true
+        sudo apt-get clean
+        df -h /
+
     - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
       with:
         extra-conf: |
