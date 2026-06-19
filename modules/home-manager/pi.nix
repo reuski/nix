@@ -84,9 +84,9 @@
         followUpMode = "one-at-a-time";
         transport = "auto";
         enabledModels = [
-          "openai-codex/gpt-5.5"
-          "moonshot/kimi-k2.6"
           "zai/glm-5.2"
+          "moonshot/kimi-k2.6"
+          "openai-codex/gpt-5.5"
           "deepseek/deepseek-v4-pro"
           "local/local"
         ];
@@ -105,61 +105,6 @@
 
       home.file.".pi/agent/models.json".source = json.generate "pi-models.json" {
         providers = {
-          moonshot = {
-            baseUrl = "https://api.moonshot.ai/v1";
-            api = "openai-completions";
-            apiKey = "MOONSHOT_API_KEY";
-            compat = {
-              supportsDeveloperRole = false;
-              supportsReasoningEffort = false;
-            };
-            models = [
-              {
-                id = "kimi-k2.6";
-                name = "Kimi K2.6";
-                reasoning = true;
-                input = [
-                  "text"
-                  "image"
-                ];
-                contextWindow = 262144;
-                maxTokens = 65536;
-                cost = {
-                  input = 0.6;
-                  output = 2.5;
-                  cacheRead = 0.15;
-                  cacheWrite = 0;
-                };
-              }
-            ];
-          };
-
-          deepseek = {
-            baseUrl = "https://api.deepseek.com/v1";
-            api = "openai-completions";
-            apiKey = "DEEPSEEK_API_KEY";
-            compat = {
-              supportsDeveloperRole = false;
-              supportsReasoningEffort = false;
-            };
-            models = [
-              {
-                id = "deepseek-v4-pro";
-                name = "DeepSeek V4 Pro";
-                reasoning = true;
-                input = [ "text" ];
-                contextWindow = 262144;
-                maxTokens = 65536;
-                cost = {
-                  input = 0.55;
-                  output = 2.19;
-                  cacheRead = 0.14;
-                  cacheWrite = 0;
-                };
-              }
-            ];
-          };
-
           local = {
             baseUrl = "http://localhost:8080";
             api = "openai-completions";

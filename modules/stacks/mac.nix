@@ -22,7 +22,6 @@ in
       home-manager.users.${config.profile.username} = {
         imports = [
           homeManager.base
-          homeManager.llama
         ];
         profile = config.profile;
       };
