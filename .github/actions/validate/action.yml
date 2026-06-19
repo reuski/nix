@@ -1,24 +1,11 @@
 name: validate
-description: Format, build NixOS hosts, and evaluate the Darwin host
+description: Format and check every flake configuration (builds NixOS hosts, evaluates Darwin)
 
 runs:
   using: composite
   steps:
-    - run: nix flake lock
+    - run: nix fmt .
       shell: bash
 
-    - run: |
-        nix shell .#formatter.x86_64-linux -c bash -euo pipefail -c \
-          'find . -name "*.nix" -print0 | xargs -0 -r nixfmt'
-      shell: bash
-
-    - run: |
-        nix build --no-link --print-build-logs \
-          .#checks.x86_64-linux.nixos-hiisi \
-          .#checks.x86_64-linux.nixos-shodan \
-          .#checks.x86_64-linux.nixos-ukko \
-          .#checks.x86_64-linux.nixos-sampo
-      shell: bash
-
-    - run: nix eval --raw .#darwinConfigurations.abraxas.config.system.build.toplevel.drvPath
+    - run: nix flake check --all-systems --print-build-logs
       shell: bash
