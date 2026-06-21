@@ -7,5 +7,11 @@ runs:
     - run: nix fmt .
       shell: bash
 
-    - run: nix flake check --all-systems --print-build-logs
+    - name: Build NixOS host checks
+      run: nix flake check --print-build-logs
+      shell: bash
+
+    - name: Evaluate Darwin checks
+      run: |
+        nix eval .#checks.aarch64-darwin --apply 'builtins.mapAttrs (_: d: d.drvPath)'
       shell: bash
