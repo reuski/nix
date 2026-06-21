@@ -1,5 +1,5 @@
 name: setup
-description: Install Nix with the project's CI configuration and binary caches
+description: Install Determinate Nix with the project's CI configuration, binary caches, and FlakeHub Cache
 
 runs:
   using: composite
@@ -18,10 +18,12 @@ runs:
         sudo apt-get clean
         df -h /
 
-    - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+    - uses: DeterminateSystems/determinate-nix-action@629b284231c2a82554b724e357e47fc6020833c8 # v3.21.2
       with:
         extra-conf: |
           accept-flake-config = true
           download-buffer-size = 536870912
           extra-substituters = https://niri.cachix.org https://noctalia.cachix.org https://vicinae.cachix.org https://ghostty.cachix.org
           extra-trusted-public-keys = niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4= vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc= ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns=
+
+    - uses: DeterminateSystems/flakehub-cache-action@9926dde74484ccb2224835b80531de64ed4336ef # v3.21.2
