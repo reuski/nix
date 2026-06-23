@@ -1,11 +1,15 @@
 { ... }:
 {
   flake.modules.nixos.plasma =
-    { ... }:
+    { config, ... }:
     {
       services.displayManager.sddm = {
         enable = true;
         wayland.enable = true;
+        autoLogin = {
+          enable = true;
+          user = config.profile.username;
+        };
       };
 
       services.desktopManager.plasma6 = {
