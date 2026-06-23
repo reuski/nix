@@ -93,7 +93,7 @@
           theme = "0x96f Theme";
           icon_theme = "Bearded Icon Theme";
           ui_font_size = 16;
-          buffer_font_family = "Hack";
+          buffer_font_family = "Hack Nerd Font";
           buffer_font_size = 16;
           tab_size = 2;
           autosave = "on_focus_change";
