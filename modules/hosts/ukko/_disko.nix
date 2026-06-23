@@ -29,5 +29,23 @@
         };
       };
     };
+
+    disk.media = {
+      device = "/dev/nvme1n1";
+      type = "disk";
+      content = {
+        type = "gpt";
+        partitions.root = {
+          size = "100%";
+          content = {
+            type = "filesystem";
+            format = "ext4";
+            extraArgs = [ "-L" "media" "-m" "0" ];
+            mountpoint = "/srv/media";
+            mountOptions = [ "noatime" ];
+          };
+        };
+      };
+    };
   };
 }
