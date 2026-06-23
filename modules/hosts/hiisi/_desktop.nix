@@ -7,16 +7,10 @@
       input = {
         touchpad = {
           tap = true;
-          natural-scroll = false;
           dwt = true;
-          accel-profile = "adaptive";
           click-method = "clickfinger";
-          scroll-method = "two-finger";
         };
-        trackpoint = {
-          accel-profile = "flat";
-          accel-speed = 0.0;
-        };
+        trackpoint.accel-profile = "flat";
       };
 
       outputs."eDP-1" = {
@@ -26,10 +20,6 @@
           refresh = 60.000;
         };
         scale = 1.25;
-        position = {
-          x = 0;
-          y = 0;
-        };
       };
     };
   };

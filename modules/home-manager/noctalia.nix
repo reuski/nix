@@ -11,24 +11,19 @@
           font_family = "Hack Nerd Font Propo";
           corner_radius_scale = 0.5;
           polkit_agent = true;
+          panel.shadow = false;
         };
 
-        theme = {
-          mode = "dark";
-          source = "builtin";
-          builtin = "Gruvbox";
-        };
+        theme.builtin = "Gruvbox";
 
-        # Niri spawns swaybg at startup (modules/home-manager/niri.nix).
         wallpaper.enabled = false;
 
         bar.main = {
-          position = "top";
-          background_opacity = 0.92;
           margin_h = 0;
           margin_v = 0;
           radius = 0;
           shadow = false;
+          background_opacity = 0.92;
           start = [ "workspaces" ];
           center = [ "clock" ];
           end = [
@@ -43,8 +38,6 @@
           behavior."screen-off" = {
             enabled = true;
             timeout = 180;
-            command = "noctalia:dpms-off";
-            resume_command = "noctalia:dpms-on";
           };
           behavior.suspend = {
             enabled = true;
