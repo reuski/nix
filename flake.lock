@@ -599,11 +599,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1782074292,
-        "narHash": "sha256-f1d88cdqe1PfeuzY90JIRCoHKLV1Uuakc4TpSNvNBKA=",
+        "lastModified": 1782255463,
+        "narHash": "sha256-agvSabL+FhK4RzwLsdnZCoBHNl/YuAnuEHsrO8gvCj4=",
         "owner": "vicinaehq",
         "repo": "vicinae",
-        "rev": "257beed1d23d17dc66a2730cf63f0d666178d3a8",
+        "rev": "dc0266854816db2f7c5c5b57ad69f1b052600407",
         "type": "github"
       },
       "original": {
