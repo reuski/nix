@@ -20,6 +20,12 @@
           ];
           actions.update-props."priority.session" = 1500;
         }
+        {
+          matches = [
+            { "node.name" = "~alsa_input\.usb-.*Blue_Microphones.*"; }
+          ];
+          actions.update-props."priority.session" = 2000;
+        }
       ];
     };
     extraConfig.pipewire."92-low-latency" = {
@@ -65,6 +71,7 @@
   ];
 
   home-manager.users.${config.profile.username}.home.packages = with pkgs; [
+    mumble
     reaper
     reaper-sws-extension
     reaper-reapack-extension
