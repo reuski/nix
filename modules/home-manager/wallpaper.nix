@@ -35,13 +35,9 @@
 
       config = {
         wallpaper.image = ./wallpapers/${config.wallpaper.primary}.png;
-        wallpaper.images =
-          map (name: ./wallpapers/${name}.png) (
-            if config.wallpaper.screens == [ ] then
-              [ config.wallpaper.primary ]
-            else
-              config.wallpaper.screens
-          );
+        wallpaper.images = map (name: ./wallpapers/${name}.png) (
+          if config.wallpaper.screens == [ ] then [ config.wallpaper.primary ] else config.wallpaper.screens
+        );
 
         home.activation.wallpaper = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
           lib.hm.dag.entryAfter [ "writeBoundary" ] ''
