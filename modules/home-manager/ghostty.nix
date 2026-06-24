@@ -22,7 +22,6 @@
           copy-on-select = true;
           confirm-close-surface = false;
           gtk-single-instance = true;
-          window-decoration = false;
           shell-integration = "fish";
           clipboard-read = "allow";
           clipboard-write = "allow";

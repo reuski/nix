@@ -17,13 +17,18 @@
         enable = true;
 
         workspace = {
+          theme = "oxygen";
           widgetStyle = "oxygen";
           colorScheme = "BreezeDark";
           iconTheme = "breeze";
-          wallpaper = config.wallpaper.image;
+          wallpaper = config.wallpaper.images;
           cursor = {
-            theme = "Breeze";
+            theme = "breeze_cursors";
             size = 24;
+          };
+          windowDecorations = {
+            library = "org.kde.oxygen";
+            theme = "Oxygen";
           };
         };
 
@@ -39,6 +44,16 @@
           virtualDesktops.number = 4;
         };
 
+        kscreenlocker = {
+          autoLock = false;
+          lockOnResume = false;
+        };
+
+        powerdevil.AC = {
+          autoSuspend.action = "nothing";
+          turnOffDisplay.idleTimeout = 600;
+        };
+
         hotkeys.commands.launch-ghostty = {
           key = "Meta+Return";
           command = getExe pkgs.ghostty;
@@ -49,6 +64,25 @@
         configFile.baloofilerc."Basic Settings"."Indexing-Enabled" = false;
       };
 
-      home.packages = [ pkgs.kdePackages.oxygen ];
+      gtk = {
+        theme = lib.mkForce {
+          package = pkgs.kdePackages.breeze-gtk;
+          name = "Breeze-Dark";
+        };
+        iconTheme = lib.mkForce {
+          package = pkgs.kdePackages.breeze-icons;
+          name = "breeze";
+        };
+      };
+
+      home = {
+        packages = [ pkgs.kdePackages.oxygen ];
+        pointerCursor = {
+          gtk.enable = lib.mkForce true;
+          package = lib.mkForce pkgs.kdePackages.breeze;
+          name = lib.mkForce "breeze_cursors";
+          size = lib.mkForce 24;
+        };
+      };
     };
 }

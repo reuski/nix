@@ -22,6 +22,7 @@ in
       home-manager.users.${config.profile.username} = {
         imports = [
           homeManager.base
+          homeManager.wallpaper
         ];
         profile = config.profile;
       };
