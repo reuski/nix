@@ -3,13 +3,9 @@
   flake.modules.nixos.plasma =
     {
       config,
-      lib,
       pkgs,
       ...
     }:
-    let
-      inherit (lib) getBin;
-    in
     {
       services.displayManager = {
         autoLogin = {
@@ -30,25 +26,21 @@
       environment.plasma6.excludePackages =
         with pkgs.kdePackages;
         [
-          ark
           aurorae
           baloo-widgets
           discover
           dolphin-plugins
           elisa
-          ffmpegthumbs
           kate
           khelpcenter
           konsole
           krdp
-          ktexteditor
           kwin-x11
           okular
           plasma-browser-integration
           plasma-workspace-wallpapers
           qrca
-        ]
-        ++ [ (getBin qttools) ];
+        ];
 
       environment.systemPackages = with pkgs; [
         haruna
