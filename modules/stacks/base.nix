@@ -8,7 +8,6 @@ in
     {
       imports = [
         generic.profile
-        homeManager.wallpaper
         homeManager.ghostty
         homeManager.zellij
         homeManager.fish

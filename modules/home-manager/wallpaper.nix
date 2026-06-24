@@ -14,15 +14,34 @@
           description = "Active wallpaper stem in wallpapers/";
         };
 
+        screens = lib.mkOption {
+          type = lib.types.listOf lib.types.str;
+          default = [ ];
+          description = "Wallpaper stems in Plasma screen order.";
+        };
+
         image = lib.mkOption {
           type = lib.types.path;
           readOnly = true;
-          description = "Resolved wallpaper path consumed by compositor modules (niri, plasma) and the Darwin activation.";
+          description = "Resolved primary wallpaper path.";
+        };
+
+        images = lib.mkOption {
+          type = lib.types.listOf lib.types.path;
+          readOnly = true;
+          description = "Resolved wallpaper paths in Plasma screen order.";
         };
       };
 
       config = {
         wallpaper.image = ./wallpapers/${config.wallpaper.primary}.png;
+        wallpaper.images =
+          map (name: ./wallpapers/${name}.png) (
+            if config.wallpaper.screens == [ ] then
+              [ config.wallpaper.primary ]
+            else
+              config.wallpaper.screens
+          );
 
         home.activation.wallpaper = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
           lib.hm.dag.entryAfter [ "writeBoundary" ] ''

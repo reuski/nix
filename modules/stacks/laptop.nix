@@ -46,6 +46,7 @@ in
       homeManager.base
       homeManager.packages
       homeManager.xdg
+      homeManager.wallpaper
       homeManager.niri
       homeManager.noctalia
       homeManager.vicinae
