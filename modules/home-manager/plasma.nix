@@ -8,7 +8,7 @@
       ...
     }:
     let
-      inherit (lib) getExe;
+      inherit (lib) genAttrs getExe;
     in
     {
       imports = [ inputs.plasma-manager.homeModules.plasma-manager ];
@@ -63,12 +63,9 @@
 
         configFile = {
           baloofilerc."Basic Settings"."Indexing-Enabled" = false;
-          kdeglobals = {
-            General = {
-              TerminalApplication = getExe pkgs.ghostty;
-              TerminalService = "com.mitchellh.ghostty.desktop";
-            };
-            KDE.LookAndFeelPackage = "org.kde.oxygen";
+          kdeglobals.General = {
+            TerminalApplication = getExe pkgs.ghostty;
+            TerminalService = "com.mitchellh.ghostty.desktop";
           };
         };
       };
@@ -88,22 +85,25 @@
         let
           gwenview = "org.kde.gwenview.desktop";
           haruna = "org.kde.haruna.desktop";
+          imageTypes = [
+            "image/avif"
+            "image/gif"
+            "image/heic"
+            "image/jpeg"
+            "image/png"
+            "image/svg+xml"
+            "image/webp"
+          ];
+          videoTypes = [
+            "video/mp4"
+            "video/mpeg"
+            "video/quicktime"
+            "video/webm"
+            "video/x-matroska"
+            "video/x-msvideo"
+          ];
         in
-        {
-          "image/avif" = gwenview;
-          "image/gif" = gwenview;
-          "image/heic" = gwenview;
-          "image/jpeg" = gwenview;
-          "image/png" = gwenview;
-          "image/svg+xml" = gwenview;
-          "image/webp" = gwenview;
-          "video/mp4" = haruna;
-          "video/mpeg" = haruna;
-          "video/quicktime" = haruna;
-          "video/webm" = haruna;
-          "video/x-matroska" = haruna;
-          "video/x-msvideo" = haruna;
-        };
+        genAttrs imageTypes (_: gwenview) // genAttrs videoTypes (_: haruna);
 
       home = {
         packages = [ pkgs.kdePackages.oxygen ];

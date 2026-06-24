@@ -8,15 +8,15 @@
       ...
     }:
     let
-      inherit (lib) getBin getExe';
+      inherit (lib) getBin;
     in
     {
-      services.greetd = {
-        enable = true;
-        settings.initial_session = {
-          command = getExe' pkgs.kdePackages.plasma-workspace "startplasma-wayland";
+      services.displayManager = {
+        autoLogin = {
+          enable = true;
           user = config.profile.username;
         };
+        plasma-login-manager.enable = true;
       };
 
       services.desktopManager.plasma6 = {
