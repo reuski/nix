@@ -70,7 +70,7 @@
             command = [
               (lib.getExe pkgs.swaybg)
               "--image"
-              "${config.home.homeDirectory}/Pictures/Wallpapers/${config.wallpaper.primary}.png"
+              "${config.wallpaper.image}"
               "--mode"
               "fill"
             ];
