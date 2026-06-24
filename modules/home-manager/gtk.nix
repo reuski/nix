@@ -19,15 +19,15 @@
           name = "Gruvbox-Plus-Dark";
         };
         font = {
-          name = "Inter";
+          name = "Hack Nerd Font";
           size = 11;
         };
       };
 
       home.pointerCursor = {
         gtk.enable = true;
-        package = pkgs.bibata-cursors;
-        name = "Bibata-Modern-Ice";
+        package = pkgs.graphite-cursors;
+        name = "graphite-dark";
         size = 24;
       };
     };

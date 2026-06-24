@@ -47,6 +47,7 @@ in
       homeManager.packages
       homeManager.xdg
       homeManager.gtk
+      homeManager.plasma
     ];
   };
 }
