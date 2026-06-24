@@ -18,12 +18,6 @@
         mcp-nixos
       ];
 
-      home.activation.piPackages = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-        for pkg in ${lib.concatStringsSep " " piPackages}; do
-          [ -d "$HOME/.pi/agent/npm/''${pkg#npm:}" ] || run ${lib.getExe' pkgs.pi-coding-agent "pi"} install "$pkg" || true
-        done
-      '';
-
       home.file.".pi/agent/AGENTS.md".text = ''
         # Operational Directives
 
