@@ -46,6 +46,7 @@
           okular
           plasma-browser-integration
           plasma-workspace-wallpapers
+          qrca
         ]
         ++ [ (getBin qttools) ];
 
