@@ -4,17 +4,24 @@ keys:
   - &hiisi age1mkmxes0zkqk0ucepftduka4c9l40qwcfku7mpuzh3tqvjnlxlsrq5vwrcn
   - &shodan age170wzd3m4kld0ctatf0ul0y8p6hlfdphzeyex0ascrw7cqaeqwa6sy786tr
   - &ukko age16y8dgerdxamh9z9da4alwahtw5fyac45djxmd3r7p0yeg8nk0v0qhmu50a
+  - &admin age1m3rjd2dwq0stqfcckgcf6wzc5420d4hx4wcv3lcm6s3knf4mkgsqu9t2k9
 
 creation_rules:
   - path_regex: secrets/users\.yaml$
     key_groups:
-      - age: [*abraxas, *sampo, *hiisi, *shodan, *ukko]
+      - age: [*sampo, *hiisi, *admin]
   - path_regex: secrets/env\.yaml$
     key_groups:
-      - age: [*abraxas, *sampo, *hiisi]
+      - age: [*abraxas, *sampo, *hiisi, *admin]
+  - path_regex: secrets/ssh\.yaml$
+    key_groups:
+      - age: [*abraxas, *sampo, *hiisi, *admin]
   - path_regex: secrets/shodan\.yaml$
     key_groups:
-      - age: [*abraxas, *sampo, *hiisi, *shodan]
+      - age: [*shodan, *admin]
   - path_regex: secrets/ukko\.yaml$
     key_groups:
-      - age: [*abraxas, *sampo, *hiisi, *ukko]
+      - age: [*ukko, *admin]
+  - path_regex: secrets/admin\.yaml$
+    key_groups:
+      - age: [*abraxas, *sampo, *hiisi, *admin]

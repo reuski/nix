@@ -14,6 +14,10 @@
         email = lib.mkOption { type = lib.types.str; };
         homeDirectory = lib.mkOption { type = lib.types.str; };
         timeZone = lib.mkOption { type = lib.types.str; };
+        sshPublicKey = lib.mkOption {
+          type = lib.types.str;
+          description = "Public half of the shared SSH identity for profile.username.";
+        };
         sshAuthorizedKeys = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
@@ -43,9 +47,8 @@
             "/home/${config.profile.username}"
         );
         timeZone = lib.mkDefault "Europe/Helsinki";
-        sshAuthorizedKeys = lib.mkDefault [
-          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOYOhwRvjVJHFoTPD02CCbvnvBUeS1eq1jSmUvfYCmbp sami@reuski.dev"
-        ];
+        sshPublicKey = lib.mkDefault "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOYOhwRvjVJHFoTPD02CCbvnvBUeS1eq1jSmUvfYCmbp sami@reuski.dev";
+        sshAuthorizedKeys = lib.mkDefault [ config.profile.sshPublicKey ];
         locale = {
           default = lib.mkDefault "en_US.UTF-8";
           regional = lib.mkDefault "fi_FI.UTF-8";
