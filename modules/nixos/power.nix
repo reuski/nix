@@ -6,10 +6,10 @@
       services.power-profiles-daemon.enable = true;
       services.tlp.enable = lib.mkForce false;
 
-      services.logind = {
-        lidSwitch = "suspend";
-        lidSwitchExternalPower = "suspend";
-        lidSwitchDocked = "ignore";
+      services.logind.settings.Login = {
+        HandleLidSwitch = "suspend";
+        HandleLidSwitchExternalPower = "suspend";
+        HandleLidSwitchDocked = "ignore";
       };
 
       services.fwupd.enable = true;

@@ -57,10 +57,7 @@
 
     vicinae.url = "github:vicinaehq/vicinae";
 
-    quadlet-nix = {
-      url = "github:SEIAROTg/quadlet-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
 
     ghostty.url = "github:ghostty-org/ghostty";
 
