@@ -38,6 +38,7 @@
   };
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
+  hardware.bluetooth.enable = lib.mkForce false;
   hardware.enableRedistributableFirmware = lib.mkDefault true;
 
   services.fwupd.enable = true;

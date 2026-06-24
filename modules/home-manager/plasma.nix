@@ -63,10 +63,6 @@
 
         configFile = {
           baloofilerc."Basic Settings"."Indexing-Enabled" = false;
-          kcminputrc = {
-            Libinput.Defaults.PointerAccelerationProfile = 1;
-            Mouse.PointerAccelerationProfile = 1;
-          };
           kdeglobals = {
             General = {
               TerminalApplication = getExe pkgs.ghostty;
@@ -87,6 +83,27 @@
           name = "breeze";
         };
       };
+
+      xdg.mimeApps.defaultApplications =
+        let
+          gwenview = "org.kde.gwenview.desktop";
+          haruna = "org.kde.haruna.desktop";
+        in
+        {
+          "image/avif" = gwenview;
+          "image/gif" = gwenview;
+          "image/heic" = gwenview;
+          "image/jpeg" = gwenview;
+          "image/png" = gwenview;
+          "image/svg+xml" = gwenview;
+          "image/webp" = gwenview;
+          "video/mp4" = haruna;
+          "video/mpeg" = haruna;
+          "video/quicktime" = haruna;
+          "video/webm" = haruna;
+          "video/x-matroska" = haruna;
+          "video/x-msvideo" = haruna;
+        };
 
       home = {
         packages = [ pkgs.kdePackages.oxygen ];
