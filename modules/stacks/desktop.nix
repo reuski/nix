@@ -47,7 +47,6 @@ in
       homeManager.packages
       homeManager.xdg
       homeManager.wallpaper
-      homeManager.gtk
       homeManager.plasma
     ];
   };

@@ -9,6 +9,8 @@
     }:
     let
       inherit (lib) genAttrs getExe;
+      cursorTheme = "breeze_cursors";
+      cursorSize = 24;
     in
     {
       imports = [ inputs.plasma-manager.homeModules.plasma-manager ];
@@ -17,14 +19,14 @@
         enable = true;
 
         workspace = {
-          theme = "oxygen";
+          theme = "breeze-dark";
           widgetStyle = "oxygen";
           colorScheme = "BreezeDark";
-          iconTheme = "breeze";
+          iconTheme = "breeze-dark";
           wallpaper = config.wallpaper.images;
           cursor = {
-            theme = "breeze_cursors";
-            size = 24;
+            theme = cursorTheme;
+            size = cursorSize;
           };
           windowDecorations = {
             library = "org.kde.oxygen";
@@ -71,13 +73,15 @@
       };
 
       gtk = {
-        theme = lib.mkForce {
+        enable = true;
+        gtk2.enable = false;
+        theme = {
           package = pkgs.kdePackages.breeze-gtk;
           name = "Breeze-Dark";
         };
-        iconTheme = lib.mkForce {
+        iconTheme = {
           package = pkgs.kdePackages.breeze-icons;
-          name = "breeze";
+          name = "breeze-dark";
         };
       };
 
@@ -109,10 +113,10 @@
         packages = [ pkgs.kdePackages.oxygen ];
         sessionVariables.TERMINAL = getExe pkgs.ghostty;
         pointerCursor = {
-          gtk.enable = lib.mkForce true;
-          package = lib.mkForce pkgs.kdePackages.breeze;
-          name = lib.mkForce "breeze_cursors";
-          size = lib.mkForce 24;
+          gtk.enable = true;
+          package = pkgs.kdePackages.breeze;
+          name = cursorTheme;
+          size = cursorSize;
         };
       };
     };
