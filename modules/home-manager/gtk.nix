@@ -1,7 +1,7 @@
 { ... }:
 {
   flake.modules.homeManager.gtk =
-    { pkgs, ... }:
+    { config, pkgs, ... }:
     let
       gruvboxDarkGtkTheme = {
         package = pkgs.gruvbox-gtk-theme;
@@ -12,6 +12,7 @@
       gtk = {
         enable = true;
         colorScheme = "dark";
+        gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";
         theme = gruvboxDarkGtkTheme;
         gtk4.theme = null;
         iconTheme = {
