@@ -3,12 +3,14 @@
   flake.modules.nixos.plasma =
     { config, ... }:
     {
-      services.displayManager.sddm = {
-        enable = true;
-        wayland.enable = true;
+      services.displayManager = {
         autoLogin = {
           enable = true;
           user = config.profile.username;
+        };
+        sddm = {
+          enable = true;
+          wayland.enable = true;
         };
       };
 
