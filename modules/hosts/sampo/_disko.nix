@@ -72,13 +72,20 @@ in
       };
     };
 
-    games = dataDisk "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_2TB_S7DNNU0X746013X" "@games" "/mnt/games" [
-      "noatime"
-      "discard=async"
-    ];
+    games =
+      dataDisk "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_2TB_S7DNNU0X746013X" "@games" "/mnt/games"
+        [
+          "noatime"
+          "discard=async"
+        ];
 
-    home = dataDisk "/dev/disk/by-id/ata-Samsung_SSD_850_EVO_500GB_S2RBNX0H821702X" "@home" "/home" btrfsOpts;
+    home =
+      dataDisk "/dev/disk/by-id/ata-Samsung_SSD_850_EVO_500GB_S2RBNX0H821702X" "@home" "/home"
+        btrfsOpts;
 
-    projects = dataDisk "/dev/disk/by-id/ata-Samsung_SSD_850_PRO_256GB_S1SUNSAG365733F" "@projects" "${homeDirectory}/projects" btrfsOpts;
+    projects =
+      dataDisk "/dev/disk/by-id/ata-Samsung_SSD_850_PRO_256GB_S1SUNSAG365733F" "@projects"
+        "${homeDirectory}/projects"
+        btrfsOpts;
   };
 }
