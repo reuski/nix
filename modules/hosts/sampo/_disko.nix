@@ -1,10 +1,12 @@
-{ ... }:
+{ lib, ... }:
 {
+  services.fstrim.enable = lib.mkForce false;
+
   disko.devices = {
     disk = {
-      main = {
+      system = {
         type = "disk";
-        device = "/dev/nvme0n1";
+        device = "/dev/nvme1n1";
         content = {
           type = "gpt";
           partitions = {
@@ -23,22 +25,13 @@
               content = {
                 type = "btrfs";
                 extraArgs = [ "-f" ];
-                subvolumes = {
-                  "@" = {
-                    mountpoint = "/";
-                    mountOptions = [
-                      "compress=zstd"
-                      "noatime"
-                      "space_cache=v2"
-                    ];
-                  };
-                  "@home" = {
-                    mountpoint = "/home";
-                    mountOptions = [
-                      "compress=zstd"
-                      "noatime"
-                    ];
-                  };
+                subvolumes."@" = {
+                  mountpoint = "/";
+                  mountOptions = [
+                    "compress=zstd"
+                    "noatime"
+                    "discard=async"
+                  ];
                 };
               };
             };
@@ -46,9 +39,9 @@
         };
       };
 
-      nix = {
+      games = {
         type = "disk";
-        device = "/dev/nvme1n1";
+        device = "/dev/nvme0n1";
         content = {
           type = "gpt";
           partitions.root = {
@@ -56,18 +49,19 @@
             content = {
               type = "btrfs";
               extraArgs = [ "-f" ];
-              mountpoint = "/nix";
-              mountOptions = [
-                "compress=zstd"
-                "noatime"
-                "space_cache=v2"
-              ];
+              subvolumes."@games" = {
+                mountpoint = "/mnt/games";
+                mountOptions = [
+                  "noatime"
+                  "discard=async"
+                ];
+              };
             };
           };
         };
       };
 
-      games = {
+      home = {
         type = "disk";
         device = "/dev/sda";
         content = {
@@ -77,17 +71,20 @@
             content = {
               type = "btrfs";
               extraArgs = [ "-f" ];
-              mountpoint = "/mnt/games";
-              mountOptions = [
-                "compress=zstd"
-                "noatime"
-              ];
+              subvolumes."@home" = {
+                mountpoint = "/home";
+                mountOptions = [
+                  "compress=zstd"
+                  "noatime"
+                  "discard=async"
+                ];
+              };
             };
           };
         };
       };
 
-      library = {
+      nix = {
         type = "disk";
         device = "/dev/sdb";
         content = {
@@ -97,11 +94,14 @@
             content = {
               type = "btrfs";
               extraArgs = [ "-f" ];
-              mountpoint = "/mnt/library";
-              mountOptions = [
-                "compress=zstd"
-                "noatime"
-              ];
+              subvolumes."@nix" = {
+                mountpoint = "/nix";
+                mountOptions = [
+                  "compress=zstd"
+                  "noatime"
+                  "discard=async"
+                ];
+              };
             };
           };
         };

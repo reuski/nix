@@ -34,7 +34,7 @@
 
   services.scx = {
     enable = true;
-    scheduler = "scx_lavd";
+    scheduler = "scx_flash";
   };
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
@@ -50,7 +50,7 @@
     modesetting.enable = true;
     open = true;
     powerManagement.enable = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
+    package = config.boot.kernelPackages.nvidiaPackages.beta;
   };
 
   environment.sessionVariables = {
