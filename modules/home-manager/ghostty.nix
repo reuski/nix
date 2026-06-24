@@ -20,6 +20,7 @@
           window-padding-y = 6;
           cursor-style = "bar";
           copy-on-select = true;
+          keybind = [ "ctrl+v=paste_from_clipboard" ];
           confirm-close-surface = false;
           gtk-single-instance = true;
           shell-integration = "fish";
