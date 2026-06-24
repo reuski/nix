@@ -26,6 +26,8 @@ in
       home.homeDirectory = config.profile.homeDirectory;
       home.stateVersion = config.home.version.release;
 
+      fonts.fontconfig.enable = false;
+
       programs.home-manager.enable = true;
     };
 }
