@@ -1,6 +1,12 @@
-{ lib, ... }:
+{ config, lib, ... }:
 {
   services.fstrim.enable = lib.mkForce false;
+
+  systemd.tmpfiles.rules = [
+    "d /mnt/games 0755 ${config.profile.username} users -"
+    "d /mnt/games/steam 0755 ${config.profile.username} users -"
+    "d /mnt/games/heroic 0755 ${config.profile.username} users -"
+  ];
 
   disko.devices = {
     disk = {

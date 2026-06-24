@@ -61,7 +61,20 @@
 
         krunner.shortcuts.launch = "Meta+Space";
 
-        configFile.baloofilerc."Basic Settings"."Indexing-Enabled" = false;
+        configFile = {
+          baloofilerc."Basic Settings"."Indexing-Enabled" = false;
+          kcminputrc = {
+            Libinput.Defaults.PointerAccelerationProfile = 1;
+            Mouse.PointerAccelerationProfile = 1;
+          };
+          kdeglobals = {
+            General = {
+              TerminalApplication = getExe pkgs.ghostty;
+              TerminalService = "com.mitchellh.ghostty.desktop";
+            };
+            KDE.LookAndFeelPackage = "org.kde.oxygen";
+          };
+        };
       };
 
       gtk = {
@@ -77,6 +90,7 @@
 
       home = {
         packages = [ pkgs.kdePackages.oxygen ];
+        sessionVariables.TERMINAL = getExe pkgs.ghostty;
         pointerCursor = {
           gtk.enable = lib.mkForce true;
           package = lib.mkForce pkgs.kdePackages.breeze;

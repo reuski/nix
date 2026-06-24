@@ -129,7 +129,8 @@
             --prefix LD_LIBRARY_PATH : $out/opt/helium \
             --add-flags "--ozone-platform=wayland" \
             --add-flags "--enable-features=WaylandWindowDecorations" \
-            --add-flags "--enable-wayland-ime=true"
+            --add-flags "--enable-wayland-ime=true" \
+            --add-flags "--password-store=basic"
 
           runHook postInstall
         '';
