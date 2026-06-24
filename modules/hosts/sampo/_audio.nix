@@ -6,6 +6,22 @@
 {
   services.pipewire = {
     jack.enable = true;
+    wireplumber.extraConfig."50-ur22c-default" = {
+      "monitor.alsa.rules" = [
+        {
+          matches = [
+            { "node.name" = "~alsa_output\.usb-Yamaha_Corporation_Steinberg_UR22C.*"; }
+          ];
+          actions.update-props."priority.session" = 1500;
+        }
+        {
+          matches = [
+            { "node.name" = "~alsa_input\.usb-Yamaha_Corporation_Steinberg_UR22C.*"; }
+          ];
+          actions.update-props."priority.session" = 1500;
+        }
+      ];
+    };
     extraConfig.pipewire."92-low-latency" = {
       "context.properties" = {
         "default.clock.rate" = 48000;
@@ -54,6 +70,7 @@
     reaper-reapack-extension
     yabridge
     yabridgectl
+    qpwgraph
     wineWow64Packages.staging
   ];
 }
