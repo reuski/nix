@@ -23,24 +23,22 @@
       programs.kde-pim.enable = false;
       services.orca.enable = false;
 
-      environment.plasma6.excludePackages =
-        with pkgs.kdePackages;
-        [
-          aurorae
-          baloo-widgets
-          discover
-          dolphin-plugins
-          elisa
-          kate
-          khelpcenter
-          konsole
-          krdp
-          kwin-x11
-          okular
-          plasma-browser-integration
-          plasma-workspace-wallpapers
-          qrca
-        ];
+      environment.plasma6.excludePackages = with pkgs.kdePackages; [
+        aurorae
+        baloo-widgets
+        discover
+        dolphin-plugins
+        elisa
+        kate
+        khelpcenter
+        konsole
+        krdp
+        kwin-x11
+        okular
+        plasma-browser-integration
+        plasma-workspace-wallpapers
+        qrca
+      ];
 
       environment.systemPackages = with pkgs; [
         haruna
