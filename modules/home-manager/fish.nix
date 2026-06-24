@@ -65,8 +65,14 @@
         '';
         shellAbbrs = {
           g = "git";
+          vi = "vim";
           dl = "cd ~/Downloads";
           p = "cd ~/Projects";
+        };
+        shellAliases = {
+          cat = "bat -pp";
+          find = "fd";
+          grep = "rg";
         };
       };
     };
