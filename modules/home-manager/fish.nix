@@ -67,7 +67,7 @@
           g = "git";
           vi = "vim";
           dl = "cd ~/Downloads";
-          p = "cd ~/Projects";
+          p = "cd ~/projects";
         };
         shellAliases = {
           cat = "bat -pp";
