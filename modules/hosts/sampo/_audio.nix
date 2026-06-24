@@ -22,7 +22,7 @@
         }
         {
           matches = [
-            { "node.name" = "~alsa_input\.usb-.*Blue_Microphones.*"; }
+            { "node.name" = "~alsa_input.*[Yy]eti.*"; }
           ];
           actions.update-props."priority.session" = 2000;
         }

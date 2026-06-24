@@ -69,6 +69,7 @@
             TerminalApplication = getExe pkgs.ghostty;
             TerminalService = "com.mitchellh.ghostty.desktop";
           };
+          kdeglobals.Sounds.Enable = false;
         };
       };
 
