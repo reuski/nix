@@ -17,11 +17,12 @@
         enable = true;
 
         workspace = {
-          colorScheme = "Gruvbox";
-          iconTheme = "Gruvbox-Plus-Dark";
+          widgetStyle = "oxygen";
+          colorScheme = "BreezeDark";
+          iconTheme = "breeze";
           wallpaper = config.wallpaper.image;
           cursor = {
-            theme = "graphite-dark";
+            theme = "Breeze";
             size = 24;
           };
         };
@@ -48,6 +49,6 @@
         configFile.baloofilerc."Basic Settings"."Indexing-Enabled" = false;
       };
 
-      home.packages = [ pkgs.kde-gruvbox ];
+      home.packages = [ pkgs.kdePackages.oxygen ];
     };
 }
