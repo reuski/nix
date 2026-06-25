@@ -94,8 +94,7 @@
         systemd.timers.deploy = {
           wantedBy = [ "timers.target" ];
           timerConfig = {
-            OnCalendar = "22:00";
-            RandomizedDelaySec = "30min";
+            OnCalendar = "02:00";
             Persistent = true;
           };
         };

@@ -47,7 +47,7 @@
           "tarball-ttl"
           "0"
         ];
-        dates = lib.mkDefault "02:00";
+        dates = lib.mkDefault "03:00";
         randomizedDelaySec = "45min";
         persistent = true;
       };
