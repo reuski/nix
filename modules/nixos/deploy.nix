@@ -20,39 +20,39 @@
           pkgs.attic-client
         ];
         text = ''
-          export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
+          ${lib.optionalString (cfg.targets != [ ]) ''
+            export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
 
-          warm() {
-            out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
-              --refresh --option tarball-ttl 0 --no-link --print-out-paths)
-            attic push "local:${cfg.cache}" "$out"
-          }
+            activate() {
+              nixos-rebuild switch --flake "${flake}#$1" \
+                --target-host "root@$1" --refresh --option tarball-ttl 0
+            }
 
-          activate() {
-            nixos-rebuild switch --flake "${flake}#$1" \
-              --target-host "root@$1" --refresh --option tarball-ttl 0
-          }
+            reboot_if_stale() {
+              ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes "root@$1" '
+                booted=$(readlink /run/booted-system/{kernel,initrd,kernel-modules})
+                built=$(readlink /run/current-system/{kernel,initrd,kernel-modules})
+                [ "$booted" = "$built" ] || systemctl reboot'
+            }
 
-          reboot_if_stale() {
-            ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes "root@$1" '
-              booted=$(readlink /run/booted-system/{kernel,initrd,kernel-modules})
-              built=$(readlink /run/current-system/{kernel,initrd,kernel-modules})
-              [ "$booted" = "$built" ] || systemctl reboot'
-          }
+            ${lib.concatMapStringsSep "\n" (h: ''
+              activate ${h} || activate ${h}
+              reboot_if_stale ${h}
+            '') cfg.targets}
+          ''}
 
-          for host in ${lib.escapeShellArgs cfg.targets}; do
-            activate "$host" || activate "$host"
-            reboot_if_stale "$host"
-          done
+          ${lib.optionalString (cfg.warm != [ ]) ''
+            warm() {
+              out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
+                --refresh --option tarball-ttl 0 --no-link --print-out-paths)
+              attic push "local:${cfg.cache}" "$out"
+            }
 
-          if [ -n "${cfg.cache}" ]; then
-            attic login local http://127.0.0.1:8090 \
-              "$(cat "$CREDENTIALS_DIRECTORY/attic-token")"
-          fi
+            # shellcheck disable=SC2154
+            attic login local http://127.0.0.1:8090 "$(cat "$CREDENTIALS_DIRECTORY/attic-token")"
 
-          for host in ${lib.escapeShellArgs cfg.warm}; do
-            warm "$host"
-          done
+            ${lib.concatMapStringsSep "\n" (h: "warm ${h}") cfg.warm}
+          ''}
         '';
       };
     in
