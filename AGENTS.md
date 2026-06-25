@@ -1,44 +1,130 @@
 # AGENTS.md
 
-Personal Nix flake: NixOS, nix-darwin, Home Manager. Dendritic — flake-parts + import-tree, every file is a flake-parts module.
+## Role
 
-## Shape
+- Personal flake: NixOS, nix-darwin, Home Manager.
+- Shape: dendritic, `flake-parts` + `import-tree`.
+- Every non-private `modules/**/*.nix` file is a flake-parts module.
+- Optimize for fresh installs. No migration shims.
 
-- `flake.nix` → `import-tree` loads all of `modules/` into flake-parts; `_`-prefixed paths are skipped.
-- Reusable code exports as `flake.modules.{nixos,darwin,homeManager,generic}.<name>` — one module per file, named for the option it owns (`jellyfin.nix` → `options.jellyfin`).
-- `modules/configurations/` lifts `configurations.{nixos,darwin}` into flake outputs + per-system `checks` — CI builds exactly these.
-- `modules/hosts/<host>/` — real systems only: `hiisi` (Niri laptop), `sampo` (Plasma gaming desktop), `shodan` (VPS), `ukko` (home server), `abraxas` (Mac). `_*.nix` are that host's private hardware/disko/network/service wiring, imported by its `default.nix`.
-- `modules/stacks/` — roles, one per file, pure composition (imports only); a role may export the same name across classes:
-  - `server.nix` → `nixos.server`: headless server; its settings live in the `nixos.headless` leaf (LTS kernel, trimmed closure, auto-upgrade + reboot).
-  - `laptop.nix` → `nixos.laptop` + `homeManager.laptop`: Niri laptop; compositor via `nixos.niri`/`homeManager.niri`, plus `nixos.power` (upower, PPD, networkmanager wifi).
-  - `desktop.nix` → `nixos.desktop` + `homeManager.desktop`: Plasma 6 desktop; compositor via `nixos.plasma` leaf; gaming is host-opt-in via `nixos.gaming` (Steam, gamemode, gamescope, 32-bit). No power/wifi laptop-isms.
-  - `mac.nix` → `darwin.mac`: Darwin workstation; system config via nix-darwin, GUI apps via Homebrew, user env via the same `homeManager.base`.
-  - `base.nix` → `homeManager.base`: CLI/home every user env gets; `nixos.core` (`modules/nixos/core.nix`) is the OS-level leaf every NixOS host imports.
-- `modules/generic/` — cross-class modules: `profile` (identity: user, locale, keyboard, colors) and `editor` (shared vimrc consumed by both `nixos.vim` and `homeManager.vim`).
-- Server service plane (ukko): `quadlets.<name>` payloads feed `proxy.services` (Caddy, ACME wildcard via Cloudflare DNS-01), `media.*` (shared identity + tmpfiles directories), and `tailnet.services` (Tailscale Serve); heimdash cards are built from `proxy.services`.
-- `modules/packages/` — overlays + custom pkgs, exported through `perSystem.packages`; inputs without `nixpkgs` follows (ghostty, noctalia, vicinae) are consumed via overlay from their flake outputs for binary-cache hits, with `modules/nixos/cachix.nix` trusting their caches.
-- `secrets/*.yaml` = SOPS ciphertext.
+## Graph
 
-## Rules
+- `flake.nix`: inputs only; `inputs.import-tree ./modules`.
+- `modules/configurations/`: `configurations.{nixos,darwin}` -> `nixosConfigurations`, `darwinConfigurations`, `checks`.
+- `modules/stacks/`: imports only; no settings except class glue.
+- `modules/nixos/`: NixOS leaves.
+- `modules/darwin/`: nix-darwin leaves.
+- `modules/home-manager/`: user-environment leaves.
+- `modules/generic/`: cross-class leaves.
+- `modules/hosts/<host>/`: real host entrypoints; `_*.nix` is host-private wiring.
+- `modules/packages/`: overlays and custom packages.
+- `secrets/*.yaml`: SOPS ciphertext only.
 
-- **Modules:** every feature is a `flake.modules` module; never import from `flake.nix`. No `specialArgs`/`extraSpecialArgs` — capture `inputs` in the top-level function. Keep them small, typed, single-purpose; each module owns the top-level option named after its file; `media.*` is only the shared identity/directories module. Toggles use `lib.mkEnableOption`; mirror an existing `modules/nixos/*.nix`.
-- **Stacks compose, leaves configure:** `modules/stacks/*` files only import and wire modules; settings live in class leaf modules (`modules/{nixos,darwin,home-manager,generic}/`). Hosts import stacks plus host-specific service modules and keep `_*.nix` for non-reusable wiring.
-- **Implementation ladder:** upstream NixOS/HM/darwin option → upstream container via `quadlets.<name>` (`modules/nixos/quadlets.nix`) → custom package. Raw `virtualisation.quadlet` only for pods (`modules/nixos/qbittorrent.nix` is the sole case). Resolve binaries with `lib.getExe`/`getExe'`.
-- **Clean-slate:** no backwards compatibility — every change targets the ideal fresh install, never a migration. Delete superseded config; no shims, fallbacks, dead conditionals, or `backupFileExtension`. Optimize disko, hardware, device paths, and `*.stateVersion` freely (stateVersion tracks the channel). Rolling unstable — every input `follows` `nixpkgs` except cache-backed GUI inputs above; no version pins.
-- **Hosts:** real hosts + supported systems only (`modules/systems.nix`). Servers auto-upgrade + reboot 04:00–06:00 on kernel change; desktops stage for manual reboot.
-- **Scope:** no X11, PulseAudio, legacy networking, duplicate tools, or backup desktops. Add packages only for terminal, browsing, hardware, services, or introspection.
-- **Darwin:** Determinate Nix owns the daemon (`nix.enable = false`); `nix-homebrew` installs Homebrew, packages go through `homebrew.*`; secrets via sops-nix's Home Manager module (no host SSH key — dedicated age key).
-- **Secrets:** sops-nix + age only; every recipient in `.sops.yaml` is a host key. Workstation keys (`abraxas`, `sampo`, `hiisi`) are recipients on every file — any workstation edits any secret; server keys (`shodan`, `ukko`) only on their own file. NixOS keys derive from `/etc/ssh/ssh_host_ed25519_key.pub` via `ssh-to-age`; the Mac has no SSH host key and uses a standalone age key (`~/.config/sops/age/keys.txt`). `homeManager.secrets` ships the tooling, `SOPS_AGE_KEY_FILE`, and `sops.age.keyFile`. After changing `.sops.yaml` recipients run `sops updatekeys` (reordering/renaming anchors needs none). Rely on sops defaults (root-owned, `0400`) — declare only what differs, usually `restartUnits`. Compose env files with `sops.templates`. Never commit private keys, decrypted exports, or plaintext.
-- **Local:** don't run Nix here (platform may lack it); CI (`.github/workflows/nix.yml`) formats, builds every NixOS host, and evaluates the darwin host. `.github/workflows/flake-lock.yml` does the daily input/package bumps — don't hand-roll updates that lane already covers.
+## Hosts
 
-## Validate
+- `hiisi`: NixOS laptop, Niri.
+- `sampo`: NixOS desktop, Plasma, gaming opt-in.
+- `shodan`: NixOS VPS.
+- `ukko`: NixOS home server.
+- `abraxas`: nix-darwin Mac.
+
+## Module Rules
+
+- Export reusable modules as `flake.modules.{nixos,darwin,homeManager,generic}.<name>`.
+- Name files after the option or role they own.
+- Capture `inputs` in module top-level arguments.
+- Do not use `specialArgs` or `extraSpecialArgs`.
+- Use `lib.mkEnableOption` for toggles.
+- Use typed `lib.mkOption` for public config.
+- Resolve executables with `lib.getExe` or `lib.getExe'`.
+- Prefer upstream NixOS/HM/darwin options.
+- Then prefer `quadlets.<name>`.
+- Use custom packages only when no upstream module/package shape fits.
+- Raw `virtualisation.quadlet` is reserved for pods; current exception: `modules/nixos/qbittorrent.nix`.
+
+## Stack Rules
+
+- Stacks compose; leaves configure.
+- `homeManager.base`: generic shell/editor/CLI only.
+- `homeManager.dev`: dev toolchain, Zed, Pi agent/config.
+- `nixos.core`: OS baseline for every NixOS host.
+- `nixos.headless`: server baseline.
+- `nixos.laptop`: laptop hardware/session stack.
+- `nixos.desktop`: desktop hardware/session stack.
+- `darwin.mac`: Darwin workstation baseline.
+- Hosts import stacks plus host-private `_*.nix`.
+
+## Service Plane
+
+- `quadlets.<name>` feeds:
+  - `virtualisation.quadlet.containers`
+  - `proxy.services`
+  - `media.directories`
+- `proxy.services`: Caddy, ACME wildcard through Cloudflare DNS-01.
+- `media.*`: shared media user/group/library dirs/container identity.
+- `tailnet.services`: Tailscale Serve only.
+- Heimdash cards derive from `proxy.services` in host config.
+- Keep service API provisioning out of Nix when it becomes UI-owned state.
+
+## Inputs
+
+- Rolling unstable.
+- Follow `nixpkgs` for every input except cache-backed GUI inputs.
+- Cache-backed GUI inputs: `ghostty`, `noctalia`, `vicinae`.
+- Trust matching caches in `modules/nixos/cachix.nix`.
+- Do not hand-roll daily input bumps; CI owns them.
+
+## Secrets
+
+- Use `sops-nix` + age only.
+- `.sops.yaml` recipients are host keys plus `admin`.
+- Server host files include server key + `admin`.
+- Workstation/bootstrap files include workstation keys + `admin`.
+- NixOS host age keys derive from `/etc/ssh/ssh_host_ed25519_key.pub`.
+- Darwin bootstrap key: `~/Library/Application Support/sops/age/keys.txt`.
+- Cross-secret editing key: `secrets/admin.yaml` -> `admin_age_key`.
+- `homeManager.secrets` exports `SOPS_AGE_KEY_FILE` to the decrypted admin key.
+- Rely on SOPS defaults: root-owned, `0400`.
+- Declare only differences: usually `restartUnits`, sometimes owner/group/mode.
+- Use `sops.templates` for env files.
+- Never commit plaintext, decrypted exports, or private keys outside encrypted SOPS values.
+
+## Scope
+
+- No X11.
+- No PulseAudio desktop stack.
+- No legacy networking.
+- No duplicate package surfaces.
+- No backup desktops.
+- Add packages only for terminal, browser, hardware, service, dev, or introspection use.
+- Keep docs reference-only. No narrative prose.
+- Keep comments out of code unless algorithmic rationale is required.
+
+## Validation
 
 Local:
 
 ```sh
-export SOPS_AGE_KEY_FILE="$HOME/.config/sops/age/keys.txt"
+export SOPS_AGE_KEY="$(sops -d --extract '["admin_age_key"]' secrets/admin.yaml)"
 for file in secrets/*.yaml; do sops -d "$file" >/dev/null; done
+unset SOPS_AGE_KEY
 git diff --check
 ```
 
-CI gates the rest: `nix fmt` + `nix flake check` (builds all host toplevels) on every PR/push.
+CI:
+
+```sh
+nix fmt
+nix flake check
+```
+
+## Agent Procedure
+
+- Read the target modules before planning.
+- Prefer `rg` and `rg --files`.
+- Keep changes atomic.
+- Delete superseded config.
+- Do not add compatibility branches.
+- Do not edit secrets as plaintext.
+- Do not run local Nix when unavailable; state the limitation.
+- Verify immediately after edits.

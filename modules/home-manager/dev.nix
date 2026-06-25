@@ -1,4 +1,7 @@
-{ ... }:
+{ config, ... }:
+let
+  inherit (config.flake.modules) homeManager;
+in
 {
   flake.modules.homeManager.dev =
     { lib, pkgs, ... }:
@@ -20,6 +23,8 @@
       };
     in
     {
+      imports = [ homeManager.pi ];
+
       home.packages = with pkgs; [
         delve
         gh
