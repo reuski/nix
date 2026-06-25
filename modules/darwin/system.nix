@@ -7,6 +7,8 @@
       system.startup.chime = false;
       time.timeZone = config.profile.timeZone;
 
+      documentation.enable = false;
+
       system.defaults = {
         NSGlobalDomain = {
           AppleInterfaceStyle = "Dark";
