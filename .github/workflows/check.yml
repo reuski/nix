@@ -53,9 +53,6 @@ jobs:
         with:
           fail-mode: true
 
-      - name: Check format
-        run: nix fmt . -- --ci
-
       - name: Evaluate Linux checks
         run: nix flake check --no-build
 

@@ -1,0 +1,45 @@
+name: format
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "**/*.nix"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - uses: DeterminateSystems/determinate-nix-action@629b284231c2a82554b724e357e47fc6020833c8 # v3.21.2
+
+      - name: Format
+        run: nix fmt .
+
+      - id: pr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          commit-message: "style: auto-format"
+          title: "style: auto-format"
+          body: "Automated treefmt formatting."
+          branch: chore/format
+          delete-branch: true
+
+      - if: steps.pr.outputs.pull-request-number != ''
+        uses: ./.github/actions/automerge
+        with:
+          pr: ${{ steps.pr.outputs.pull-request-number }}
+          token: ${{ secrets.GITHUB_TOKEN }}
