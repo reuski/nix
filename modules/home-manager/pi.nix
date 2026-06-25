@@ -79,14 +79,13 @@
         transport = "auto";
         enabledModels = [
           "zai/glm-5.2"
-          "moonshot/kimi-k2.6"
-          "openai-codex/gpt-5.5"
+          "moonshotai/kimi-k2.6"
           "deepseek/deepseek-v4-pro"
           "local/local"
         ];
         markdown.codeBlockIndent = "  ";
-        defaultProvider = "local";
-        defaultModel = "local";
+        defaultProvider = "zai";
+        defaultModel = "glm-5.2";
       };
 
       home.file.".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
