@@ -1,4 +1,4 @@
-name: flake-lock
+name: update
 
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -69,9 +69,8 @@ jobs:
           commit-message: "chore: update flake inputs"
           title: "chore: update flake inputs"
           body: "Automated flake input refresh and package bump."
-          branch: chore/flake-lock
+          branch: chore/update-flake
           delete-branch: true
-          labels: automated, flake-lock
 
       - if: steps.pr.outputs.pull-request-number != ''
         uses: ./.github/actions/automerge
