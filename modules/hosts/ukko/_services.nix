@@ -408,6 +408,11 @@ in
         kind = "vaultwarden";
         credential = "vaultwarden-admin-token";
       }
+      {
+        name = "Cache";
+        url = "https://${tsHost}:8090/ukko";
+        check = "http://127.0.0.1:8090/ukko/nix-cache-info";
+      }
     ];
   };
 
