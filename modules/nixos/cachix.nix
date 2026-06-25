@@ -20,7 +20,7 @@
           ]
           ++ lib.optional (
             config.networking.hostName != "ukko"
-          ) "ukko:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+          ) "ukko:NjZT4Lc1JJvioCv4z6Qv8zDmX+v25+e2r/9qGjTzHkU="
         );
       };
     };
