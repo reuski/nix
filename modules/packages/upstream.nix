@@ -7,7 +7,6 @@
     in
     lib.optionalAttrs isLinux {
       ghostty = inputs.ghostty.packages.${system}.default;
-      ghostty-terminfo = final.ghostty.terminfo;
       noctalia = inputs.noctalia.packages.${system}.default;
       vicinae = inputs.vicinae.packages.${system}.default;
     };
