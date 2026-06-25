@@ -15,6 +15,7 @@
         name = "deploy";
         runtimeInputs = [
           config.nix.package
+          pkgs.git
           pkgs.nixos-rebuild
           pkgs.openssh
           pkgs.attic-client
