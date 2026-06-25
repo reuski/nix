@@ -11,7 +11,14 @@
           font_family = "Hack Nerd Font Propo";
           corner_radius_scale = 0.5;
           polkit_agent = true;
-          panel.shadow = false;
+          panel = {
+            transparency_mode = "solid";
+            borders = false;
+            shadow = false;
+            control_center_placement = "floating";
+            wallpaper_placement = "floating";
+            session_placement = "floating";
+          };
         };
 
         theme.builtin = "Gruvbox";
@@ -23,7 +30,8 @@
           margin_v = 0;
           radius = 0;
           shadow = false;
-          background_opacity = 0.92;
+          background_opacity = 1.0;
+          reserve_space = true;
           start = [ "workspaces" ];
           center = [ "clock" ];
           end = [

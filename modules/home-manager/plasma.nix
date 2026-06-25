@@ -61,9 +61,16 @@
           command = getExe pkgs.ghostty;
         };
 
+        shortcuts.kwin."Window Close" = "Meta+Q";
+
         krunner.shortcuts.launch = "Meta+Space";
 
         configFile = {
+          kwalletrc."Wallet" = {
+            Enabled = true;
+            Default Wallet = "Default";
+            Close When Idle = false;
+          };
           baloofilerc."Basic Settings"."Indexing-Enabled" = false;
           kdeglobals.General = {
             TerminalApplication = getExe pkgs.ghostty;

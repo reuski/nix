@@ -38,7 +38,7 @@
 
       config.profile = {
         username = lib.mkDefault "reuski";
-        fullName = lib.mkDefault "reuski";
+        fullName = lib.mkDefault "Sami Reunanen";
         email = lib.mkDefault "sami@reuski.dev";
         homeDirectory = lib.mkDefault (
           if pkgs.stdenv.hostPlatform.isDarwin then
