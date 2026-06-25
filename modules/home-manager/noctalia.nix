@@ -12,12 +12,8 @@
           corner_radius_scale = 0.5;
           polkit_agent = true;
           panel = {
-            transparency_mode = "solid";
             borders = false;
             shadow = false;
-            control_center_placement = "floating";
-            wallpaper_placement = "floating";
-            session_placement = "floating";
           };
         };
 
@@ -26,12 +22,14 @@
         wallpaper.enabled = false;
 
         bar.main = {
+          thickness = 32;
           radius = 0;
+          margin_h = 0;
+          margin_v = 0;
+          padding = 16;
+          widget_spacing = 8;
           shadow = false;
-          background_opacity = 1.0;
-          reserve_space = true;
           start = [ "workspaces" ];
-          center = [ "clock" ];
           end = [
             "volume"
             "battery"
