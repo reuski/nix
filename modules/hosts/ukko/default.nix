@@ -33,10 +33,18 @@ in
         nixos.valheim
         nixos.mumble
         nixos.skaldi
+        nixos.cache
         nixos.deploy
       ];
 
-      deploy.targets = [ "shodan" ];
+      deploy = {
+        cache = "ukko";
+        warm = [
+          "sampo"
+          "hiisi"
+        ];
+        targets = [ "shodan" ];
+      };
 
       system.stateVersion = config.system.nixos.release;
     };

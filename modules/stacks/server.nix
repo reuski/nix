@@ -7,6 +7,7 @@ in
     imports = [
       generic.profile
       nixos.nixpkgs
+      nixos.cachix
       nixos.core
       nixos.headless
       nixos.networkd
