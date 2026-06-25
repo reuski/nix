@@ -10,9 +10,7 @@
             "https://vicinae.cachix.org"
             "https://ghostty.cachix.org"
           ]
-          ++ lib.optional (
-            config.networking.hostName != "ukko"
-          ) "https://ukko.tail2fc4c2.ts.net:8090/ukko"
+          ++ lib.optional (config.networking.hostName != "ukko") "https://ukko.tail2fc4c2.ts.net:8090/ukko"
         );
         trusted-public-keys = lib.mkAfter (
           [

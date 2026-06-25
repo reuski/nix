@@ -25,7 +25,7 @@
           warm() {
             out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
               --refresh --option tarball-ttl 0 --no-link --print-out-paths)
-            attic push "${cfg.cache}" "$out"
+            attic push "local:${cfg.cache}" "$out"
           }
 
           activate() {
@@ -40,13 +40,18 @@
               [ "$booted" = "$built" ] || systemctl reboot'
           }
 
-          for host in ${lib.escapeShellArgs cfg.warm}; do
-            warm "$host"
-          done
-
           for host in ${lib.escapeShellArgs cfg.targets}; do
             activate "$host" || activate "$host"
             reboot_if_stale "$host"
+          done
+
+          if [ -n "${cfg.cache}" ]; then
+            attic login local http://127.0.0.1:8090 \
+              "$(cat "$CREDENTIALS_DIRECTORY/attic-token")"
+          fi
+
+          for host in ${lib.escapeShellArgs cfg.warm}; do
+            warm "$host"
           done
         '';
       };
