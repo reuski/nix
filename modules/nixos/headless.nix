@@ -2,6 +2,12 @@
 {
   flake.modules.nixos.headless =
     { lib, pkgs, ... }:
+    let
+      xtermGhosttyTerminfo = pkgs.runCommand "xterm-ghostty-terminfo" { } ''
+        mkdir -p $out/share/terminfo/x
+        ln -s ${pkgs.ncurses}/share/terminfo/g/ghostty $out/share/terminfo/x/xterm-ghostty
+      '';
+    in
     {
       boot.kernelPackages = lib.mkForce pkgs.linuxPackages;
 
@@ -22,11 +28,11 @@
       environment.systemPackages = with pkgs; [
         curl
         dnsutils
-        ghostty-terminfo
         git
         jq
         lsof
         ncurses
+        xtermGhosttyTerminfo
         rsync
         tcpdump
       ];
