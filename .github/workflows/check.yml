@@ -1,4 +1,4 @@
-name: nix
+name: check
 
 on:
   pull_request:
@@ -40,7 +40,7 @@ permissions:
 
 jobs:
   evaluate:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -63,9 +63,9 @@ jobs:
         run: |
           nix eval .#checks.aarch64-darwin --apply 'builtins.mapAttrs (_: d: d.drvPath)'
 
-  build:
+  nixos:
     needs: evaluate
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     strategy:
       fail-fast: false
@@ -87,3 +87,20 @@ jobs:
 
       - name: Size ${{ matrix.host }}
         run: nix path-info --closure-size --human-readable ".#checks.x86_64-linux.nixos-${{ matrix.host }}"
+
+  darwin:
+    needs: evaluate
+    runs-on: macos-26
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - uses: DeterminateSystems/determinate-nix-action@629b284231c2a82554b724e357e47fc6020833c8 # v3.21.2
+
+      - name: Build abraxas
+        run: /usr/bin/time -l nix build --no-link ".#checks.aarch64-darwin.darwin-abraxas" --print-build-logs
+
+      - name: Size abraxas
+        run: nix path-info --closure-size --human-readable ".#checks.aarch64-darwin.darwin-abraxas"

@@ -38,8 +38,8 @@ unset SOPS_AGE_KEY
 
 CI:
 
-- `.github/workflows/nix.yml`: `nix fmt`, NixOS host builds, Darwin evaluation.
-- `.github/workflows/flake-lock.yml`: daily `nix flake update`, `nix-update helium-browser`, PR automerge on green.
+- `.github/workflows/check.yml`: `nix fmt`, NixOS host builds, Darwin build/evaluation.
+- `.github/workflows/update.yml`: daily `nix flake update`, `nix-update helium-browser`, PR automerge on green.
 
 ## Secrets
 
