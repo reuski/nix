@@ -27,6 +27,8 @@ in
 
       fonts.fontconfig.enable = false;
 
+      manual.manpages.enable = false;
+      programs.man.generateCaches = false;
       programs.home-manager.enable = true;
     };
 }

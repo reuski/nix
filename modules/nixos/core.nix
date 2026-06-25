@@ -23,6 +23,9 @@
         MaxRetentionSec=1month
       '';
 
+      documentation.nixos.enable = false;
+      documentation.man.cache.enable = false;
+
       users.mutableUsers = false;
       users.users.root.hashedPassword = "!";
       users.users.${config.profile.username} = {

@@ -26,8 +26,6 @@
         wallpaper.enabled = false;
 
         bar.main = {
-          margin_h = 0;
-          margin_v = 0;
           radius = 0;
           shadow = false;
           background_opacity = 1.0;

@@ -13,10 +13,10 @@
       programs.ssh = {
         enable = true;
         enableDefaultConfig = false;
-        matchBlocks."*" = {
-          inherit identityFile;
-          identitiesOnly = true;
-          addKeysToAgent = "yes";
+        settings."*" = {
+          IdentityFile = identityFile;
+          IdentitiesOnly = true;
+          AddKeysToAgent = "yes";
         };
       };
 
