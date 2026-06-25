@@ -19,7 +19,6 @@ in
         homeManager.fzf
         homeManager.git
         homeManager.cli
-        homeManager.pi
       ];
 
       home.username = config.profile.username;

@@ -5,10 +5,10 @@
     let
       json = pkgs.formats.json { };
       piPackages = [
-        "npm:pi-web-access"
-        "npm:context-mode"
         "npm:pi-mcp-adapter"
+        "npm:pi-web-access"
         "npm:pi-subagents"
+        "npm:context-mode"
       ];
     in
     {
@@ -21,26 +21,31 @@
       home.file.".pi/agent/AGENTS.md".text = ''
         # Operational Directives
 
-        ## 1. Interaction Protocol
+        ## Protocol
 
-        - **Zero Latency:** Eliminate conversational filler, pleasantries, and meta-commentary.
-        - **Token Efficiency:** Batch tool executions. Minimize output verbosity without losing clarity.
-        - **Context Awareness:** Dynamically adapt to the detected environment, languages, and frameworks.
+        - No filler.
+        - Batch tool calls.
+        - Prefer `rg` and `rg --files`.
+        - Read before planning.
+        - State blockers only with evidence.
 
-        ## 2. Engineering Standards
+        ## Engineering
 
-        - **Modern Best Practices:** Utilize bleeding-edge, stable features of the target language.
-        - **Code Hygiene:**
-          - **Self-Documenting:** Naming must be precise. Comments are prohibited except for complex algorithmic rationale.
-          - **Lean Implementation:** Strict adherence to YAGNI and KISS. No over-engineering.
-          - **Purity:** Prefer functional patterns (immutability, side-effect isolation) where applicable.
-        - **Architecture:** Maintain strict separation of concerns. Ensure modularity and testability.
+        - Bleeding-edge features.
+        - Precise and concise names.
+        - No comments except algorithmic rationale.
+        - YAGNI.
+        - KISS.
+        - Functional shape where it clarifies.
+        - Strict ownership boundaries.
 
-        ## 3. Execution Lifecycle
+        ## Lifecycle
 
-        - **Discovery:** Proactively map the codebase and read configuration files before formulating a plan.
-        - **Implementation:** Perform atomic, idempotent changes.
-        - **Verification:** Shift-left. Validate syntax and basic functionality immediately post-generation.
+        - Discover.
+        - Patch atomically.
+        - Delete dead config.
+        - Verify immediately.
+        - Report changed files and validation.
       '';
 
       home.file.".pi/agent/settings.json".source = json.generate "pi-settings.json" {
