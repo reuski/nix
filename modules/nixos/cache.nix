@@ -14,17 +14,6 @@
         ATTIC_SERVER_TOKEN_RS256_SECRET_BASE64=${config.sops.placeholder."attic/server-token"}
       '';
 
-      systemd.tmpfiles.rules = [ "d /root/.config/attic 0700 root root -" ];
-
-      sops.templates."attic-client".path = "/root/.config/attic/config.toml";
-      sops.templates."attic-client".content = ''
-        default-server = "ukko"
-
-        [servers.ukko]
-        endpoint = "http://127.0.0.1:8090/"
-        token = "${config.sops.placeholder."attic/push-token"}"
-      '';
-
       services.atticd = {
         enable = true;
         environmentFile = config.sops.templates."atticd-env".path;
@@ -44,6 +33,10 @@
           };
         };
       };
+
+      systemd.services.deploy.serviceConfig.LoadCredential = "attic-token:${
+        config.sops.secrets."attic/push-token".path
+      }";
 
       environment.systemPackages = [ pkgs.attic-client ];
 
