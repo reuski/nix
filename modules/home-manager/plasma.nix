@@ -66,10 +66,10 @@
         krunner.shortcuts.launch = "Meta+Space";
 
         configFile = {
-          kwalletrc."Wallet" = {
+          kwalletrc.Wallet = {
             Enabled = true;
-            Default Wallet = "Default";
-            Close When Idle = false;
+            "Default Wallet" = "Default";
+            "Close When Idle" = false;
           };
           baloofilerc."Basic Settings"."Indexing-Enabled" = false;
           kdeglobals.General = {
