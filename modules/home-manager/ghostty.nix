@@ -16,6 +16,8 @@
           font-size = 12;
           theme = "Gruvbox Dark";
           background-opacity = 0.95;
+          window-width = 140;
+          window-height = 38;
           window-padding-x = 6;
           window-padding-y = 6;
           cursor-style = "bar";
