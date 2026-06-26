@@ -108,8 +108,8 @@
         owner = "reuski";
         repo = "reuski.dev";
         rev = "7c6f35d22c09ebe2e531b0df338c11af92a700ae";
-        hash = lib.fakeHash;
-        depsHash = lib.fakeHash;
+        hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+        depsHash = "sha256-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=";
         installPhase = ''
           cp -r _site $out
         '';
@@ -121,8 +121,8 @@
         owner = "reuski";
         repo = "beebud";
         rev = "33c8d43bf595680358c46c04120782e97786944a";
-        hash = lib.fakeHash;
-        depsHash = lib.fakeHash;
+        hash = "sha256-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=";
+        depsHash = "sha256-DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD=";
         installPhase = ''
           mkdir -p $out
           cp -r build $out/build
@@ -138,8 +138,8 @@
         owner = "reuski";
         repo = "wahuu.games";
         rev = "2188815f57a49e4319fc0852e796a598a03aa1f4";
-        hash = lib.fakeHash;
-        depsHash = lib.fakeHash;
+        hash = "sha256-EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE=";
+        depsHash = "sha256-FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF=";
         installPhase = ''
           mkdir -p $out/bin
           cp -r src dist index.html $out/

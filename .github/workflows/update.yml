@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   update:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -40,10 +40,15 @@ jobs:
           nix-update() {
             nix run "github:NixOS/nixpkgs/$(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)#nix-update" -- "$@"
           }
-          for pkg in web-reuski-dev web-beebud web-wahuu-games; do
-            nix-update --flake --version=branch --custom-dep deps "$pkg" \
-              --override-filename modules/packages/web.nix
-          done
+          nix-update --flake --version=branch --subpackage deps \
+            --url https://github.com/reuski/reuski.dev \
+            --override-filename modules/packages/web.nix web-reuski-dev
+          nix-update --flake --version=branch --subpackage deps \
+            --url https://github.com/reuski/beebud \
+            --override-filename modules/packages/web.nix web-beebud
+          nix-update --flake --version=branch --subpackage deps \
+            --url https://github.com/reuski/wahuu.games \
+            --override-filename modules/packages/web.nix web-wahuu-games
         timeout-minutes: 15
 
       - name: Format
