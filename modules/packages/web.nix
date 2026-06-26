@@ -81,7 +81,8 @@
             NODE_ENV = "production";
             configurePhase = ''
               runHook preConfigure
-              ln -s ${deps} node_modules
+              cp -r ${deps} node_modules
+              chmod -R u+w node_modules
               runHook postConfigure
             '';
             buildPhase = ''
