@@ -29,10 +29,14 @@ jobs:
 
       - name: Bump helium browser
         run: |
-          nix run "github:NixOS/nixpkgs/$(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)#nix-update" -- \
-            helium-browser --flake \
-            --url https://github.com/imputnet/helium-linux \
-            --override-filename modules/packages/helium.nix
+          nix-update() {
+            nix run "github:NixOS/nixpkgs/$(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)#nix-update" -- "$@"
+          }
+          bump() {
+            nix-update --flake --version="$1" --url "$2" --override-filename "$3" "$4"
+            nix-update --flake --version=skip --url "$2" --override-filename "$3" "$4"
+          }
+          bump stable https://github.com/imputnet/helium-linux modules/packages/helium.nix helium-browser
         timeout-minutes: 10
 
       - name: Bump web apps
@@ -40,15 +44,13 @@ jobs:
           nix-update() {
             nix run "github:NixOS/nixpkgs/$(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)#nix-update" -- "$@"
           }
-          nix-update --flake --version=branch \
-            --url https://github.com/reuski/reuski.dev \
-            --override-filename modules/packages/web.nix web-reuski-dev
-          nix-update --flake --version=branch \
-            --url https://github.com/reuski/beebud \
-            --override-filename modules/packages/web.nix web-beebud
-          nix-update --flake --version=branch \
-            --url https://github.com/reuski/wahuu.games \
-            --override-filename modules/packages/web.nix web-wahuu-games
+          bump() {
+            nix-update --flake --version=branch --url "$1" --override-filename modules/packages/web.nix "$2"
+            nix-update --flake --version=skip  --url "$1" --override-filename modules/packages/web.nix "$2"
+          }
+          bump https://github.com/reuski/reuski.dev web-reuski-dev
+          bump https://github.com/reuski/beebud web-beebud
+          bump https://github.com/reuski/wahuu.games web-wahuu-games
         timeout-minutes: 15
 
       - name: Format
