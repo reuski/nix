@@ -9,12 +9,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  NIX_CONFIG: |
-    download-buffer-size = 536870912
-    extra-substituters = https://niri.cachix.org https://noctalia.cachix.org https://vicinae.cachix.org https://ghostty.cachix.org
-    extra-trusted-public-keys = niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4= vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc= ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns=
-
 permissions:
   contents: write
   pull-requests: write
@@ -24,11 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-
-      - uses: DeterminateSystems/determinate-nix-action@629b284231c2a82554b724e357e47fc6020833c8 # v3.21.2
+      - uses: ./.github/actions/setup
 
       - name: Update inputs
         run: nix flake update
@@ -46,21 +36,9 @@ jobs:
         run: nix fmt .
         timeout-minutes: 5
 
-      - uses: DeterminateSystems/flake-checker-action@3164002371bc90729c68af0e24d5aacf20d7c9f6 # v12
+      - uses: ./.github/actions/validate
         with:
-          fail-mode: true
-
-      - name: Evaluate Linux checks
-        run: nix flake check --no-build
-        timeout-minutes: 12
-
-      - name: Evaluate macOS checks
-        run: |
-          nix eval .#checks.aarch64-darwin --apply 'builtins.mapAttrs (_: d: d.drvPath)'
-        timeout-minutes: 8
-
-      - name: Build NixOS checks
-        run: nix flake check --print-build-logs
+          build: "true"
         timeout-minutes: 30
 
       - id: pr
