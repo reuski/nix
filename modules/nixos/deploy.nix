@@ -53,6 +53,11 @@
             attic login local http://127.0.0.1:8090 "$(cat "$CREDENTIALS_DIRECTORY/attic-token")"
 
             ${lib.concatMapStringsSep "\n" (h: "warm ${h}") cfg.warm}
+
+            ${lib.optionalString (cfg.stampPath != null) ''
+              mkdir -p "$(dirname "${cfg.stampPath}")"
+              date -u +%s > "${cfg.stampPath}"
+            ''}
           ''}
         '';
       };
@@ -74,6 +79,11 @@
           default = [ ];
           description = "Hosts this machine builds, pushes, and activates over Tailscale SSH (MagicDNS names).";
         };
+        stampPath = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = "Optional path overwritten with the current Unix timestamp after a successful cache warm-up.";
+        };
       };
 
       config = lib.mkIf (cfg.warm != [ ] || cfg.targets != [ ]) {
@@ -83,6 +93,7 @@
             "network-online.target"
             "tailscaled.service"
             "atticd.service"
+            "attic-cache.service"
           ];
           wants = [ "network-online.target" ];
           serviceConfig = {

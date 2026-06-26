@@ -4,13 +4,13 @@ Personal dendritic flake. Agent rules: [AGENTS.md](AGENTS.md).
 
 ## Hosts
 
-| Host | Class | System | Role |
-| --- | --- | --- | --- |
-| `hiisi` | NixOS | `x86_64-linux` | Niri laptop |
-| `sampo` | NixOS | `x86_64-linux` | Plasma desktop |
-| `shodan` | NixOS | `x86_64-linux` | VPS |
-| `ukko` | NixOS | `x86_64-linux` | Home server |
-| `abraxas` | nix-darwin | `aarch64-darwin` | MacBook |
+| Host      | Class      | System           | Role           |
+| --------- | ---------- | ---------------- | -------------- |
+| `hiisi`   | NixOS      | `x86_64-linux`   | Niri laptop    |
+| `sampo`   | NixOS      | `x86_64-linux`   | Plasma desktop |
+| `shodan`  | NixOS      | `x86_64-linux`   | VPS            |
+| `ukko`    | NixOS      | `x86_64-linux`   | Home server    |
+| `abraxas` | nix-darwin | `aarch64-darwin` | MacBook        |
 
 ## Graph
 
@@ -43,40 +43,35 @@ CI:
 
 ## Cache and Upgrades
 
-`ukko` is the fleet builder, binary cache, and orchestrator. Native, no containers.
+`ukko` is the fleet builder, cache, and orchestrator.
 
-- `cache.nix`: `atticd` at `127.0.0.1:8090`, tailnet-served `https://ukko.tail2fc4c2.ts.net:8090/ukko`.
-- `deploy.nix`: one `deploy` service+timer. `targets` (`shodan`) build, push, and activate over Tailscale SSH; `warm` (`sampo`, `hiisi`) build and push for self-upgrade pull.
-- `cachix.nix`: every host but `ukko` consumes the substituter and key. One URL for LAN and remote; Tailscale connects same-network peers directly.
+- `cache.nix`: `atticd` at `127.0.0.1:8090`, tailnet-served `https://ukko.tail2fc4c2.ts.net:8090/ukko`. An `attic-cache` oneshot mints an ephemeral admin token and creates the `ukko` cache if absent, so `deploy` never pushes into a missing cache.
+- `deploy.nix`: one `deploy` service+timer, ordered after `attic-cache`. `targets` (`shodan`) build, push, and activate over Tailscale SSH; `warm` (`sampo`, `hiisi`) build and push for self-upgrade pull.
+- `nix.nix`: owns `nix.settings`. Declares only added caches (the `ukko` attic first on every host but `ukko`, then cachix endpoints); NixOS core appends `cache.nixos.org`. One URL for LAN and remote; Tailscale connects same-network peers directly.
 
 Nightly cascade (Europe/Helsinki):
 
-| Time | Host | Unit |
-| --- | --- | --- |
-| `02:00` | ukko | `deploy.timer`: warm, deploy `shodan` |
-| `03:00` | workstations | `nixos-upgrade`: pull cache; `persistent` catches morning boots |
-| `04:00`–`06:00` | ukko | `nixos-upgrade`: self, reboot window |
+| Time            | Host         | Unit                                                            |
+| --------------- | ------------ | --------------------------------------------------------------- |
+| `02:00`         | ukko         | `deploy.timer`: warm, deploy `shodan`                           |
+| `03:00`         | workstations | `nixos-upgrade`: pull cache; `persistent` catches morning boots |
+| `04:00`–`06:00` | ukko         | `nixos-upgrade`: self, reboot window                            |
 
 The cache is an optimization, never a hard dependency (`connect-timeout = 5` + fallback):
 
 - Offline: fall back to `cache.nixos.org` + local build.
-- Replaced: new signing key, stale `cachix.nix` key ignored; re-bootstrap below.
+- `atticd` mints a new signing keypair on cache creation; the stale key in `nix.nix` is ignored by clients until updated below.
 
 Health: heimdash `Cache` card; run failures via `systemctl --failed`.
 
-Fresh `ukko` (`/var/lib/atticd` is not persisted; recreate the cache and key):
+Fresh `ukko` (`/var/lib/atticd` is not persisted). `attic-cache` recreates the `ukko` cache automatically on boot; only the public key needs harvesting once:
 
 ```sh
 sops updatekeys --yes secrets/ukko.yaml
 ```
 
 ```sh
-token=$(atticd-atticadm make-token --sub boot --validity 1h \
-  --pull '*' --push '*' --create-cache '*' --configure-cache '*')
-attic login local http://127.0.0.1:8090 "$token"
-attic cache create ukko
-attic cache configure ukko --public
-attic cache info ukko   # public key -> cachix.nix
+ssh reuski@home.reuski.dev attic cache info ukko   # Public Key -> nix.nix
 ```
 
 ## Secrets
