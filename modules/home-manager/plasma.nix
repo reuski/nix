@@ -62,6 +62,7 @@
         };
 
         shortcuts.kwin."Window Close" = "Meta+Q";
+        shortcuts.plasmashell."manage activities" = [ ];
 
         krunner.shortcuts.launch = "Meta+Space";
 
