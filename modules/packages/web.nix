@@ -29,13 +29,12 @@
           outputHash = hash;
           dontConfigure = true;
           dontFixup = true;
-          buildPhase = ''
-            export HOME=$TMPDIR
-            export BUN_INSTALL_CACHE_DIR=$TMPDIR/cache
-            bun install --frozen-lockfile --no-progress
-          '';
+          dontBuild = true;
           installPhase = ''
-            cp -r node_modules $out
+            export HOME=$TMPDIR
+            bun install --frozen-lockfile --no-progress
+            mkdir -p $out
+            cp -r node_modules $out/
           '';
         };
 
@@ -76,13 +75,13 @@
             depsHash = depsHash;
             nativeBuildInputs = [
               bun
+              nodejs
               makeWrapper
             ];
             NODE_ENV = "production";
             configurePhase = ''
               runHook preConfigure
-              cp -r ${deps} node_modules
-              chmod -R u+w node_modules
+              ln -s ${deps}/node_modules node_modules
               runHook postConfigure
             '';
             buildPhase = ''
