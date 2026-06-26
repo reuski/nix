@@ -22,7 +22,7 @@
         scale = 1.25;
       };
 
-      layout.window-rules = [
+      window-rules = [
         {
           matches = [ { app-id = "^ghostty$"; } ];
           open-maximized = true;
