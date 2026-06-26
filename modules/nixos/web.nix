@@ -119,12 +119,20 @@
       );
 
       hostDomains = concatLists (
-        (mapAttrsToList (_: s: [
-          s.domain
-        ] ++ s.aliases) cfg.sites)
-        ++ (mapAttrsToList (_: s: [
-          s.domain
-        ] ++ s.aliases) cfg.services)
+        (mapAttrsToList (
+          _: s:
+          [
+            s.domain
+          ]
+          ++ s.aliases
+        ) cfg.sites)
+        ++ (mapAttrsToList (
+          _: s:
+          [
+            s.domain
+          ]
+          ++ s.aliases
+        ) cfg.services)
       );
       servicePorts = mapAttrsToList (_: s: s.port) cfg.services;
 
@@ -148,30 +156,34 @@
           default = config.profile.email;
         };
         sites = mkOption {
-          type = types.attrsOf (types.submodule {
-            options = hostOptions // {
-              package = mkOption {
-                type = types.package;
-                description = "Derivation whose store path is the static site root.";
+          type = types.attrsOf (
+            types.submodule {
+              options = hostOptions // {
+                package = mkOption {
+                  type = types.package;
+                  description = "Derivation whose store path is the static site root.";
+                };
               };
-            };
-          });
+            }
+          );
           default = { };
         };
         services = mkOption {
-          type = types.attrsOf (types.submodule {
-            options = hostOptions // {
-              package = mkOption {
-                type = types.package;
-                description = "Derivation providing bin/web-<name>.";
+          type = types.attrsOf (
+            types.submodule {
+              options = hostOptions // {
+                package = mkOption {
+                  type = types.package;
+                  description = "Derivation providing bin/web-<name>.";
+                };
+                port = mkOption { type = types.port; };
+                envFile = mkOption {
+                  type = types.nullOr types.path;
+                  default = null;
+                };
               };
-              port = mkOption { type = types.port; };
-              envFile = mkOption {
-                type = types.nullOr types.path;
-                default = null;
-              };
-            };
-          });
+            }
+          );
           default = { };
         };
       };
@@ -182,9 +194,7 @@
           ++ (mapAttrsToList (name: _: nameAssertion "services" name) cfg.services)
           ++ [
             {
-              assertion = intersectLists (builtins.attrNames cfg.sites) (
-                builtins.attrNames cfg.services
-              ) == [ ];
+              assertion = intersectLists (builtins.attrNames cfg.sites) (builtins.attrNames cfg.services) == [ ];
               message = "web app names must be unique across sites and services.";
             }
             {
