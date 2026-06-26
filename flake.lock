@@ -147,11 +147,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1782121378,
-        "narHash": "sha256-j7MgED3BFp10fkDtEVukBZPkhz1bEK82Ev2So78epXY=",
+        "lastModified": 1782454025,
+        "narHash": "sha256-RgRjK/sR23/xFirTGxe0E+bpCTpfnsliIRD1S/Mv3RU=",
         "owner": "reuski",
         "repo": "heimdash",
-        "rev": "6cdea99fb54e0a6abdd56a408d918321d23d2e2b",
+        "rev": "b8378e5285f2b0466afe89ab4f8c37083db63012",
         "type": "github"
       },
       "original": {
@@ -414,11 +414,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1782445571,
-        "narHash": "sha256-Po9EyimylzYVkE8Ga4+08myqvRniHkWW0LM3gjrdtZ0=",
+        "lastModified": 1782462073,
+        "narHash": "sha256-i6LyUBzvPSwnDk29dKGL0s0rTszLQaVXi4g2tnv6LvY=",
         "owner": "noctalia-dev",
         "repo": "noctalia",
-        "rev": "78e528ba61704226208c06a6aea5f5971c5347d5",
+        "rev": "4263897d054bd56f23e26cee3bda63bcd011c56b",
         "type": "github"
       },
       "original": {
