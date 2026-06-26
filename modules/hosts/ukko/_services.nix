@@ -49,12 +49,16 @@ in
         port = 53;
         upstream_dns = [
           "https://dns.quad9.net/dns-query"
-          "tls://dns.quad9.net"
+          "https://dnsforge.de/dns-query"
         ];
+        upstream_mode = "parallel";
         bootstrap_dns = [
           "9.9.9.9"
           "149.112.112.112"
+          "2620:fe::fe"
+          "2620:fe::9"
         ];
+        enable_dnssec = true;
         allowed_clients = [
           "127.0.0.1"
           "192.168.1.0/24"
@@ -104,11 +108,11 @@ in
       filters = [
         {
           enabled = true;
-          url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt";
+          url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt";
         }
         {
           enabled = true;
-          url = "https://adguardteam.github.io/HostlistsRegistry/assets/filter_2.txt";
+          url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/tif.txt";
         }
       ];
       querylog.enabled = true;
@@ -128,7 +132,7 @@ in
   };
 
   sops.secrets = {
-    "cloudflare/dns-token" = { };
+    "cloudflare/dns-token".restartUnits = [ "cloudflare-dyndns.service" ];
     "jellyfin/admin-password".restartUnits = [ "jellyfin-setup.service" ];
     "pia/username".restartUnits = [ "gluetun.service" ];
     "pia/password".restartUnits = [ "gluetun.service" ];
@@ -184,10 +188,10 @@ in
     };
     "pia-gluetun-env" = {
       content = ''
-        PIA_USER=${config.sops.placeholder."pia/username"}
-        PIA_PASS=${config.sops.placeholder."pia/password"}
-        VPN_PORT_FORWARDING_USERNAME=${config.sops.placeholder."pia/username"}
-        VPN_PORT_FORWARDING_PASSWORD=${config.sops.placeholder."pia/password"}
+        PIA_USER="${config.sops.placeholder."pia/username"}"
+        PIA_PASS="${config.sops.placeholder."pia/password"}"
+        VPN_PORT_FORWARDING_USERNAME="${config.sops.placeholder."pia/username"}"
+        VPN_PORT_FORWARDING_PASSWORD="${config.sops.placeholder."pia/password"}"
       '';
       restartUnits = [ "gluetun.service" ];
     };
