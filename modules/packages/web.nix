@@ -97,14 +97,14 @@
               ${installPhase}
               runHook postInstall
             '';
-            passthru.deps = deps;
+            passthru.npmDeps = deps;
           }
         );
     in
     {
       web-reuski-dev = bunApp {
         pname = "reuski-dev";
-        version = "unstable-2026-02-16";
+        version = "0-unstable-2026-02-16";
         owner = "reuski";
         repo = "reuski.dev";
         rev = "7c6f35d22c09ebe2e531b0df338c11af92a700ae";
@@ -117,7 +117,7 @@
 
       web-beebud = bunApp {
         pname = "beebud";
-        version = "unstable-2026-05-15";
+        version = "0-unstable-2026-05-15";
         owner = "reuski";
         repo = "beebud";
         rev = "33c8d43bf595680358c46c04120782e97786944a";
@@ -134,7 +134,7 @@
 
       web-wahuu-games = bunApp {
         pname = "wahuu-games";
-        version = "unstable-2026-05-10";
+        version = "0-unstable-2026-05-10";
         owner = "reuski";
         repo = "wahuu.games";
         rev = "2188815f57a49e4319fc0852e796a598a03aa1f4";

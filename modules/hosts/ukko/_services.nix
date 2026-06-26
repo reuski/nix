@@ -423,6 +423,7 @@ in
   };
 
   tailnet.services = {
+    hass.port = 8123;
     audiobookshelf.port = 8000;
     vaultwarden.port = 8222;
     navidrome.port = 4533;
