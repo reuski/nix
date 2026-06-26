@@ -122,7 +122,7 @@
         repo = "beebud";
         rev = "33c8d43bf595680358c46c04120782e97786944a";
         hash = "sha256-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=";
-        depsHash = "sha256-DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD=";
+        depsHash = "sha256-DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD=";
         installPhase = ''
           mkdir -p $out
           cp -r build $out/build
