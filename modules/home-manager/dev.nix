@@ -31,6 +31,8 @@ in
         go
         golangci-lint
         govulncheck
+        nil
+        nixfmt
         python314
         ruff
         ty
@@ -84,8 +86,8 @@ in
           "bearded-icon-theme"
           "biome"
           "html"
+          "nix"
           "svelte"
-          "tailwindcss"
           "zig"
         ];
 
@@ -142,6 +144,9 @@ in
 
           lsp = {
             biome.settings.require_config_file = true;
+            nil.formatting.command = [
+              (lib.getExe pkgs.nixfmt)
+            ];
             ty.binary.path = lib.getExe pkgs.ty;
             ruff.binary.path = lib.getExe pkgs.ruff;
             gopls.settings = {
@@ -225,6 +230,10 @@ in
               tab_size = 4;
               language_servers = [ "zls" ];
               formatter.language_server.name = "zls";
+            };
+            Nix = {
+              language_servers = [ "nil" ];
+              formatter.external.command = lib.getExe pkgs.nixfmt;
             };
           };
         };

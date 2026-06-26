@@ -4,7 +4,6 @@
     {
       config,
       lib,
-      pkgs,
       ...
     }:
     let
@@ -12,7 +11,6 @@
       inherit (lib)
         concatLists
         concatStringsSep
-        hasPrefix
         intersectLists
         mapAttrs'
         mapAttrsToList
@@ -22,65 +20,21 @@
         nameValuePair
         optional
         optionalAttrs
-        optionalString
         types
         unique
         ;
 
-      stateDir = "/var/lib/web";
       enabled = cfg.sites != { } || cfg.services != { };
-      bun = lib.getExe pkgs.bun;
-      ssh = lib.getExe' pkgs.openssh "ssh";
-      systemctl = lib.getExe' pkgs.systemd "systemctl";
-
-      safeName = lib.replaceStrings [ "." "/" ":" "@" " " "_" ] [ "-" "-" "-" "-" "-" "-" ];
       validName = name: builtins.match "[a-z0-9]+(-[a-z0-9]+)*" name != null;
-      appState = name: "web/apps/${safeName name}";
-      appRoot = name: "/var/lib/${appState name}";
-      appCache = name: "/var/cache/${appState name}";
-      checkout = name: "${appRoot name}/src";
-      siteRoot = name: "${appRoot name}/site";
-      syncUnit = name: "web-sync-${safeName name}";
-      siteUnit = name: "web-site-${safeName name}";
-      serviceUnit = name: "web-service-${safeName name}";
-      deployUnit = name: "web-deploy-${safeName name}";
-      caddyHosts = domains: concatStringsSep ", " domains;
-      appDomains = app: [ app.domain ] ++ app.aliases;
 
-      bunInstall = ''
-        if [ -e bun.lock ] || [ -e bun.lockb ]; then
-          ${bun} install --frozen-lockfile
-        else
-          ${bun} install
-        fi
+      headers = ''
+        header {
+          Strict-Transport-Security "max-age=31536000"
+          X-Content-Type-Options "nosniff"
+          X-Frame-Options "SAMEORIGIN"
+          Referrer-Policy "strict-origin-when-cross-origin"
+        }
       '';
-
-      sshRepo = repo: hasPrefix "git@" repo.url || hasPrefix "ssh://" repo.url;
-      httpsRepo = repo: hasPrefix "https://" repo.url;
-      cloneArgs =
-        repo: optionalString repo.shallow "--depth=1 --filter=blob:none --no-tags --single-branch";
-      fetchArgs = repo: optionalString repo.shallow "--depth=1 --filter=blob:none --no-tags";
-
-      repoKeyFiles = app: optional (app.repo.keyFile != null) app.repo.keyFile;
-      repoCredentials = app: optional (app.repo.keyFile != null) "git-key:${app.repo.keyFile}";
-      appCredentials = app: optional (app.envFile != null) "env:${app.envFile}" ++ repoCredentials app;
-      loadCredentials = credentials: optionalAttrs (credentials != [ ]) { LoadCredential = credentials; };
-      conditions = app: unique (optional (app.envFile != null) app.envFile ++ repoKeyFiles app);
-      repoGitSsh =
-        app:
-        optionalString (app.repo.keyFile != null) ''
-          export GIT_SSH_COMMAND="${ssh} -i $CREDENTIALS_DIRECTORY/git-key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=/etc/ssh/ssh_known_hosts"
-        '';
-      envSetup =
-        app:
-        optionalString (app.envFile != null) ''
-          rm -f .env
-          ln -s "$CREDENTIALS_DIRECTORY/env" .env
-        '';
-      envCleanup = app: optionalString (app.envFile != null) "rm -f .env";
-      usesSsh = builtins.any (app: sshRepo app.repo || app.repo.keyFile != null) (
-        builtins.attrValues cfg.sites ++ builtins.attrValues cfg.services
-      );
 
       hardening = {
         CapabilityBoundingSet = "";
@@ -107,389 +61,42 @@
         RestrictRealtime = true;
         RestrictSUIDSGID = true;
         SystemCallArchitectures = "native";
+        SystemCallFilter = [
+          "@system-service"
+          "~@privileged @resources"
+        ];
+        SystemCallErrno = "EPERM";
       };
 
-      repoType = types.submodule {
-        options = {
-          url = mkOption { type = types.str; };
-          branch = mkOption {
-            type = types.str;
-            default = "main";
-          };
-          keyFile = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-          };
-          shallow = mkOption {
-            type = types.bool;
-            default = true;
-          };
-        };
-      };
-
-      repoOption = types.coercedTo types.str (url: { inherit url; }) repoType;
-
-      appOptions = {
+      hostOptions = {
         domain = mkOption { type = types.str; };
         aliases = mkOption {
           type = types.listOf types.str;
           default = [ ];
         };
-        repo = mkOption { type = repoOption; };
         extraConfig = mkOption {
           type = types.lines;
           default = "";
         };
-        install = mkOption {
-          type = types.lines;
-          default = bunInstall;
-        };
-        envFile = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-        };
       };
-
-      siteType = types.submodule {
-        options = appOptions // {
-          output = mkOption {
-            type = types.str;
-            default = "_site";
-          };
-          build = mkOption {
-            type = types.lines;
-            default = "${bun} run build";
-          };
-        };
-      };
-
-      serviceType = types.submodule {
-        options = appOptions // {
-          port = mkOption { type = types.port; };
-          build = mkOption {
-            type = types.nullOr types.lines;
-            default = "${bun} run build";
-          };
-          start = mkOption {
-            type = types.str;
-            default = "${bun} run start";
-          };
-        };
-      };
-
-      nameAssertion = kind: name: _value: {
-        assertion = validName name;
-        message = "web.${kind}.${name} must use lowercase kebab-case.";
-      };
-
-      repoUrlAssertion = kind: name: app: {
-        assertion = httpsRepo app.repo || sshRepo app.repo;
-        message = "web.${kind}.${name}.repo.url must use HTTPS or SSH.";
-      };
-
-      repoKeyAssertion = kind: name: app: {
-        assertion = !(sshRepo app.repo) || app.repo.keyFile != null;
-        message = "web.${kind}.${name}.repo.keyFile is required for SSH repository URLs.";
-      };
-
-      domainAssertion = kind: name: app: {
-        assertion = app.domain != "" && builtins.all (domain: domain != "") app.aliases;
-        message = "web.${kind}.${name} domains must not be empty.";
-      };
-
-      siteNames = builtins.attrNames cfg.sites;
-      serviceNames = builtins.attrNames cfg.services;
-      overlappingApps = intersectLists siteNames serviceNames;
-      hostDomains =
-        concatLists (mapAttrsToList (_name: site: appDomains site) cfg.sites)
-        ++ concatLists (mapAttrsToList (_name: service: appDomains service) cfg.services);
-      servicePorts = mapAttrsToList (_name: service: service.port) cfg.services;
-
-      syncService = mode: name: app: {
-        description = "Sync web app ${name}";
-        wants = [ "network-online.target" ];
-        after = [ "network-online.target" ];
-        path = with pkgs; [
-          coreutils
-          git
-          openssh
-        ];
-        environment = {
-          HOME = appRoot name;
-          GIT_TERMINAL_PROMPT = "0";
-        };
-        unitConfig = optionalAttrs (repoKeyFiles app != [ ]) {
-          ConditionPathExists = repoKeyFiles app;
-        };
-        serviceConfig =
-          hardening
-          // loadCredentials (repoCredentials app)
-          // {
-            Type = "oneshot";
-            RemainAfterExit = true;
-            User = cfg.user;
-            Group = cfg.group;
-            StateDirectory = appState name;
-            StateDirectoryMode = mode;
-            CacheDirectory = appState name;
-            CacheDirectoryMode = "0750";
-            ReadWritePaths = [ (appRoot name) ];
-            TimeoutStartSec = "10min";
-            UMask = "0027";
-            ExecStart = pkgs.writeShellScript "sync-${safeName name}" ''
-              set -euo pipefail
-
-              ${repoGitSsh app}
-
-              checkout=${lib.escapeShellArg (checkout name)}
-              branch=${lib.escapeShellArg app.repo.branch}
-              url=${lib.escapeShellArg app.repo.url}
-
-              if [ ! -d "$checkout/.git" ]; then
-                rm -rf "$checkout"
-                git clone ${cloneArgs app.repo} --branch "$branch" "$url" "$checkout"
-              else
-                git -C "$checkout" remote set-url origin "$url"
-                old=$(git -C "$checkout" rev-parse HEAD)
-                current_branch=$(git -C "$checkout" branch --show-current)
-                git -C "$checkout" fetch ${fetchArgs app.repo} --prune --force origin "+refs/heads/$branch:refs/remotes/origin/$branch"
-                new=$(git -C "$checkout" rev-parse "refs/remotes/origin/$branch")
-                if [ "$old" = "$new" ] && [ "$current_branch" = "$branch" ]; then
-                  printf '%s\n' "$old" > "$STATE_DIRECTORY/revision"
-                  exit 0
-                fi
-                git -C "$checkout" checkout -B "$branch" "refs/remotes/origin/$branch"
-                git -C "$checkout" reset --hard "refs/remotes/origin/$branch"
-                git -C "$checkout" clean -ffdx
-              fi
-
-              git -C "$checkout" rev-parse HEAD > "$STATE_DIRECTORY/revision"
-            '';
-          };
-      };
-
-      siteService = name: site: {
-        description = "Build web site ${name}";
-        wantedBy = [ "multi-user.target" ];
-        wants = [ "${syncUnit name}.service" ];
-        requires = [ "${syncUnit name}.service" ];
-        after = [ "${syncUnit name}.service" ];
-        path = with pkgs; [
-          bun
-          coreutils
-          findutils
-          git
-          openssh
-        ];
-        environment.NODE_ENV = "production";
-        unitConfig = optionalAttrs (conditions site != [ ]) {
-          ConditionPathExists = conditions site;
-        };
-        serviceConfig =
-          hardening
-          // loadCredentials (appCredentials site)
-          // {
-            Type = "oneshot";
-            User = cfg.user;
-            Group = cfg.group;
-            WorkingDirectory = checkout name;
-            StateDirectory = appState name;
-            StateDirectoryMode = "0755";
-            CacheDirectory = appState name;
-            CacheDirectoryMode = "0750";
-            ReadWritePaths = [
-              (appRoot name)
-              (appCache name)
-            ];
-            TimeoutStartSec = "15min";
-            UMask = "0022";
-            ExecStart = pkgs.writeShellScript "build-${safeName name}" ''
-              set -euo pipefail
-
-              tmp=""
-              cleanup() {
-                ${envCleanup site}
-                if [ -n "$tmp" ]; then
-                  rm -rf "$tmp"
-                fi
-              }
-              trap cleanup EXIT
-
-              export HOME="$STATE_DIRECTORY"
-              export XDG_CACHE_HOME="$CACHE_DIRECTORY"
-              export BUN_INSTALL_CACHE_DIR="$CACHE_DIRECTORY/bun"
-              ${repoGitSsh site}
-
-              cd ${lib.escapeShellArg (checkout name)}
-              ${envSetup site}
-              ${site.install}
-              ${site.build}
-
-              output=${lib.escapeShellArg site.output}
-              target="$STATE_DIRECTORY/site"
-              tmp=$(mktemp -d "$STATE_DIRECTORY/.site.XXXXXX")
-
-              cp -R "$output/." "$tmp/"
-              find "$tmp" -type d -exec chmod 0755 {} +
-              find "$tmp" -type f -exec chmod 0644 {} +
-
-              rm -rf "''${target}.old"
-              if [ -e "$target" ]; then
-                mv "$target" "''${target}.old"
-              fi
-              if mv "$tmp" "$target"; then
-                tmp=""
-                trap - EXIT
-                cleanup
-                rm -rf "''${target}.old"
-              else
-                if [ -e "''${target}.old" ]; then
-                  mv "''${target}.old" "$target"
-                fi
-                exit 1
-              fi
-            '';
-          };
-      };
-
-      runtimeService = name: service: {
-        description = "Run web service ${name}";
-        wantedBy = [ "multi-user.target" ];
-        wants = [ "${syncUnit name}.service" ];
-        requires = [ "${syncUnit name}.service" ];
-        after = [ "${syncUnit name}.service" ];
-        path = with pkgs; [
-          bun
-          coreutils
-          git
-          openssh
-        ];
-        environment = {
-          NODE_ENV = "production";
-          HOST = "127.0.0.1";
-          PORT = toString service.port;
-        };
-        unitConfig = optionalAttrs (conditions service != [ ]) {
-          ConditionPathExists = conditions service;
-        };
-        serviceConfig =
-          hardening
-          // loadCredentials (appCredentials service)
-          // optionalAttrs (service.envFile != null) {
-            ExecStopPost = pkgs.writeShellScript "clean-${safeName name}-env" ''
-              rm -f ${lib.escapeShellArg (checkout name)}/.env
-            '';
-          }
-          // {
-            Type = "exec";
-            User = cfg.user;
-            Group = cfg.group;
-            WorkingDirectory = checkout name;
-            StateDirectory = appState name;
-            StateDirectoryMode = "0750";
-            CacheDirectory = appState name;
-            CacheDirectoryMode = "0750";
-            ReadWritePaths = [
-              (appRoot name)
-              (appCache name)
-            ];
-            Restart = "on-failure";
-            RestartSec = "5s";
-            RestartSteps = 5;
-            RestartMaxDelaySec = "1min";
-            UMask = "0027";
-            ExecStart = pkgs.writeShellScript "run-${safeName name}" ''
-              set -euo pipefail
-
-              export HOME="$STATE_DIRECTORY"
-              export XDG_CACHE_HOME="$CACHE_DIRECTORY"
-              export BUN_INSTALL_CACHE_DIR="$CACHE_DIRECTORY/bun"
-              ${repoGitSsh service}
-
-              cd ${lib.escapeShellArg (checkout name)}
-              ${envSetup service}
-              ${service.install}
-              ${optionalString (service.build != null) service.build}
-              exec ${service.start}
-            '';
-          };
-      };
-
-      deployService = hasSite: targetUnit: name: {
-        description = "Deploy web app ${name}";
-        wants = [ "network-online.target" ];
-        after = [ "network-online.target" ];
-        path = with pkgs; [ coreutils ];
-        serviceConfig = hardening // {
-          Type = "oneshot";
-          TimeoutStartSec = "25min";
-          ExecStart = pkgs.writeShellScript "deploy-${safeName name}" ''
-            set -euo pipefail
-
-            revision=${lib.escapeShellArg "${appRoot name}/revision"}
-            old=""
-            if [ -e "$revision" ]; then
-              old=$(cat "$revision")
-            fi
-
-            ${systemctl} restart ${lib.escapeShellArg "${syncUnit name}.service"}
-
-            new=$(cat "$revision")
-            ${optionalString hasSite ''
-              site=${lib.escapeShellArg (siteRoot name)}
-              if [ "$old" = "$new" ] && [ -d "$site" ]; then
-                exit 0
-              fi
-            ''}
-            ${optionalString (!hasSite) ''
-              if [ "$old" = "$new" ]; then
-                exit 0
-              fi
-            ''}
-
-            ${systemctl} restart ${lib.escapeShellArg "${targetUnit name}.service"}
-          '';
-        };
-      };
-
-      deployTimer = name: {
-        description = "Deploy web app ${name}";
-        wantedBy = [ "timers.target" ];
-        timerConfig = {
-          OnCalendar = cfg.deployInterval;
-          RandomizedDelaySec = cfg.deployRandomizedDelaySec;
-          FixedRandomDelay = true;
-          Persistent = true;
-          Unit = "${deployUnit name}.service";
-        };
-      };
-
-      headers = ''
-        header {
-          Strict-Transport-Security "max-age=31536000"
-          X-Content-Type-Options "nosniff"
-          X-Frame-Options "SAMEORIGIN"
-          Referrer-Policy "strict-origin-when-cross-origin"
-        }
-      '';
 
       redirectHosts =
         app:
         optionalAttrs (app.aliases != [ ]) {
-          ${caddyHosts app.aliases}.extraConfig = ''
+          ${concatStringsSep ", " app.aliases}.extraConfig = ''
             ${headers}
             redir https://${app.domain}{uri} permanent
           '';
         };
 
       siteHosts =
-        name: site:
+        _name: site:
         {
           ${site.domain}.extraConfig = ''
             encode zstd gzip
             ${headers}
             ${site.extraConfig}
-            root * ${siteRoot name}
+            root * ${site.package}
             file_server
           '';
         }
@@ -510,9 +117,21 @@
       virtualHosts = mergeAttrsList (
         (mapAttrsToList siteHosts cfg.sites) ++ (mapAttrsToList serviceHosts cfg.services)
       );
-      siteUnits = mapAttrsToList (name: _site: "${siteUnit name}.service") cfg.sites;
-      serviceUnits = mapAttrsToList (name: _service: "${serviceUnit name}.service") cfg.services;
-      hostedUnits = siteUnits ++ serviceUnits;
+
+      hostDomains = concatLists (
+        (mapAttrsToList (_: s: [
+          s.domain
+        ] ++ s.aliases) cfg.sites)
+        ++ (mapAttrsToList (_: s: [
+          s.domain
+        ] ++ s.aliases) cfg.services)
+      );
+      servicePorts = mapAttrsToList (_: s: s.port) cfg.services;
+
+      nameAssertion = kind: name: {
+        assertion = validName name;
+        message = "web.${kind}.${name} must use lowercase kebab-case.";
+      };
     in
     {
       options.web = {
@@ -528,37 +147,44 @@
           type = types.str;
           default = config.profile.email;
         };
-        deployInterval = mkOption {
-          type = types.str;
-          default = "hourly";
-        };
-        deployRandomizedDelaySec = mkOption {
-          type = types.str;
-          default = "5min";
-        };
         sites = mkOption {
-          type = types.attrsOf siteType;
+          type = types.attrsOf (types.submodule {
+            options = hostOptions // {
+              package = mkOption {
+                type = types.package;
+                description = "Derivation whose store path is the static site root.";
+              };
+            };
+          });
           default = { };
         };
         services = mkOption {
-          type = types.attrsOf serviceType;
+          type = types.attrsOf (types.submodule {
+            options = hostOptions // {
+              package = mkOption {
+                type = types.package;
+                description = "Derivation providing bin/web-<name>.";
+              };
+              port = mkOption { type = types.port; };
+              envFile = mkOption {
+                type = types.nullOr types.path;
+                default = null;
+              };
+            };
+          });
           default = { };
         };
       };
 
       config = mkIf enabled {
         assertions =
-          (mapAttrsToList (nameAssertion "sites") cfg.sites)
-          ++ (mapAttrsToList (nameAssertion "services") cfg.services)
-          ++ (mapAttrsToList (repoUrlAssertion "sites") cfg.sites)
-          ++ (mapAttrsToList (repoUrlAssertion "services") cfg.services)
-          ++ (mapAttrsToList (repoKeyAssertion "sites") cfg.sites)
-          ++ (mapAttrsToList (repoKeyAssertion "services") cfg.services)
-          ++ (mapAttrsToList (domainAssertion "sites") cfg.sites)
-          ++ (mapAttrsToList (domainAssertion "services") cfg.services)
+          (mapAttrsToList (name: _: nameAssertion "sites" name) cfg.sites)
+          ++ (mapAttrsToList (name: _: nameAssertion "services" name) cfg.services)
           ++ [
             {
-              assertion = overlappingApps == [ ];
+              assertion = intersectLists (builtins.attrNames cfg.sites) (
+                builtins.attrNames cfg.services
+              ) == [ ];
               message = "web app names must be unique across sites and services.";
             }
             {
@@ -575,19 +201,7 @@
         users.users.${cfg.user} = {
           isSystemUser = true;
           group = cfg.group;
-          home = stateDir;
-        };
-
-        systemd.tmpfiles.rules = [
-          "d ${stateDir} 0755 root root -"
-          "d ${stateDir}/apps 0755 root root -"
-          "d ${stateDir}/keys 0700 root root -"
-          "d ${stateDir}/secrets 0700 root root -"
-        ];
-
-        programs.ssh.knownHosts = optionalAttrs usesSsh {
-          "github.com".publicKey =
-            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl";
+          home = "/var/lib/web";
         };
 
         networking.firewall = {
@@ -601,35 +215,35 @@
         services.caddy = {
           enable = true;
           email = cfg.email;
-          virtualHosts = virtualHosts;
+          inherit virtualHosts;
         };
 
-        systemd.services =
-          (mapAttrs' (name: site: nameValuePair (syncUnit name) (syncService "0755" name site)) cfg.sites)
-          // (mapAttrs' (
-            name: service: nameValuePair (syncUnit name) (syncService "0750" name service)
-          ) cfg.services)
-          // (mapAttrs' (name: site: nameValuePair (siteUnit name) (siteService name site)) cfg.sites)
-          // (mapAttrs' (
-            name: service: nameValuePair (serviceUnit name) (runtimeService name service)
-          ) cfg.services)
-          // (mapAttrs' (
-            name: _site: nameValuePair (deployUnit name) (deployService true siteUnit name)
-          ) cfg.sites)
-          // (mapAttrs' (
-            name: _service: nameValuePair (deployUnit name) (deployService false serviceUnit name)
-          ) cfg.services)
-          // {
-            caddy = {
-              wants = hostedUnits;
-              after = siteUnits;
+        systemd.services = mapAttrs' (
+          name: service:
+          nameValuePair "web-${name}" {
+            description = "web service ${name}";
+            wantedBy = [ "multi-user.target" ];
+            after = [ "network-online.target" ];
+            wants = [ "network-online.target" ];
+            environment = {
+              NODE_ENV = "production";
+              HOST = "127.0.0.1";
+              PORT = toString service.port;
+              HOME = "/var/lib/web/${name}";
             };
-          };
-
-        systemd.timers =
-          (mapAttrs' (name: _site: nameValuePair (deployUnit name) (deployTimer name)) cfg.sites)
-          // (mapAttrs' (name: _service: nameValuePair (deployUnit name) (deployTimer name)) cfg.services);
-
+            serviceConfig = hardening // {
+              Type = "exec";
+              User = cfg.user;
+              Group = cfg.group;
+              WorkingDirectory = service.package;
+              StateDirectory = "web/${name}";
+              EnvironmentFile = optional (service.envFile != null) service.envFile;
+              Restart = "on-failure";
+              RestartSec = "5s";
+              ExecStart = "${service.package}/bin/web-${name}";
+            };
+          }
+        ) cfg.services;
       };
     };
 }

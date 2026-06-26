@@ -1,6 +1,5 @@
 {
   config,
-  lib,
   pkgs,
   ...
 }:
@@ -9,7 +8,7 @@
     sites.reuski-dev = {
       domain = "reuski.dev";
       aliases = [ "www.reuski.dev" ];
-      repo = "https://github.com/reuski/reuski.dev.git";
+      package = pkgs.web-reuski-dev;
       extraConfig = ''
         @atprotoDid path /.well-known/atproto-did
         respond @atprotoDid "did:plc:igxk22uwwycyvrhxxwz2zevj" 200
@@ -20,16 +19,15 @@
       beebud = {
         domain = "beebud.buzz";
         aliases = [ "www.beebud.buzz" ];
-        repo = "https://github.com/reuski/beebud.git";
+        package = pkgs.web-beebud;
         port = 3001;
-        start = "${lib.getExe pkgs.bun} build/index.js";
         envFile = config.sops.secrets."web/beebud/env".path;
       };
 
       wahuu-games = {
         domain = "wahuu.games";
         aliases = [ "www.wahuu.games" ];
-        repo = "https://github.com/reuski/wahuu.games.git";
+        package = pkgs.web-wahuu-games;
         port = 3000;
         envFile = config.sops.secrets."web/wahuu-games/env".path;
       };
@@ -41,13 +39,13 @@
       owner = config.web.user;
       group = config.web.group;
       mode = "0400";
-      restartUnits = [ "web-service-beebud.service" ];
+      restartUnits = [ "web-beebud.service" ];
     };
     "web/wahuu-games/env" = {
       owner = config.web.user;
       group = config.web.group;
       mode = "0400";
-      restartUnits = [ "web-service-wahuu-games.service" ];
+      restartUnits = [ "web-wahuu-games.service" ];
     };
   };
 }
