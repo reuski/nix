@@ -8,6 +8,7 @@
         cacert
         fetchFromGitHub
         makeWrapper
+        nodejs
         stdenvNoCC
         ;
 
