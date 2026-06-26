@@ -54,7 +54,14 @@
         stdenvNoCC.mkDerivation (
           finalAttrs:
           let
-            src = fetchFromGitHub { inherit owner repo rev hash; };
+            src = fetchFromGitHub {
+              inherit
+                owner
+                repo
+                rev
+                hash
+                ;
+            };
             deps = bunDeps {
               inherit src;
               hash = finalAttrs.depsHash;
