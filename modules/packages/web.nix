@@ -8,7 +8,6 @@
         cacert
         fetchFromGitHub
         makeWrapper
-        nodejs
         stdenvNoCC
         ;
 
@@ -76,7 +75,6 @@
             depsHash = depsHash;
             nativeBuildInputs = [
               bun
-              nodejs
               makeWrapper
             ];
             NODE_ENV = "production";
