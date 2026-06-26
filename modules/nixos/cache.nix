@@ -34,6 +34,25 @@
         };
       };
 
+      systemd.services.attic-cache = {
+        description = "Ensure ukko Attic cache exists";
+        after = [ "atticd.service" ];
+        requires = [ "atticd.service" ];
+        wantedBy = [ "multi-user.target" ];
+        path = [ pkgs.attic-client ];
+        serviceConfig = {
+          Type = "oneshot";
+          RemainAfterExit = true;
+        };
+        script = ''
+          export PATH="/run/current-system/sw/bin:$PATH"
+          token=$(atticd-atticadm make-token --sub bootstrap --validity 5m \
+            --pull '*' --push '*' --create-cache '*' --configure-cache '*')
+          attic login local http://127.0.0.1:8090 "$token" >/dev/null
+          attic cache info ukko >/dev/null 2>&1 || attic cache create ukko --public
+        '';
+      };
+
       systemd.services.deploy.serviceConfig.LoadCredential = "attic-token:${
         config.sops.secrets."attic/push-token".path
       }";

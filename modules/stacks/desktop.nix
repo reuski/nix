@@ -9,7 +9,6 @@ in
       imports = [
         generic.profile
         nixos.nixpkgs
-        nixos.cachix
         nixos.core
         nixos.boot
         nixos.metal

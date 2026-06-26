@@ -39,6 +39,7 @@ in
 
       deploy = {
         cache = "ukko";
+        stampPath = "/var/lib/heimdash/attic-primed";
         warm = [
           "sampo"
           "hiisi"

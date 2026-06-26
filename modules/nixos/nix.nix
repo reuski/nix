@@ -25,10 +25,22 @@
           "flakes"
         ];
         trusted-users = [ "@wheel" ];
-        substituters = [ "https://cache.nixos.org" ];
-        trusted-public-keys = [
-          "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        ];
+        substituters =
+          lib.optional (config.networking.hostName != "ukko") "https://ukko.tail2fc4c2.ts.net:8090/ukko"
+          ++ [
+            "https://noctalia.cachix.org"
+            "https://vicinae.cachix.org"
+            "https://ghostty.cachix.org"
+          ];
+        trusted-public-keys =
+          lib.optional (
+            config.networking.hostName != "ukko"
+          ) "ukko:NjZT4Lc1JJvioCv4z6Qv8zDmX+v25+e2r/9qGjTzHkU="
+          ++ [
+            "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+            "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc="
+            "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
+          ];
         auto-optimise-store = true;
       };
 

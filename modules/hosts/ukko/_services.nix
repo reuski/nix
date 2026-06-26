@@ -409,9 +409,11 @@ in
         credential = "vaultwarden-admin-token";
       }
       {
-        name = "Cache";
+        name = "Attic";
         url = "https://${tsHost}:8090/ukko";
         check = "http://127.0.0.1:8090/ukko/nix-cache-info";
+        kind = "attic";
+        stamp = "/var/lib/heimdash/attic-primed";
       }
     ];
   };
