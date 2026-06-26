@@ -5,6 +5,7 @@
     config.flake.overlays.helium-browser
     config.flake.overlays.python-validity
     config.flake.overlays.pi
+    config.flake.overlays.web
   ];
 
   perSystem =
@@ -15,6 +16,7 @@
       }
       // lib.optionalAttrs (lib.hasSuffix "-linux" system) {
         inherit (pkgs) helium-browser python-validity;
+        inherit (pkgs) web-beebud web-reuski-dev web-wahuu-games;
       };
     };
 }

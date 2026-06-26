@@ -35,6 +35,17 @@ jobs:
             --override-filename modules/packages/helium.nix
         timeout-minutes: 10
 
+      - name: Bump web apps
+        run: |
+          nix-update() {
+            nix run "github:NixOS/nixpkgs/$(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)#nix-update" -- "$@"
+          }
+          for pkg in web-reuski-dev web-beebud web-wahuu-games; do
+            nix-update --flake --version=branch --custom-dep deps "$pkg" \
+              --override-filename modules/packages/web.nix
+          done
+        timeout-minutes: 15
+
       - name: Format
         run: nix fmt .
         timeout-minutes: 5
