@@ -99,6 +99,10 @@
           lifecycle = "lazy";
           idleTimeout = 10;
         };
+        mcpServers."context-mode" = {
+          command = lib.getExe' pkgs.bun "bunx";
+          args = [ "context-mode" ];
+        };
       };
 
       home.file.".pi/agent/models.json".source = json.generate "pi-models.json" {

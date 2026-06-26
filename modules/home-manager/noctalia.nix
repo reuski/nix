@@ -21,16 +21,20 @@
 
         wallpaper.enabled = false;
 
+        location.auto_locate = true;
+
         bar.main = {
           thickness = 32;
           radius = 0;
-          margin_h = 0;
-          margin_v = 0;
+          margin_ends = 0;
+          margin_edge = 0;
           padding = 16;
           widget_spacing = 8;
           shadow = false;
           start = [ "workspaces" ];
+          center = [ "clock" ];
           end = [
+            "caffeine"
             "volume"
             "battery"
             "control-center"
