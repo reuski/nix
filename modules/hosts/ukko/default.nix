@@ -40,6 +40,7 @@ in
       deploy = {
         cache = "ukko";
         stampPath = "/var/lib/heimdash/attic-primed";
+        notify = "http://127.0.0.1:2586/fleet";
         warm = [
           "sampo"
           "hiisi"
