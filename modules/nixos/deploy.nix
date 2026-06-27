@@ -21,6 +21,8 @@
           pkgs.attic-client
         ];
         text = ''
+          rc=0
+
           ${lib.optionalString (cfg.targets != [ ]) ''
             export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
 
@@ -37,8 +39,11 @@
             }
 
             ${lib.concatMapStringsSep "\n" (h: ''
-              activate ${h} || activate ${h}
-              reboot_if_stale ${h}
+              if activate ${h} || activate ${h}; then
+                reboot_if_stale ${h} || true
+              else
+                rc=1
+              fi
             '') cfg.targets}
           ''}
 
@@ -52,13 +57,15 @@
             # shellcheck disable=SC2154
             attic login local http://127.0.0.1:8090 "$(cat "$CREDENTIALS_DIRECTORY/attic-token")"
 
-            ${lib.concatMapStringsSep "\n" (h: "warm ${h}") cfg.warm}
+            ${lib.concatMapStringsSep "\n" (h: "warm ${h} || rc=1") cfg.warm}
 
             ${lib.optionalString (cfg.stampPath != null) ''
               mkdir -p "$(dirname "${cfg.stampPath}")"
               date -u +%s > "${cfg.stampPath}"
             ''}
           ''}
+
+          exit "$rc"
         '';
       };
     in

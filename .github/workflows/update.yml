@@ -58,9 +58,16 @@ jobs:
         timeout-minutes: 5
 
       - uses: ./.github/actions/validate
-        with:
-          build: "true"
-        timeout-minutes: 30
+        timeout-minutes: 10
+
+      - name: Build custom packages
+        run: |
+          nix build --no-link --print-build-logs \
+            .#helium-browser \
+            .#web-reuski-dev \
+            .#web-beebud \
+            .#web-wahuu-games
+        timeout-minutes: 20
 
       - id: pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
