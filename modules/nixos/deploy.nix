@@ -19,9 +19,18 @@
           pkgs.nixos-rebuild
           pkgs.openssh
           pkgs.attic-client
+          pkgs.curl
+          pkgs.jq
+          pkgs.gawk
+          pkgs.coreutils
         ];
         text = ''
           rc=0
+          report=$(mktemp)
+          warns=$(mktemp)
+          trap 'rm -f "$report" "$warns"' EXIT
+
+          collect() { grep -iE 'warning|deprecat' "$1" >> "$warns" || true; }
 
           ${lib.optionalString (cfg.targets != [ ]) ''
             export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
@@ -39,30 +48,80 @@
             }
 
             ${lib.concatMapStringsSep "\n" (h: ''
-              if activate ${h} || activate ${h}; then
+              log=$(mktemp)
+              if activate ${h} > "$log" 2>&1 || activate ${h} > "$log" 2>&1; then
                 reboot_if_stale ${h} || true
               else
                 rc=1
+                { printf '%s // DEPLOY FAULT\n' ${h}; tail -n 6 "$log"; printf '\n'; } >> "$report"
               fi
+              collect "$log"
+              rm -f "$log"
             '') cfg.targets}
           ''}
 
           ${lib.optionalString (cfg.warm != [ ]) ''
             warm() {
+              local out
               out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
-                --refresh --option tarball-ttl 0 --no-link --print-out-paths)
-              attic push "local:${cfg.cache}" "$out"
+                --refresh --option tarball-ttl 0 --no-link --print-out-paths 2> "$2") || return 1
+              attic push "local:${cfg.cache}" "$out" >> "$2" 2>&1
             }
 
             # shellcheck disable=SC2154
             attic login local http://127.0.0.1:8090 "$(cat "$CREDENTIALS_DIRECTORY/attic-token")"
 
-            ${lib.concatMapStringsSep "\n" (h: "warm ${h} || rc=1") cfg.warm}
+            ${lib.concatMapStringsSep "\n" (h: ''
+              log=$(mktemp)
+              if ! warm ${h} "$log"; then
+                rc=1
+                { printf '%s // BUILD FAULT\n' ${h}; tail -n 6 "$log"; printf '\n'; } >> "$report"
+              fi
+              collect "$log"
+              rm -f "$log"
+            '') cfg.warm}
 
             ${lib.optionalString (cfg.stampPath != null) ''
               mkdir -p "$(dirname "${cfg.stampPath}")"
               date -u +%s > "${cfg.stampPath}"
             ''}
+          ''}
+
+          ${lib.optionalString (cfg.notify != null) ''
+            new=$(mktemp)
+            old="$STATE_DIRECTORY/inputs"
+            nix flake metadata "${flake}" --refresh --json 2>/dev/null \
+              | jq -r '.locks as $l | $l.nodes.root.inputs | to_entries[]
+                       | select(.value | type == "string")
+                       | ($l.nodes[.value].locked.rev // empty) as $rev
+                       | "\(.key) \($rev[0:7])"' \
+              | sort > "$new"
+            changed=""
+            if [ -f "$old" ]; then
+              changed=$(grep -vxFf "$old" "$new" | awk '{ print $1 }' | paste -sd, - | sed 's/,/, /g' || true)
+            fi
+            cp "$new" "$old"
+            rm -f "$new"
+
+            warnings=$(sort -u "$warns" | head -n 15)
+
+            if [ -n "$changed" ] || [ -s "$report" ] || [ -n "$warnings" ]; then
+              if [ "$rc" -eq 0 ]; then
+                title="RDY // UPDATES"
+                prio="default"
+              else
+                title="ERR // UPDATES"
+                prio="high"
+              fi
+              {
+                printf '%s // %s\n\n' "$title" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                if [ -n "$changed" ]; then printf 'UPGRADED\n  %s\n\n' "$changed"; fi
+                if [ -s "$report" ]; then printf 'FAULTS\n'; sed 's/^/  /' "$report"; fi
+                if [ -n "$warnings" ]; then printf 'WARNINGS\n'; printf '%s\n' "$warnings" | sed 's/^/  /'; fi
+              } | curl -fsS \
+                -H "Title: $title" -H "Priority: $prio" \
+                --data-binary @- "${cfg.notify}" || true
+            fi
           ''}
 
           exit "$rc"
@@ -91,6 +150,11 @@
           default = null;
           description = "Optional path overwritten with the current Unix timestamp after a successful cache warm-up.";
         };
+        notify = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = "Optional ntfy topic URL the daily run digest (upgraded inputs, faults, warnings) is POSTed to.";
+        };
       };
 
       config = lib.mkIf (cfg.warm != [ ] || cfg.targets != [ ]) {
@@ -106,6 +170,7 @@
           serviceConfig = {
             Type = "oneshot";
             Environment = "HOME=/root";
+            StateDirectory = "deploy";
             ExecStart = lib.getExe pipeline;
           };
         };

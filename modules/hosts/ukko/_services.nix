@@ -268,6 +268,17 @@ in
     ];
   };
 
+  services.ntfy-sh = {
+    enable = true;
+    settings = {
+      base-url = "https://ntfy.home.reuski.dev";
+      listen-http = "127.0.0.1:2586";
+      behind-proxy = true;
+      cache-file = "/var/lib/ntfy-sh/cache.db";
+      cache-duration = "72h";
+    };
+  };
+
   services.skaldi.enable = true;
   services.skaldi.settings.opensubsonic = {
     enabled = true;
@@ -419,6 +430,13 @@ in
         kind = "attic";
         stamp = "/var/lib/heimdash/attic-primed";
       }
+      {
+        name = "Updates";
+        url = "https://ntfy.home.reuski.dev/fleet";
+        check = "http://127.0.0.1:2586/v1/health";
+        api = "http://127.0.0.1:2586/fleet";
+        kind = "ntfy";
+      }
     ];
   };
 
@@ -427,6 +445,10 @@ in
     audiobookshelf.port = 8000;
     vaultwarden.port = 8222;
     navidrome.port = 4533;
+    ntfy = {
+      port = 2586;
+      https = 2587;
+    };
   };
 
   proxy = {
@@ -434,6 +456,7 @@ in
     dnsEnvironmentFile = config.sops.templates."acme-cloudflare-env".path;
     services = {
       adguard.port = 3000;
+      ntfy.port = 2586;
       heimdash.domain = "home.reuski.dev";
     };
   };
