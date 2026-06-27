@@ -103,12 +103,12 @@
     {
       web-reuski-dev = bunApp {
         pname = "reuski-dev";
-        version = "0-unstable-2026-02-16";
+        version = "0-unstable-2026-06-26";
         owner = "reuski";
         repo = "reuski.dev";
-        rev = "7c6f35d22c09ebe2e531b0df338c11af92a700ae";
-        hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-        depsHash = "sha256-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=";
+        rev = "910b001d50553d4957bc982aee63de726ba59fe2";
+        hash = "sha256-j7v4qEjofg6EH99Tdb6vOHq1iPo9VrpJPJJlXEvdklI=";
+        depsHash = "sha256-KIsFYH+6fAIUZ7ZdryBZDA7RIw5+M+/DHtHXD2HY2+U=";
         installPhase = ''
           cp -r _site $out
         '';
@@ -116,12 +116,12 @@
 
       web-beebud = bunApp {
         pname = "beebud";
-        version = "0-unstable-2026-05-15";
+        version = "0-unstable-2026-06-26";
         owner = "reuski";
         repo = "beebud";
-        rev = "33c8d43bf595680358c46c04120782e97786944a";
-        hash = "sha256-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=";
-        depsHash = "sha256-DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD=";
+        rev = "814a6395be3f5bfa635548ddf8ab82dff5abe805";
+        hash = "sha256-GRb2PsNnoSWzbtJGaJYolgPlquyeHTA7BQq3xIXlo1A=";
+        depsHash = "sha256-kWm3thvDSgxodii94PHKFE7YvF+xi01/ADW9xz6PwqI=";
         installPhase = ''
           mkdir -p $out
           cp -r build $out/build
@@ -137,8 +137,8 @@
         owner = "reuski";
         repo = "wahuu.games";
         rev = "2188815f57a49e4319fc0852e796a598a03aa1f4";
-        hash = "sha256-EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE=";
-        depsHash = "sha256-FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF=";
+        hash = "sha256-7VxG/elF4x7Vdc3dAItS60gix0MYjxI5TcGV/ND3mhE=";
+        depsHash = "sha256-vUP1Far2eWpog8ste0MH4xBVC+369JkMGDyP60OQLiU=";
         installPhase = ''
           mkdir -p $out/bin
           cp -r src dist index.html $out/
