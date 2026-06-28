@@ -41,6 +41,10 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+
+      - name: Verify sops recipients
+        run: nix shell nixpkgs#python3 -c python3 .github/scripts/check-sops-recipients.py
+
       - uses: ./.github/actions/validate
 
   nixos:

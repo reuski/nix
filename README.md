@@ -73,19 +73,36 @@ Copy `Public Key` to `modules/nixos/nix.nix`.
 
 ## Secrets
 
+- Backend: `sops-nix` + age. Recipients: host keys plus `admin`; see [`.sops.yaml`](.sops.yaml).
+- NixOS host keys derive from `/etc/ssh/ssh_host_ed25519_key.pub` via `ssh-to-age`; darwin uses `~/Library/Application Support/sops/age/keys.txt`.
+- `secrets/admin.yaml` -> `admin_age_key` is the cross-host editing key; decrypted to `/run/secrets/admin_age_key` (darwin: `~/.config/sops-nix/secrets/admin_age_key`) and exported via `SOPS_AGE_KEY_FILE`.
+- `homeManager.secrets` installs tooling and exports `SOPS_AGE_KEY_FILE`; sets `sops.age.keyFile` on darwin only (NixOS secrets are system-level).
+- Env files: `sops.templates`. Defaults: root-owned, `0400`; declare only exceptions such as `restartUnits`.
+
+Edit a value:
+
 ```sh
 sops secrets/env.yaml
 ```
 
+Add a key to an existing file:
+
+```sh
+sops secrets/ukko.yaml
+```
+
+Add a secret file: create `secrets/<name>.yaml`, add a matching `creation_rules` entry in [`.sops.yaml`](.sops.yaml), then `sops -e`.
+
+Rotate a value (e.g. API key): `sops secrets/<file>.yaml`, edit, save; `restartUnits` applies it.
+
+Rotate the admin key: generate a new age key, replace `&admin` in [`.sops.yaml`](.sops.yaml), then rekey all.
+
+Rekey (after recipient changes in [`.sops.yaml`](.sops.yaml)):
 ```sh
 for file in secrets/*.yaml; do sops updatekeys --yes "$file"; done
 ```
 
-Paths:
-
-- NixOS host key: `/etc/ssh/ssh_host_ed25519_key.pub`.
-- Darwin age key: `~/Library/Application Support/sops/age/keys.txt`.
-- Admin edit key: `secrets/admin.yaml` -> `admin_age_key`.
+CI (`.github/workflows/check.yml` `evaluate`) verifies each file's recipient set matches [`.sops.yaml`](.sops.yaml) keylessly via `.github/scripts/check-sops-recipients.py`; catches stale and over-scoped recipients on every `secrets/**` change.
 
 ## Backups
 

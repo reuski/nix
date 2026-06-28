@@ -1,7 +1,12 @@
 { inputs, ... }:
 {
   flake.modules.homeManager.secrets =
-    { config, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       bootstrapKeyFile =
         if pkgs.stdenv.isDarwin then
@@ -26,6 +31,6 @@
       home.file.".config/sops/age/.keep".text = "";
       home.sessionVariables.SOPS_AGE_KEY_FILE = adminKeyFile;
 
-      sops.age.keyFile = bootstrapKeyFile;
+      sops.age.keyFile = lib.mkIf pkgs.stdenv.isDarwin bootstrapKeyFile;
     };
 }

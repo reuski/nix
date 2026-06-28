@@ -9,8 +9,6 @@
     }:
     let
       inherit (lib) genAttrs getExe;
-      cursorTheme = "breeze_cursors";
-      cursorSize = 24;
     in
     {
       imports = [ inputs.plasma-manager.homeModules.plasma-manager ];
@@ -19,19 +17,16 @@
         enable = true;
 
         workspace = {
-          theme = "breeze-dark";
-          widgetStyle = "oxygen";
-          colorScheme = "BreezeDark";
+          colorScheme = "Oxygen Dark";
+          widgetStyle = "Union";
+          theme = "oxygen";
           iconTheme = "breeze-dark";
           wallpaper = config.wallpaper.images;
-          cursor = {
-            theme = cursorTheme;
-            size = cursorSize;
-          };
           windowDecorations = {
-            library = "org.kde.oxygen";
-            theme = "Oxygen";
+            library = "org.kde.kwin.aurorae";
+            theme = "kwin4_decoration_qml_plastik";
           };
+          splashScreen.theme = "None";
         };
 
         fonts.general = {
@@ -76,6 +71,7 @@
           kdeglobals.General = {
             TerminalApplication = getExe pkgs.ghostty;
             TerminalService = "com.mitchellh.ghostty.desktop";
+            accentColorFromWallpaper = true;
           };
           kdeglobals.Sounds.Enable = false;
         };
@@ -121,12 +117,6 @@
       home = {
         packages = [ pkgs.kdePackages.oxygen ];
         sessionVariables.TERMINAL = getExe pkgs.ghostty;
-        pointerCursor = {
-          gtk.enable = true;
-          package = pkgs.kdePackages.breeze;
-          name = cursorTheme;
-          size = cursorSize;
-        };
       };
     };
 }
