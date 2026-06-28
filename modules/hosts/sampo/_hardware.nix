@@ -8,14 +8,11 @@
   ...
 }:
 let
-  system = pkgs.stdenv.hostPlatform.system;
-  currentKernelPkgs = import inputs.nixpkgs {
-    inherit system;
-    config.allowUnfree = true;
-  };
+  # Temporary: NixOS/nixpkgs#535850 makes current linux_zen output vmlinuz instead of bzImage.
   pinnedZenKernel =
     (import inputs.nixpkgs-zen-kernel {
-      inherit system;
+      inherit (pkgs.stdenv.hostPlatform) system;
+      config.allowUnfree = true;
     }).linuxPackages_zen.kernel;
 in
 {
@@ -35,7 +32,7 @@ in
     "ntsync"
   ];
 
-  boot.kernelPackages = lib.mkForce (currentKernelPkgs.linuxPackagesFor pinnedZenKernel);
+  boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor pinnedZenKernel);
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
