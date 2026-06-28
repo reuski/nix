@@ -35,18 +35,21 @@ in
         nixos.skaldi
         nixos.cache
         nixos.deploy
+        nixos.alerts
       ];
 
       deploy = {
         cache = "ukko";
         stampPath = "/var/lib/heimdash/attic-primed";
-        notify = "http://127.0.0.1:2586/fleet";
+        notify = "http://127.0.0.1:2586/updates";
         warm = [
           "sampo"
           "hiisi"
         ];
         targets = [ "shodan" ];
       };
+
+      alerts.ntfy = "http://127.0.0.1:2586/alerts";
 
       system.stateVersion = config.system.nixos.release;
     };

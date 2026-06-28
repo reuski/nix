@@ -88,38 +88,44 @@
           ''}
 
           ${lib.optionalString (cfg.notify != null) ''
+            meta=$(mktemp)
             new=$(mktemp)
             old="$STATE_DIRECTORY/inputs"
-            nix flake metadata "${flake}" --refresh --json 2>/dev/null \
-              | jq -r '.locks as $l | $l.nodes.root.inputs | to_entries[]
-                       | select(.value | type == "string")
-                       | ($l.nodes[.value].locked.rev // empty) as $rev
-                       | "\(.key) \($rev[0:7])"' \
-              | sort > "$new"
-            changed=""
-            if [ -f "$old" ]; then
-              changed=$(grep -vxFf "$old" "$new" | awk '{ print $1 }' | paste -sd, - | sed 's/,/, /g' || true)
+            nix flake metadata "${flake}" --refresh --json 2>/dev/null > "$meta" || true
+            jq -r '.locks as $l | $l.nodes.root.inputs | to_entries[]
+                   | select(.value | type == "string")
+                   | ($l.nodes[.value].locked.rev // empty) as $rev
+                   | "\(.key) \($rev[0:7])"' "$meta" 2>/dev/null \
+              | sort > "$new" || true
+
+            packages=""
+            nixpkgs_changed=0
+            if [ -f "$old" ] && [ -s "$new" ]; then
+              changed=$(grep -vxFf "$old" "$new" | awk '{ print $1 }' || true)
+              packages=$(printf '%s\n' "$changed" | grep -vx nixpkgs | paste -sd, - | sed 's/,/, /g' || true)
+              if printf '%s\n' "$changed" | grep -qx nixpkgs; then nixpkgs_changed=1; fi
             fi
-            cp "$new" "$old"
+            if [ -s "$new" ]; then cp "$new" "$old"; fi
             rm -f "$new"
+
+            channel=""
+            if [ "$nixpkgs_changed" = 1 ]; then
+              ts=$(jq -r '.locks as $l | ($l.nodes[$l.nodes.root.inputs.nixpkgs].locked.lastModified // empty)' "$meta" 2>/dev/null || true)
+              if [ -n "$ts" ]; then channel="nixpkgs $(date -u -d "@$ts" +%Y-%m-%d 2>/dev/null || true)"; fi
+            fi
+            rm -f "$meta"
 
             warnings=$(sort -u "$warns" | head -n 15)
 
-            if [ -n "$changed" ] || [ -s "$report" ] || [ -n "$warnings" ]; then
-              if [ "$rc" -eq 0 ]; then
-                title="RDY // UPDATES"
-                prio="default"
-              else
-                title="ERR // UPDATES"
-                prio="high"
-              fi
+            if [ -n "$packages" ] || [ -s "$report" ] || [ -n "$warnings" ]; then
+              if [ "$rc" -eq 0 ]; then prio="default"; else prio="high"; fi
               {
-                printf '%s // %s\n\n' "$title" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-                if [ -n "$changed" ]; then printf 'UPGRADED\n  %s\n\n' "$changed"; fi
                 if [ -s "$report" ]; then printf 'FAULTS\n'; sed 's/^/  /' "$report"; fi
+                if [ -n "$channel" ]; then printf 'CHANNEL\n  %s\n\n' "$channel"; fi
+                if [ -n "$packages" ]; then printf 'PACKAGES\n  %s\n\n' "$packages"; fi
                 if [ -n "$warnings" ]; then printf 'WARNINGS\n'; printf '%s\n' "$warnings" | sed 's/^/  /'; fi
               } | curl -fsS \
-                -H "Title: $title" -H "Priority: $prio" \
+                -H "Priority: $prio" \
                 --data-binary @- "${cfg.notify}" || true
             fi
           ''}

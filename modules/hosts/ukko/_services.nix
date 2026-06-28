@@ -431,10 +431,10 @@ in
         stamp = "/var/lib/heimdash/attic-primed";
       }
       {
-        name = "Updates";
-        url = "https://ntfy.home.reuski.dev/fleet";
+        name = "ntfy";
+        url = "https://ntfy.home.reuski.dev";
         check = "http://127.0.0.1:2586/v1/health";
-        api = "http://127.0.0.1:2586/fleet";
+        api = "http://127.0.0.1:2586/updates,alerts";
         kind = "ntfy";
       }
     ];
