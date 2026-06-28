@@ -61,7 +61,12 @@
 
       config = lib.mkIf cfg.enable {
         services.restic.backups.${host} = {
-          inherit (cfg) repository passwordFile rcloneConfigFile paths;
+          inherit (cfg)
+            repository
+            passwordFile
+            rcloneConfigFile
+            paths
+            ;
           initialize = true;
           pruneOpts = [
             "--keep-daily 7"
