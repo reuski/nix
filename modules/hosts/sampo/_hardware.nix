@@ -1,10 +1,16 @@
 {
   config,
+  inputs,
   lib,
   modulesPath,
   pkgs,
   ...
 }:
+let
+  pinnedZenKernel = (import inputs.nixpkgs-zen-kernel {
+    inherit (pkgs.stdenv.hostPlatform) system;
+  }).linuxPackages_zen.kernel;
+in
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
@@ -22,7 +28,7 @@
     "ntsync"
   ];
 
-  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_zen;
+  boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor pinnedZenKernel);
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
