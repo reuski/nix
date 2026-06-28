@@ -132,6 +132,8 @@ in
   };
 
   sops.secrets = {
+    "backup/restic-password".restartUnits = [ "restic-backups-ukko.service" ];
+    "backup/rclone-conf".restartUnits = [ "restic-backups-ukko.service" ];
     "cloudflare/dns-token".restartUnits = [ "cloudflare-dyndns.service" ];
     "jellyfin/admin-password".restartUnits = [ "jellyfin-setup.service" ];
     "pia/username".restartUnits = [ "gluetun.service" ];
@@ -235,6 +237,26 @@ in
     environmentFile = config.sops.templates."vaultwarden-env".path;
   };
   servarr.enable = true;
+
+  backup = {
+    enable = true;
+    repository = "rclone:filen:nixbackup/ukko";
+    passwordFile = config.sops.secrets."backup/restic-password".path;
+    rcloneConfigFile = config.sops.secrets."backup/rclone-conf".path;
+    notify = "http://127.0.0.1:2586/alerts";
+    stampPath = "/var/lib/heimdash/backup-stamp";
+    paths = [
+      "/var/backup/vaultwarden"
+      "/var/lib/valheim/saves/worlds_local"
+      "/var/lib/home-assistant"
+      "/var/lib/navidrome"
+      "/var/lib/sonarr"
+      "/var/lib/radarr"
+      "/var/lib/lidarr"
+      "/var/lib/prowlarr"
+      "/var/lib/maintainerr"
+    ];
+  };
 
   hass.enable = true;
 
@@ -429,6 +451,12 @@ in
         check = "http://127.0.0.1:8090/ukko/nix-cache-info";
         kind = "attic";
         stamp = "/var/lib/heimdash/attic-primed";
+      }
+      {
+        name = "Backup";
+        url = "https://drive.filen.io";
+        kind = "backup";
+        stamp = "/var/lib/heimdash/backup-stamp";
       }
       {
         name = "ntfy";

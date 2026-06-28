@@ -36,6 +36,7 @@ in
         nixos.cache
         nixos.deploy
         nixos.alerts
+        nixos.backup
       ];
 
       deploy = {

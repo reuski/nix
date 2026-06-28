@@ -66,6 +66,14 @@
 - Heimdash cards derive from `proxy.services` in host config.
 - Keep service API provisioning out of Nix when it becomes UI-owned state.
 
+## Backups
+
+- `nixos.backup`: `restic` over an `rclone` remote; provider swap = `backup.repository` + the rclone config.
+- `backup.paths`: only unreproducible state a fresh install loses; never media or the Attic cache.
+- Per-host secrets: `backup/restic-password` (keystone, encrypted in git), `backup/rclone-conf`.
+- `backup.stampPath` feeds the heimdash `backup` card (age + freshness); failures POST to `backup.notify`.
+- Restore on the host: `restic-<host> snapshots` / `restic-<host> restore latest --target /` (wrapper carries repo/password/rclone).
+
 ## Inputs
 
 - Rolling unstable.
