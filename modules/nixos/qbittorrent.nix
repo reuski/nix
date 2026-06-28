@@ -48,7 +48,7 @@
 
           install -d -m 0700 "$runtime" "$runtime/wireguard"
           rm -f /var/lib/gluetun/piaportforward.json
-          curl_flags=(--fail --silent --show-error --location --retry 3 --retry-delay 1 --retry-all-errors)
+          curl_flags=(--fail --silent --show-error --location --connect-timeout 10 --retry 15 --retry-delay 2 --retry-all-errors)
 
           token_response=$(curl "''${curl_flags[@]}" --request POST \
             --form "username=$PIA_USER" \
@@ -145,8 +145,14 @@
               ];
             };
             unitConfig = {
-              After = [ "adguardhome.service" ];
-              Wants = [ "adguardhome.service" ];
+              After = [
+                "adguardhome.service"
+                "network-online.target"
+              ];
+              Wants = [
+                "adguardhome.service"
+                "network-online.target"
+              ];
             };
           };
 
