@@ -91,7 +91,7 @@
               runHook postBuild
             '';
             installPhase = ''
-              nodeModules=${deps}
+              nodeModules=${deps}/node_modules
               runHook preInstall
               ${installPhase}
               runHook postInstall
