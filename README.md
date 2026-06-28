@@ -74,6 +74,35 @@ sops updatekeys --yes secrets/ukko.yaml
 ssh reuski@home.reuski.dev attic cache info ukko   # Public Key -> nix.nix
 ```
 
+## Backups
+
+`nixos.backup`: off-site `restic` over an `rclone` remote. The provider lives in the remote, so switching clouds is `backup.repository` plus the rclone config. `ukko` targets `filen` (`rclone:filen:nixbackup/ukko`).
+
+- Scope: `backup.paths` is the unreproducible state a fresh install loses; never media or the Attic cache.
+- Encryption: `restic` client-side; the remote never sees plaintext.
+- Secrets in `secrets/<host>.yaml`: `backup/restic-password` (the keystone — kept in encrypted git so a scratched host restores itself), `backup/rclone-conf`.
+- Schedule: daily, retention `7d/4w/6m`. Failures POST to ntfy; success stamps `backup.stampPath` for the heimdash `Backup` card (age + freshness, red past 36h).
+
+Add a host: import `nixos.backup`, set `backup.paths`, add the two secrets to `secrets/<host>.yaml`.
+
+Provider config (rerun after a Filen password change):
+
+```sh
+rclone config   # create the `filen` remote
+export SOPS_AGE_KEY="$(sops -d --extract '["admin_age_key"]' secrets/admin.yaml)"
+sops set secrets/ukko.yaml '["backup"]["rclone-conf"]' \
+  "$(rclone config show filen | python3 -c 'import json,sys;print(json.dumps(sys.stdin.read()))')"
+```
+
+Restore (run on the host; the wrapper carries repo, password, and rclone config):
+
+```sh
+ssh reuski@home.reuski.dev
+sudo restic-ukko snapshots
+sudo restic-ukko restore latest --target /            # all paths in place
+sudo restic-ukko restore latest --target /tmp/r --include /var/lib/navidrome
+```
+
 ## Secrets
 
 - Backend: `sops-nix` + age.
