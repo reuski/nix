@@ -63,7 +63,7 @@
         SystemCallArchitectures = "native";
         SystemCallFilter = [
           "@system-service"
-          "~@privileged @resources"
+          "~@privileged"
         ];
         SystemCallErrno = "EPERM";
       };
