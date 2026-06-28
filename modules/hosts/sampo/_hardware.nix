@@ -7,9 +7,10 @@
   ...
 }:
 let
-  pinnedZenKernel = (import inputs.nixpkgs-zen-kernel {
-    inherit (pkgs.stdenv.hostPlatform) system;
-  }).linuxPackages_zen.kernel;
+  pinnedZenKernel =
+    (import inputs.nixpkgs-zen-kernel {
+      inherit (pkgs.stdenv.hostPlatform) system;
+    }).linuxPackages_zen.kernel;
 in
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
