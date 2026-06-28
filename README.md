@@ -40,12 +40,16 @@ CI: evaluate, host builds, format PRs, input/package update PRs.
 
 ```sh
 HOST=hiisi
-sudo nixos-rebuild switch --flake ".#$HOST"
+sudo nixos-rebuild switch \
+  --flake "github:reuski/nix/main#$HOST" \
+  --refresh --option tarball-ttl 0
 ```
 
 ```sh
 HOST=abraxas
-darwin-rebuild switch --flake ".#$HOST"
+darwin-rebuild switch \
+  --flake "github:reuski/nix/main#$HOST" \
+  --refresh --option tarball-ttl 0
 ```
 
 ## Fleet
