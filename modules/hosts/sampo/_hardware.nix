@@ -8,9 +8,14 @@
   ...
 }:
 let
+  system = pkgs.stdenv.hostPlatform.system;
+  currentKernelPkgs = import inputs.nixpkgs {
+    inherit system;
+    config.allowUnfree = true;
+  };
   pinnedZenKernel =
     (import inputs.nixpkgs-zen-kernel {
-      inherit (pkgs.stdenv.hostPlatform) system;
+      inherit system;
     }).linuxPackages_zen.kernel;
 in
 {
@@ -30,7 +35,7 @@ in
     "ntsync"
   ];
 
-  boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor pinnedZenKernel);
+  boot.kernelPackages = lib.mkForce (currentKernelPkgs.linuxPackagesFor pinnedZenKernel);
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
