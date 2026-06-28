@@ -1,6 +1,7 @@
+{ inputs }:
+
 {
   config,
-  inputs,
   lib,
   modulesPath,
   pkgs,
