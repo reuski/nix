@@ -81,6 +81,12 @@
 - Cache-backed GUI inputs: `ghostty`, `noctalia`, `vicinae`.
 - Trust matching caches in `modules/nixos/cachix.nix`.
 - Do not hand-roll daily input bumps; CI owns them.
+- When one package blocks updates, keep `nixpkgs` rolling and isolate that package.
+- Temporary pins use fixed-rev, `flake = false` inputs; no hidden fetchers.
+- Manual lockfile edits are for input graph changes only.
+- Scope pins to the host-private module that selects the broken package.
+- Kernel pins import only the pinned kernel; use current `pkgs.linuxPackagesFor`.
+- Do not pin NVIDIA, userspace, or whole package sets without failing-build proof.
 
 ## Secrets
 

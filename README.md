@@ -41,6 +41,16 @@ CI:
 - `.github/workflows/check.yml`: `nix fmt`, NixOS host builds, Darwin build/evaluation.
 - `.github/workflows/update.yml`: daily `nix flake update`, `nix-update helium-browser`, PR automerge on green.
 
+## Update Blockers
+
+- Keep `nixpkgs` rolling; isolate the broken package.
+- Prefer a fixed-rev, `flake = false` input for temporary package pins; no hidden fetchers.
+- Scope pins to the host-private module that selects the broken package.
+- Kernel pins: import only the pinned kernel, then use current `pkgs.linuxPackagesFor`.
+- Do not pin NVIDIA, userspace, or whole package sets without a failing CI build proving they broke.
+- Leave routine lock refresh to CI; update `flake.lock` locally only for input graph edits.
+- Remove the pin after upstream builds green.
+
 ## Cache and Upgrades
 
 `ukko` is the fleet builder, cache, and orchestrator.
@@ -85,13 +95,16 @@ ssh reuski@home.reuski.dev attic cache info ukko   # Public Key -> nix.nix
 
 Add a host: import `nixos.backup`, set `backup.paths`, add the two secrets to `secrets/<host>.yaml`.
 
-Provider config (rerun after a Filen password change):
+Provider config (Filen secret fields stay rclone-obscured; rerun after a Filen password change):
 
 ```sh
 rclone config   # create the `filen` remote
+rclone_conf="$(rclone config file | tail -n 1)"
 export SOPS_AGE_KEY="$(sops -d --extract '["admin_age_key"]' secrets/admin.yaml)"
-sops set secrets/ukko.yaml '["backup"]["rclone-conf"]' \
-  "$(rclone config show filen | python3 -c 'import json,sys;print(json.dumps(sys.stdin.read()))')"
+awk '/^\[filen\]$/ { keep = 1 } /^\[/ && $0 != "[filen]" { keep = 0 } keep' "$rclone_conf" \
+  | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' \
+  | sops set --value-stdin secrets/ukko.yaml '["backup"]["rclone-conf"]'
+unset SOPS_AGE_KEY
 ```
 
 Restore (run on the host; the wrapper carries repo, password, and rclone config):
