@@ -7,6 +7,7 @@
       ...
     }:
     {
+      home-manager.backupFileExtension = "backup";
       services.displayManager = {
         autoLogin = {
           enable = true;
