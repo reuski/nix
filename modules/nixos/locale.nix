@@ -19,6 +19,15 @@
         "${config.profile.locale.regional}/UTF-8"
       ];
 
+      services.xserver.xkb = {
+        inherit (config.profile.keyboard)
+          layout
+          variant
+          model
+          options
+          ;
+      };
+
       console = {
         keyMap = config.profile.keyboard.layout;
         font = "${pkgs.terminus_font}/share/consolefonts/ter-v24n.psf.gz";

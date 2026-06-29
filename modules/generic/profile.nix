@@ -55,8 +55,8 @@
         };
         keyboard = {
           model = lib.mkDefault "pc105";
-          layout = lib.mkDefault "fi";
-          variant = lib.mkDefault "nodeadkeys";
+          layout = lib.mkDefault "us";
+          variant = lib.mkDefault "altgr-weur";
           options = lib.mkDefault "";
         };
         colors.gruvbox = {
