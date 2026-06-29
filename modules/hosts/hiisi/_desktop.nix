@@ -1,5 +1,10 @@
 { config, ... }:
 {
+  profile.keyboard = {
+    layout = "fi";
+    variant = "nodeadkeys";
+  };
+
   home-manager.users.${config.profile.username} = {
     wallpaper.primary = "plus";
 
