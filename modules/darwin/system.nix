@@ -33,7 +33,6 @@
           persistent-apps = [ ];
         };
         finder = {
-          AppleShowAllExtensions = true;
           FXPreferredViewStyle = "clmv";
           ShowPathbar = true;
           _FXShowPosixPathInTitle = true;

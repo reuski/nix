@@ -8,8 +8,6 @@ in
     {
       imports = [
         darwin.mac
-        darwin.zed
-        darwin.tableplus
         ./_desktop.nix
       ];
 
