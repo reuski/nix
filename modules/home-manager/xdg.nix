@@ -9,7 +9,7 @@
         createDirectories = true;
         setSessionVariables = true;
         pictures = "${config.profile.homeDirectory}/Pictures";
-        documents = "${config.profile.homeDirectory}/Documents";
+        documents = null;
         download = "${config.profile.homeDirectory}/Downloads";
         desktop = null;
         templates = null;

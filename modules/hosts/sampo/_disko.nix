@@ -28,10 +28,8 @@ in
   services.fstrim.enable = lib.mkForce false;
 
   systemd.tmpfiles.rules = [
-    "d /mnt/games 0755 ${username} users -"
-    "d /mnt/games/steam 0755 ${username} users -"
-    "d /mnt/games/heroic 0755 ${username} users -"
-    "d ${homeDirectory}/projects 0755 ${username} users -"
+    "d ${homeDirectory}/games/steam 0755 ${username} users -"
+    "d ${homeDirectory}/games/heroic 0755 ${username} users -"
   ];
 
   disko.devices.disk = {
@@ -73,7 +71,8 @@ in
     };
 
     games =
-      dataDisk "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_2TB_S7DNNU0X746013X" "@games" "/mnt/games"
+      dataDisk "/dev/disk/by-id/nvme-Samsung_SSD_990_PRO_2TB_S7DNNU0X746013X" "@games"
+        "${homeDirectory}/games"
         [
           "noatime"
           "discard=async"
@@ -87,5 +86,17 @@ in
       dataDisk "/dev/disk/by-id/ata-Samsung_SSD_850_PRO_256GB_S1SUNSAG365733F" "@projects"
         "${homeDirectory}/projects"
         btrfsOpts;
+  };
+
+  fileSystems.storage = {
+    device = "/dev/disk/by-id/wwn-0x5000c500e797fcc5";
+    fsType = "btrfs";
+    mountPoint = "${homeDirectory}/storage";
+    options = [
+      "noatime"
+      "nofail"
+      "x-systemd.automount"
+      "x-systemd.idle-timeout=10min"
+    ];
   };
 }
