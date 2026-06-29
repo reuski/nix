@@ -18,12 +18,6 @@
           cleanup = "uninstall";
         };
         taps = [ "imputnet/helium" ];
-        casks = [
-          "cleanshot"
-          "ghostty"
-          "helium"
-          "raycast"
-        ];
       };
     };
 }
