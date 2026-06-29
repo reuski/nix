@@ -15,7 +15,6 @@
 
       home-manager.users.${config.profile.username}.home.packages = with pkgs; [
         localsend
-        signal-desktop
       ];
     };
 }
