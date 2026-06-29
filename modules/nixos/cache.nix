@@ -18,6 +18,7 @@
         enable = true;
         environmentFile = config.sops.templates."atticd-env".path;
         settings = {
+          database.url = "sqlite:///var/lib/atticd/server.db?mode=rwc&_journal_mode=WAL&_synchronous=NORMAL&_busy_timeout=30000&_mmap_size=268435456";
           listen = "127.0.0.1:8090";
           api-endpoint = "https://ukko.tail2fc4c2.ts.net:8090/";
           chunking = {
