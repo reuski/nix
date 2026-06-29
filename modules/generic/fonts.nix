@@ -4,9 +4,13 @@
     packages = lib.mkOption {
       type = lib.types.functionTo (lib.types.listOf lib.types.package);
       default =
-        pkgs: with pkgs; [
+        pkgs:
+        with pkgs;
+        [
           nerd-fonts.hack
           inter
+        ]
+        ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
           noto-fonts
           noto-fonts-cjk-sans
           noto-fonts-color-emoji
