@@ -26,18 +26,22 @@
         ];
         text = ''
           rc=0
-          report=$(mktemp)
+          score=$(mktemp)
+          detail=$(mktemp)
           warns=$(mktemp)
-          trap 'rm -f "$report" "$warns"' EXIT
+          meta=$(mktemp)
+          trap 'rm -f "$score" "$detail" "$warns" "$meta"' EXIT
 
           collect() { grep -iE 'warning|deprecat' "$1" >> "$warns" || true; }
+          mark() { printf '%-4s %-6s %s\n' "$1" "$2" "$3" >> "$score"; }
 
           ${lib.optionalString (cfg.targets != [ ]) ''
             export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
 
             activate() {
               nixos-rebuild switch --flake "${flake}#$1" \
-                --target-host "root@$1" --refresh --option tarball-ttl 0
+                --target-host "root@$1" --refresh --option tarball-ttl 0 \
+                --max-jobs 1 --cores ${toString cfg.cores}
             }
 
             reboot_if_stale() {
@@ -50,10 +54,12 @@
             ${lib.concatMapStringsSep "\n" (h: ''
               log=$(mktemp)
               if activate ${h} > "$log" 2>&1 || activate ${h} > "$log" 2>&1; then
+                mark ACT ${h} OK
                 reboot_if_stale ${h} || true
               else
                 rc=1
-                { printf '%s // DEPLOY FAULT\n' ${h}; tail -n 6 "$log"; printf '\n'; } >> "$report"
+                mark ACT ${h} FAIL
+                { printf '%s\n' ${h}; grep -iE 'error|fatal|fail|exception' "$log" | tail -n 3; } >> "$detail"
               fi
               collect "$log"
               rm -f "$log"
@@ -64,7 +70,8 @@
             warm() {
               local out
               out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
-                --refresh --option tarball-ttl 0 --no-link --print-out-paths 2> "$2") || return 1
+                --refresh --option tarball-ttl 0 --no-link --print-out-paths \
+                --max-jobs 1 --cores ${toString cfg.cores} 2> "$2") || return 1
               attic push "local:${cfg.cache}" "$out" >> "$2" 2>&1
             }
 
@@ -73,9 +80,12 @@
 
             ${lib.concatMapStringsSep "\n" (h: ''
               log=$(mktemp)
-              if ! warm ${h} "$log"; then
+              if warm ${h} "$log"; then
+                mark WARM ${h} OK
+              else
                 rc=1
-                { printf '%s // BUILD FAULT\n' ${h}; tail -n 6 "$log"; printf '\n'; } >> "$report"
+                mark WARM ${h} FAIL
+                { printf '%s\n' ${h}; grep -iE 'error|fatal|fail|exception' "$log" | tail -n 3; } >> "$detail"
               fi
               collect "$log"
               rm -f "$log"
@@ -88,7 +98,6 @@
           ''}
 
           ${lib.optionalString (cfg.notify != null) ''
-            meta=$(mktemp)
             new=$(mktemp)
             old="$STATE_DIRECTORY/inputs"
             nix flake metadata "${flake}" --refresh --json 2>/dev/null > "$meta" || true
@@ -113,21 +122,27 @@
               ts=$(jq -r '.locks as $l | ($l.nodes[$l.nodes.root.inputs.nixpkgs].locked.lastModified // empty)' "$meta" 2>/dev/null || true)
               if [ -n "$ts" ]; then channel="nixpkgs $(date -u -d "@$ts" +%Y-%m-%d 2>/dev/null || true)"; fi
             fi
-            rm -f "$meta"
 
-            warnings=$(sort -u "$warns" | head -n 15)
+            warnings=$(sort -u "$warns" | head -n 10)
 
-            if [ -n "$packages" ] || [ -s "$report" ] || [ -n "$warnings" ]; then
-              if [ "$rc" -eq 0 ]; then prio="default"; else prio="high"; fi
-              {
-                if [ -s "$report" ]; then printf 'FAULTS\n'; sed 's/^/  /' "$report"; fi
-                if [ -n "$channel" ]; then printf 'CHANNEL\n  %s\n\n' "$channel"; fi
-                if [ -n "$packages" ]; then printf 'PACKAGES\n  %s\n\n' "$packages"; fi
-                if [ -n "$warnings" ]; then printf 'WARNINGS\n'; printf '%s\n' "$warnings" | sed 's/^/  /'; fi
-              } | curl -fsS \
+            total=$(wc -l < "$score" | tr -d ' ')
+            ok=$(grep -c ' OK$' "$score" || true)
+            status=$( [ "$rc" -eq 0 ] && printf OK || printf FAIL )
+            headline="DEPLOY $ok/$total $status"
+            prio=$( [ "$rc" -eq 0 ] && printf default || printf high )
+
+            {
+              printf '```\n%s\n\n' "$headline"
+              cat "$score"
+              [ -s "$detail" ] && { printf '\n'; cat "$detail"; }
+              [ -n "$channel" ] && printf '\nCHANNEL %s\n' "$channel"
+              [ -n "$packages" ] && printf '\nINPUTS %s\n' "$packages"
+              [ -n "$warnings" ] && printf '\nWARN\n%s\n' "$warnings"
+              printf '```\n'
+            } | curl -fsS \
                 -H "Priority: $prio" \
+                -H "Title: $headline" \
                 --data-binary @- "${cfg.notify}" || true
-            fi
           ''}
 
           exit "$rc"
@@ -159,7 +174,12 @@
         notify = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
           default = null;
-          description = "Optional ntfy topic URL the daily run digest (upgraded inputs, faults, warnings) is POSTed to.";
+          description = "ntfy topic URL a per-run digest (scoreboard, faults, input delta, warnings) is always POSTed to.";
+        };
+        cores = lib.mkOption {
+          type = lib.types.ints.positive;
+          default = 6;
+          description = "CPU cores allotted to build steps; caps nightly thermal load and concurrent substituter load.";
         };
       };
 
