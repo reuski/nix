@@ -1,5 +1,3 @@
-{ inputs }:
-
 {
   config,
   lib,
@@ -7,16 +5,11 @@
   pkgs,
   ...
 }:
-let
-  # Temporary: NixOS/nixpkgs#535850 makes current linux_zen output vmlinuz instead of bzImage.
-  pinnedZenKernel =
-    (import inputs.nixpkgs-zen-kernel {
-      inherit (pkgs.stdenv.hostPlatform) system;
-      config.allowUnfree = true;
-    }).linuxPackages_zen.kernel;
-in
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
+
+  # Temporary: NixOS/nixpkgs#535850 makes linux_zen emit vmlinuz, not bzImage.
+  system.boot.loader.kernelFile = "vmlinuz";
 
   boot.initrd.availableKernelModules = [
     "nvme"
@@ -32,7 +25,7 @@ in
     "ntsync"
   ];
 
-  boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor pinnedZenKernel);
+  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_zen;
   boot.kernelParams = [
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
