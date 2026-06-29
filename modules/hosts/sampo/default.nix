@@ -9,7 +9,7 @@ in
       imports = [
         inputs.disko.nixosModules.disko
         ./_disko.nix
-        (import ./_hardware.nix { inherit inputs; })
+        ./_hardware.nix
         ./_network.nix
         nixos.desktop
         nixos.gaming
