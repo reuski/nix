@@ -17,21 +17,29 @@
         enable = true;
 
         workspace = {
-          colorScheme = "Oxygen Dark";
-          widgetStyle = "Union";
-          theme = "oxygen";
+          lookAndFeel = "org.kde.oxygen";
           iconTheme = "breeze-dark";
           wallpaper = config.wallpaper.images;
-          windowDecorations = {
-            library = "org.kde.kwin.aurorae";
-            theme = "kwin4_decoration_qml_plastik";
-          };
-          splashScreen.theme = "None";
         };
 
-        fonts.general = {
-          family = "Hack Nerd Font";
-          pointSize = 11;
+        fonts = {
+          general = {
+            family = "Inter";
+            pointSize = 10;
+          };
+          fixedWidth = {
+            family = "Hack Nerd Font";
+            pointSize = 10;
+          };
+          small = {
+            family = "Inter";
+            pointSize = 8;
+          };
+          windowTitle = {
+            family = "Inter";
+            pointSize = 10;
+            weight = "demiBold";
+          };
         };
 
         kwin = {

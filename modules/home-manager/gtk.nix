@@ -20,8 +20,8 @@
           name = "Gruvbox-Plus-Dark";
         };
         font = {
-          name = "Hack Nerd Font";
-          size = 11;
+          name = "Inter";
+          size = 10;
         };
       };
 

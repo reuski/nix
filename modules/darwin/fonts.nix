@@ -1,8 +1,8 @@
-{ ... }:
+{ config, ... }:
 {
   flake.modules.darwin.fonts =
     { pkgs, ... }:
     {
-      fonts.packages = [ pkgs.nerd-fonts.hack ];
+      fonts.packages = config.fontSet.packages pkgs;
     };
 }

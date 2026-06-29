@@ -1,18 +1,13 @@
-{ ... }:
+{ config, ... }:
 {
   flake.modules.nixos.fonts =
     { pkgs, ... }:
     {
       fonts.enableDefaultPackages = false;
-      fonts.packages = with pkgs; [
-        nerd-fonts.hack
-        noto-fonts-color-emoji
-      ];
-
-      fonts.fontconfig.defaultFonts = {
-        monospace = [ "Hack Nerd Font" ];
-        sansSerif = [ "Hack Nerd Font" ];
-        emoji = [ "Noto Color Emoji" ];
+      fonts.packages = config.fontSet.packages pkgs;
+      fonts.fontconfig = {
+        enable = true;
+        defaultFonts = config.fontSet.defaultFonts;
       };
     };
 }
