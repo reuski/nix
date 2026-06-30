@@ -8,9 +8,6 @@
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
 
-  # Temporary: NixOS/nixpkgs#535850 makes linux_zen emit vmlinuz, not bzImage.
-  system.boot.loader.kernelFile = "vmlinuz";
-
   boot.initrd.availableKernelModules = [
     "nvme"
     "vmd"
@@ -54,7 +51,7 @@
     modesetting.enable = true;
     open = true;
     powerManagement.enable = true;
-    package = config.boot.kernelPackages.nvidiaPackages.beta;
+    package = config.boot.kernelPackages.nvidiaPackages.production;
   };
 
   environment.sessionVariables = {
