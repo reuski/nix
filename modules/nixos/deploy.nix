@@ -71,7 +71,11 @@
               local out
               out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
                 --refresh --option tarball-ttl 0 --no-link --print-out-paths \
-                --max-jobs 1 --cores ${toString cfg.cores} 2> "$2") || return 1
+                --max-jobs 1 --cores ${toString cfg.cores} 2> "$2") \
+              || out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
+                --refresh --option tarball-ttl 0 --no-link --print-out-paths \
+                --max-jobs 1 --cores ${toString cfg.cores} 2>> "$2") \
+              || return 1
               attic push "local:${cfg.cache}" "$out" >> "$2" 2>&1
             }
 
