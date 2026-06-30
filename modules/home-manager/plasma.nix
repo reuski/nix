@@ -17,7 +17,18 @@
         enable = true;
 
         workspace = {
-          lookAndFeel = "org.kde.oxygen";
+          colorScheme = "OxygenDark";
+          theme = "oxygen";
+          widgetStyle = "Union";
+          windowDecorations = {
+            library = "org.kde.kwin.aurorae";
+            theme = "kwin4_decoration_qml_plastik";
+          };
+          splashScreen.theme = "None";
+          cursor = {
+            theme = "Oxygen_Zion";
+            size = 24;
+          };
           iconTheme = "breeze-dark";
           wallpaper = config.wallpaper.images;
         };
@@ -123,7 +134,10 @@
         genAttrs imageTypes (_: gwenview) // genAttrs videoTypes (_: haruna);
 
       home = {
-        packages = [ pkgs.kdePackages.oxygen ];
+        packages = [
+          pkgs.kdePackages.oxygen
+          pkgs.kdePackages.union
+        ];
         sessionVariables.TERMINAL = getExe pkgs.ghostty;
       };
     };
