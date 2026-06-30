@@ -5,13 +5,7 @@
     {
       programs.steam = {
         enable = true;
-        gamescopeSession.enable = true;
         remotePlay.openFirewall = true;
-      };
-
-      programs.gamescope = {
-        enable = true;
-        capSysNice = true;
       };
 
       programs.gamemode = {
