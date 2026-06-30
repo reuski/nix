@@ -29,7 +29,7 @@
 
       window-rules = [
         {
-          matches = [ { app-id = "^ghostty$"; } ];
+          matches = [ { app-id = "ghostty"; } ];
           open-maximized = true;
         }
       ];

@@ -1,7 +1,7 @@
 { ... }:
 {
   flake.modules.nixos.gaming =
-    { pkgs, ... }:
+    { config, pkgs, ... }:
     {
       programs.steam = {
         enable = true;
@@ -14,6 +14,7 @@
       };
 
       hardware.steam-hardware.enable = true;
+      hardware.uinput.enable = true;
       hardware.graphics.enable32Bit = true;
 
       systemd.user.tmpfiles.rules = [
@@ -24,6 +25,8 @@
       environment.sessionVariables = {
         VKD3D_CONFIG = "dxr";
       };
+
+      users.users.${config.profile.username}.extraGroups = [ "uinput" ];
 
       environment.systemPackages = [ pkgs.heroic ];
     };
