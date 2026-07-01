@@ -16,11 +16,7 @@ in
       nixos.secrets
       nixos.vim
       nixos.nix
+      nixos.tailscale
     ];
-
-    services.tailscale = {
-      enable = true;
-      openFirewall = true;
-    };
   };
 }
