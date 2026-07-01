@@ -103,7 +103,7 @@
     {
       web-reuski-dev = bunApp {
         pname = "reuski-dev";
-        version = "0-unstable-2026-06-26";
+        version = "0-unstable-2026-06-30";
         owner = "reuski";
         repo = "reuski.dev";
         rev = "910b001d50553d4957bc982aee63de726ba59fe2";
@@ -116,11 +116,11 @@
 
       web-beebud = bunApp {
         pname = "beebud";
-        version = "0-unstable-2026-06-26";
+        version = "0-unstable-2026-06-30";
         owner = "reuski";
         repo = "beebud";
-        rev = "814a6395be3f5bfa635548ddf8ab82dff5abe805";
-        hash = "sha256-GRb2PsNnoSWzbtJGaJYolgPlquyeHTA7BQq3xIXlo1A=";
+        rev = "a18d639d655c3d4d827e96663b44b4d80fe31a6e";
+        hash = "sha256-6YYxqx7rPlu4JgZAIganb8TIqf82lyXyW2m12s3wXyI=";
         depsHash = "sha256-kWm3thvDSgxodii94PHKFE7YvF+xi01/ADW9xz6PwqI=";
         installPhase = ''
           mkdir -p $out
