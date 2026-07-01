@@ -30,7 +30,8 @@
           detail=$(mktemp)
           warns=$(mktemp)
           meta=$(mktemp)
-          trap 'rm -f "$score" "$detail" "$warns" "$meta"' EXIT
+          new=$(mktemp)
+          trap 'rm -f "$score" "$detail" "$warns" "$meta" "$new"' EXIT
 
           collect() { grep -iE 'warning|deprecat' "$1" >> "$warns" || true; }
           mark() { printf '%-4s %-6s %s\n' "$1" "$2" "$3" >> "$score"; }
@@ -106,7 +107,6 @@
           ''}
 
           ${lib.optionalString (cfg.notify != null) ''
-            new=$(mktemp)
             old="$STATE_DIRECTORY/inputs"
             nix flake metadata "${flake}" --refresh --json 2>/dev/null > "$meta" || true
             jq -r '.locks as $l | $l.nodes.root.inputs | to_entries[]
@@ -123,7 +123,6 @@
               if printf '%s\n' "$changed" | grep -qx nixpkgs; then nixpkgs_changed=1; fi
             fi
             if [ -s "$new" ]; then cp "$new" "$old"; fi
-            rm -f "$new"
 
             channel=""
             if [ "$nixpkgs_changed" = 1 ]; then
