@@ -69,12 +69,12 @@
             ;
           initialize = true;
           pruneOpts = [
+            "--keep-hourly 24"
             "--keep-daily 7"
-            "--keep-weekly 4"
-            "--keep-monthly 6"
+            "--keep-weekly 2"
           ];
           timerConfig = {
-            OnCalendar = "daily";
+            OnCalendar = "*-*-* 0/4:00:00";
             Persistent = true;
             RandomizedDelaySec = "30min";
           };
