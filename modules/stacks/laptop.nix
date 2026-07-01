@@ -20,19 +20,9 @@ in
         nixos.fonts
         nixos.niri
         nixos.nix
+        nixos.tailscale
+        nixos.workstation
       ];
-
-      hardware.graphics.enable = true;
-
-      programs.localsend = {
-        enable = true;
-        openFirewall = true;
-      };
-
-      services.tailscale = {
-        enable = true;
-        openFirewall = true;
-      };
 
       home-manager.users.${config.profile.username} = {
         imports = [ homeManager.laptop ];

@@ -45,6 +45,9 @@ jobs:
       - name: Verify sops recipients
         run: nix shell nixpkgs#python3 -c python3 .github/scripts/check-sops-recipients.py
 
+      - name: Verify private host imports
+        run: nix shell nixpkgs#python3 -c python3 .github/scripts/check-private-imports.py
+
       - uses: ./.github/actions/validate
 
   nixos:
