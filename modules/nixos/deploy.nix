@@ -82,12 +82,14 @@
             # shellcheck disable=SC2154
             attic login local http://127.0.0.1:8090 "$(cat "$CREDENTIALS_DIRECTORY/attic-token")"
 
+            primed=1
             ${lib.concatMapStringsSep "\n" (h: ''
               log=$(mktemp)
               if warm ${h} "$log"; then
                 mark WARM ${h} OK
               else
                 rc=1
+                primed=0
                 mark WARM ${h} FAIL
                 { printf '%s\n' ${h}; grep -iE 'error|fatal|fail|exception' "$log" | tail -n 3; } >> "$detail"
               fi
@@ -96,8 +98,10 @@
             '') cfg.warm}
 
             ${lib.optionalString (cfg.stampPath != null) ''
-              mkdir -p "$(dirname "${cfg.stampPath}")"
-              date -u +%s > "${cfg.stampPath}"
+              if [ "$primed" = 1 ]; then
+                mkdir -p "$(dirname "${cfg.stampPath}")"
+                date -u +%s > "${cfg.stampPath}"
+              fi
             ''}
           ''}
 
