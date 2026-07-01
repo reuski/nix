@@ -42,10 +42,6 @@
     bluetooth.enable = false;
   };
 
-  networking.wireless.iwd.enable = false;
-
-  powerManagement.cpuFreqGovernor = "powersave";
-
   systemd.network.networks."20-wifi" = {
     matchConfig.Name = "wl*";
     networkConfig = {
@@ -55,7 +51,7 @@
     };
     dhcpV4Config.RouteMetric = 600;
     ipv6AcceptRAConfig.RouteMetric = 600;
-    linkConfig.RequiredForOnline = "routable";
+    linkConfig.RequiredForOnline = false;
   };
 
   services.thermald.enable = true;
@@ -63,7 +59,6 @@
   environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
   environment.systemPackages = with pkgs; [
     intel-gpu-tools
-    iw
     libva-utils
     pciutils
     usbutils
