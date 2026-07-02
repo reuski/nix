@@ -12,7 +12,8 @@
         "npm:context-mode"
       ];
       gruvboxTheme = {
-        "$schema" = "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json";
+        "$schema" =
+          "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json";
         name = "gruvbox";
         vars = {
           bg = "#282828";
@@ -137,7 +138,8 @@
         - Do not over-ask for recoverable git-tracked edits.
       '';
 
-      home.file.".pi/agent/themes/gruvbox.json".source = json.generate "pi-gruvbox-theme.json" gruvboxTheme;
+      home.file.".pi/agent/themes/gruvbox.json".source =
+        json.generate "pi-gruvbox-theme.json" gruvboxTheme;
 
       home.file.".pi/agent/settings.json".source = json.generate "pi-settings.json" {
         packages = piPackages;
