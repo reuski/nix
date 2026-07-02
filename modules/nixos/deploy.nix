@@ -34,7 +34,7 @@
           trap 'rm -f "$score" "$detail" "$warns" "$meta" "$new"' EXIT
 
           collect() { grep -iE 'warning|deprecat' "$1" >> "$warns" || true; }
-          mark() { printf '%-4s %-6s %s\n' "$1" "$2" "$3" >> "$score"; }
+          mark() { printf '%s %s %s\n' "$1" "$2" "$3" >> "$score"; }
 
           ${lib.optionalString (cfg.targets != [ ]) ''
             export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
@@ -139,16 +139,14 @@
             prio=$( [ "$rc" -eq 0 ] && printf default || printf high )
 
             {
-              printf '```\n%s\n\n' "$headline"
+              printf '%s\n\n' "$headline"
               cat "$score"
               [ -s "$detail" ] && { printf '\n'; cat "$detail"; }
               [ -n "$channel" ] && printf '\nCHANNEL %s\n' "$channel"
               [ -n "$packages" ] && printf '\nINPUTS %s\n' "$packages"
               [ -n "$warnings" ] && printf '\nWARN\n%s\n' "$warnings"
-              printf '```\n'
             } | curl -fsS \
                 -H "Priority: $prio" \
-                -H "Title: $headline" \
                 --data-binary @- "${cfg.notify}" || true
           ''}
 
@@ -185,7 +183,7 @@
         };
         cores = lib.mkOption {
           type = lib.types.ints.positive;
-          default = 6;
+          default = 4;
           description = "CPU cores allotted to build steps; caps nightly thermal load and concurrent substituter load.";
         };
       };
