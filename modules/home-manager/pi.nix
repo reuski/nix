@@ -8,8 +8,91 @@
         "npm:pi-mcp-adapter"
         "npm:pi-web-access"
         "npm:pi-subagents"
+        "npm:pi-intercom"
         "npm:context-mode"
       ];
+      gruvboxTheme = {
+        "$schema" = "https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json";
+        name = "gruvbox";
+        vars = {
+          bg = "#282828";
+          fg = "#ebdbb2";
+          accent = "#fabd2f";
+          accent2 = "#83a598";
+          red = "#fb4934";
+          green = "#b8bb26";
+          yellow = "#fabd2f";
+          orange = "#fe8019";
+          purple = "#d3869b";
+          gray = "#a89984";
+          dimGray = "#928374";
+          surface = "#32302f";
+          surface2 = "#3c3836";
+          surface3 = "#504945";
+          toolPendingBg = "#2d2a28";
+          toolSuccessBg = "#303522";
+          toolErrorBg = "#3a2722";
+          customMsgBg = "#342d32";
+        };
+        colors = {
+          accent = "accent";
+          border = "accent";
+          borderAccent = "accent2";
+          borderMuted = "surface3";
+          success = "green";
+          error = "red";
+          warning = "yellow";
+          muted = "gray";
+          dim = "dimGray";
+          text = "fg";
+          thinkingText = "gray";
+          selectedBg = "surface3";
+          userMessageBg = "surface";
+          userMessageText = "fg";
+          customMessageBg = "customMsgBg";
+          customMessageText = "fg";
+          customMessageLabel = "accent2";
+          toolPendingBg = "toolPendingBg";
+          toolSuccessBg = "toolSuccessBg";
+          toolErrorBg = "toolErrorBg";
+          toolTitle = "accent2";
+          toolOutput = "gray";
+          mdHeading = "yellow";
+          mdLink = "accent2";
+          mdLinkUrl = "dimGray";
+          mdCode = "orange";
+          mdCodeBlock = "green";
+          mdCodeBlockBorder = "surface3";
+          mdQuote = "gray";
+          mdQuoteBorder = "purple";
+          mdHr = "surface3";
+          mdListBullet = "accent";
+          toolDiffAdded = "green";
+          toolDiffRemoved = "red";
+          toolDiffContext = "gray";
+          syntaxComment = "dimGray";
+          syntaxKeyword = "purple";
+          syntaxFunction = "accent2";
+          syntaxVariable = "fg";
+          syntaxString = "green";
+          syntaxNumber = "orange";
+          syntaxType = "yellow";
+          syntaxOperator = "accent";
+          syntaxPunctuation = "gray";
+          thinkingOff = "surface3";
+          thinkingMinimal = "dimGray";
+          thinkingLow = "accent";
+          thinkingMedium = "accent2";
+          thinkingHigh = "purple";
+          thinkingXhigh = "red";
+          bashMode = "green";
+        };
+        export = {
+          pageBg = "#282828";
+          cardBg = "#32302f";
+          infoBg = "#3c3836";
+        };
+      };
     in
     {
       home.packages = with pkgs; [
@@ -46,10 +129,19 @@
         - Delete dead config.
         - Verify immediately.
         - Report changed files and validation.
+
+        ## Safety
+
+        - Gate destructive actions: force push, `git reset --hard`, `rm -rf`, overwriting `.env`/lockfiles, package removal, `sudo`, service stop.
+        - Confirm with `ACTION / COMMAND / REASON` before executing.
+        - Do not over-ask for recoverable git-tracked edits.
       '';
+
+      home.file.".pi/agent/themes/gruvbox.json".source = json.generate "pi-gruvbox-theme.json" gruvboxTheme;
 
       home.file.".pi/agent/settings.json".source = json.generate "pi-settings.json" {
         packages = piPackages;
+        theme = "gruvbox";
         terminal.showImages = false;
         hideThinkingBlock = true;
         quietStartup = true;
@@ -98,6 +190,9 @@
           command = lib.getExe' pkgs.mcp-nixos "mcp-nixos";
           lifecycle = "lazy";
           idleTimeout = 10;
+        };
+        mcpServers.grep = {
+          url = "https://mcp.grep.app";
         };
       };
 
