@@ -34,5 +34,7 @@
             "x-scheme-handler/chrome" = h;
           };
       };
+
+      xdg.configFile."mimeapps.list".force = true;
     };
 }
