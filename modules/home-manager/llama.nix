@@ -6,6 +6,7 @@
       inherit (pkgs.stdenv) isDarwin;
       cp = pkgs.cudaPackages;
       toolchain = if isDarwin then pkgs.stdenv.cc else cp.backendStdenv.cc;
+      tls = pkgs.openssl;
       cudaInc = lib.concatStringsSep ":" [
         "${lib.getDev cp.cuda_cudart}/include"
         "${lib.getDev cp.cccl}/include"
@@ -20,6 +21,13 @@
         "${lib.getDev cp.cccl}"
         "${cp.cuda_nvcc}"
       ];
+      runLibPath = lib.concatStringsSep ":" (
+        [ "${lib.getLib tls}/lib" ]
+        ++ lib.optionals (!isDarwin) [
+          "/run/opengl-driver/lib"
+          cudaLib
+        ]
+      );
 
       backendFlags = lib.concatStringsSep " " (
         if isDarwin then
@@ -36,6 +44,12 @@
           ]
       );
 
+      buildEnv = ''
+        export CMAKE_PREFIX_PATH="${lib.getDev tls}:${lib.getLib tls}''${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+        export LD_LIBRARY_PATH="${runLibPath}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export DYLD_LIBRARY_PATH="${runLibPath}''${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
+      '';
+
       cudaEnv = lib.optionalString (!isDarwin) ''
         export CUDACXX="${lib.getExe' cp.cuda_nvcc "nvcc"}"
         export CUDAHOSTCXX="${lib.getExe' cp.backendStdenv.cc "g++"}"
@@ -43,7 +57,6 @@
         export CPATH="${cudaInc}''${CPATH:+:$CPATH}"
         export LIBRARY_PATH="${cudaLib}''${LIBRARY_PATH:+:$LIBRARY_PATH}"
         export CUDAToolkit_ROOT="${cudaRoots}"
-        export LD_LIBRARY_PATH="/run/opengl-driver/lib:${cudaLib}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
       '';
 
       llama = pkgs.writeShellApplication {
@@ -64,6 +77,7 @@
             cp.libcublas
           ];
         text = ''
+          ${buildEnv}
           ${cudaEnv}
           llama_dir="$HOME/.local/src/llama.cpp"
           server="$llama_dir/build/bin/llama-server"
@@ -77,6 +91,7 @@
               -DLLAMA_BUILD_APP=OFF \
               -DGGML_BUILD_TESTS=OFF \
               -DGGML_BUILD_EXAMPLES=OFF \
+              -DLLAMA_OPENSSL=ON \
               ${backendFlags}
             cmake --build "$llama_dir/build" --target llama-server
           }
