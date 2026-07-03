@@ -2,7 +2,7 @@
 {
   disko.devices = {
     disk.main = {
-      device = "/dev/nvme1n1";
+      device = "/dev/disk/by-id/nvme-PC711_NVMe_SK_hynix_512GB____FNB2N597512002F0K";
       type = "disk";
       content = {
         type = "gpt";
@@ -31,7 +31,7 @@
     };
 
     disk.media = {
-      device = "/dev/nvme0n1";
+      device = "/dev/disk/by-id/nvme-CT4000P3SSD8_2422E8B582A9";
       type = "disk";
       content = {
         type = "gpt";
