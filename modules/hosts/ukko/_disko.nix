@@ -2,7 +2,7 @@
 {
   disko.devices = {
     disk.main = {
-      device = "/dev/nvme0n1";
+      device = "/dev/nvme1n1";
       type = "disk";
       content = {
         type = "gpt";
@@ -31,7 +31,7 @@
     };
 
     disk.media = {
-      device = "/dev/nvme1n1";
+      device = "/dev/nvme0n1";
       type = "disk";
       content = {
         type = "gpt";
