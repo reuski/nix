@@ -29,28 +29,11 @@
         };
       };
     };
+  };
 
-    disk.media = {
-      device = "/dev/disk/by-id/nvme-CT4000P3SSD8_2422E8B582A9";
-      type = "disk";
-      content = {
-        type = "gpt";
-        partitions.root = {
-          size = "100%";
-          content = {
-            type = "filesystem";
-            format = "ext4";
-            extraArgs = [
-              "-L"
-              "media"
-              "-m"
-              "0"
-            ];
-            mountpoint = "/srv/media";
-            mountOptions = [ "noatime" ];
-          };
-        };
-      };
-    };
+  fileSystems."/srv/media" = {
+    device = "/dev/disk/by-partlabel/disk-media-root";
+    fsType = "ext4";
+    options = [ "noatime" ];
   };
 }
