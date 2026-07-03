@@ -334,7 +334,10 @@ in
 
   services.heimdash = {
     enable = true;
-    mounts = [ "/" ];
+    mounts = [
+      "/"
+      "/srv/media"
+    ];
     credentials = {
       sonarr-api-key.path = config.sops.secrets."sonarr/api-key".path;
       radarr-api-key.path = config.sops.secrets."radarr/api-key".path;
