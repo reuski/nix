@@ -12,13 +12,19 @@
           matches = [
             { "node.name" = "~alsa_output\.usb-Yamaha_Corporation_Steinberg_UR22C.*"; }
           ];
-          actions.update-props."priority.session" = 1500;
+          actions.update-props = {
+            "priority.session" = 1500;
+            "session.suspend-timeout-seconds" = 0;
+          };
         }
         {
           matches = [
             { "node.name" = "~alsa_input\.usb-Yamaha_Corporation_Steinberg_UR22C.*"; }
           ];
-          actions.update-props."priority.session" = 1500;
+          actions.update-props = {
+            "priority.session" = 1500;
+            "session.suspend-timeout-seconds" = 0;
+          };
         }
         {
           matches = [

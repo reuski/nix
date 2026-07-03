@@ -8,10 +8,7 @@
         remotePlay.openFirewall = true;
       };
 
-      programs.gamemode = {
-        enable = true;
-        enableRenice = true;
-      };
+      powerManagement.cpuFreqGovernor = "performance";
 
       hardware.steam-hardware.enable = true;
       hardware.uinput.enable = true;
