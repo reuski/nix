@@ -71,6 +71,37 @@
               evaluate temperature "$tc" 75 85 C TEMP
             fi
           fi
+
+          for dev in /sys/class/block/nvme*n1; do
+            [ -d "$dev" ] || continue
+            name=$(basename "$dev")
+            for hw in "$dev"/device/hwmon*/; do
+              f="$hw/temp1_input"
+              [ -r "$f" ] || continue
+              read -r reading < "$f" || continue
+              case "$reading" in "" | *[!0-9]*) continue ;; esac
+              tc=$((reading / 1000))
+              if [ "$tc" -ge 0 ] && [ "$tc" -le 120 ]; then
+                evaluate "drivetemp-$name" "$tc" 70 80 C "DRIVE $name"
+                break
+              fi
+            done
+          done
+
+          for hw in /sys/class/hwmon/hwmon*; do
+            [ -r "$hw/name" ] || continue
+            read -r hname < "$hw/name" || continue
+            [ "$hname" = drivetemp ] || continue
+            f="$hw/temp1_input"
+            [ -r "$f" ] || continue
+            read -r reading < "$f" || continue
+            case "$reading" in "" | *[!0-9]*) continue ;; esac
+            tc=$((reading / 1000))
+            if [ "$tc" -ge 0 ] && [ "$tc" -le 120 ]; then
+              hwname=$(basename "$hw")
+              evaluate "drivetemp-$hwname" "$tc" 70 80 C "DRIVE sata-$hwname"
+            fi
+          done
         '';
       };
     in
@@ -79,7 +110,7 @@
         ntfy = lib.mkOption {
           type = lib.types.nullOr lib.types.str;
           default = null;
-          description = "ntfy topic URL hardware alerts are POSTed to. Edge-triggered on threshold crossings + recovery; thresholds match heimdash defaults (disk 80/90, memory 80/90, temperature 75/85 °C). CPU is intentionally not alerted (transient).";
+          description = "ntfy topic URL hardware alerts are POSTed to.";
         };
         interval = lib.mkOption {
           type = lib.types.str;
