@@ -4,7 +4,22 @@
     { pkgs, lib, ... }:
     let
       inherit (pkgs.stdenv) isDarwin;
-      cudatoolkit = pkgs.cudaPackages.cudatoolkit;
+      cp = pkgs.cudaPackages;
+      toolchain = if isDarwin then pkgs.stdenv.cc else cp.backendStdenv.cc;
+      cudaInc = lib.concatStringsSep ":" [
+        "${lib.getDev cp.cuda_cudart}/include"
+        "${lib.getDev cp.cccl}/include"
+      ];
+      cudaLib = lib.makeLibraryPath [
+        (lib.getLib cp.cuda_cudart)
+        (lib.getLib cp.libcublas)
+      ];
+      cudaRoots = lib.concatStringsSep ":" [
+        "${lib.getDev cp.cuda_cudart}"
+        "${lib.getLib cp.libcublas}"
+        "${lib.getDev cp.cccl}"
+        "${cp.cuda_nvcc}"
+      ];
 
       backendFlags = lib.concatStringsSep " " (
         if isDarwin then
@@ -22,10 +37,13 @@
       );
 
       cudaEnv = lib.optionalString (!isDarwin) ''
-        export CUDACXX="${cudatoolkit}/bin/nvcc"
-        export LD_LIBRARY_PATH="/run/opengl-driver/lib:${
-          lib.makeLibraryPath [ cudatoolkit ]
-        }''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export CUDACXX="${lib.getExe' cp.cuda_nvcc "nvcc"}"
+        export CUDAHOSTCXX="${lib.getExe' cp.backendStdenv.cc "g++"}"
+        # split-layout: nvcc's own include lacks cuda_runtime.h/<nv/target>; expose cudart+cccl.
+        export CPATH="${cudaInc}''${CPATH:+:$CPATH}"
+        export LIBRARY_PATH="${cudaLib}''${LIBRARY_PATH:+:$LIBRARY_PATH}"
+        export CUDAToolkit_ROOT="${cudaRoots}"
+        export LD_LIBRARY_PATH="/run/opengl-driver/lib:${cudaLib}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
       '';
 
       llama = pkgs.writeShellApplication {
@@ -36,10 +54,15 @@
             cmake
             ninja
             git
-            stdenv.cc
+            toolchain
             ccache
           ]
-          ++ lib.optionals (!isDarwin) [ cudatoolkit ];
+          ++ lib.optionals (!isDarwin) [
+            cp.cuda_nvcc
+            cp.cccl
+            cp.cuda_cudart
+            cp.libcublas
+          ];
         text = ''
           ${cudaEnv}
           llama_dir="$HOME/.local/src/llama.cpp"
