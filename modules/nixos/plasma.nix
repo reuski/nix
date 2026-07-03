@@ -3,6 +3,7 @@
   flake.modules.nixos.plasma =
     {
       config,
+      lib,
       pkgs,
       ...
     }:
@@ -19,6 +20,9 @@
         enable = true;
         enableQt5Integration = false;
       };
+
+      services.power-profiles-daemon.enable = false;
+      services.upower.enable = lib.mkForce false;
 
       programs.kde-pim.enable = false;
       services.orca.enable = false;
