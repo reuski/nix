@@ -19,10 +19,6 @@
         "L+ %h/.local/share/Steam/compatibilitytools.d/Proton-GE - - - - ${pkgs.proton-ge-bin.steamcompattool}"
       ];
 
-      environment.sessionVariables = {
-        VKD3D_CONFIG = "dxr";
-      };
-
       users.users.${config.profile.username}.extraGroups = [ "uinput" ];
 
       environment.systemPackages = [ pkgs.heroic ];
