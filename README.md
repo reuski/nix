@@ -187,6 +187,12 @@ Replace `&abraxas` in `.sops.yaml` with the printed key, then rekey:
 for file in secrets/*.yaml; sops updatekeys --yes "$file"; end
 ```
 
+Send the key to the Mac (prints a one-time code):
+
+```sh
+nix run nixpkgs#croc -- send "$HOSTDIR/sops/age/keys.txt"
+```
+
 Darwin (on the Mac):
 
 ```sh
@@ -198,8 +204,9 @@ sudo installer -pkg /tmp/Determinate.pkg -target /
 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 nix --version
 install -d -m 0700 "$HOME/Library/Application Support/sops/age"
-scp <nixos-host>:.local/state/reuski-nix/$HOST/sops/age/keys.txt "$HOME/Library/Application Support/sops/age/keys.txt"
-chmod 0600 "$HOME/Library/Application Support/sops/age/keys.txt"
+cd "$HOME/Library/Application Support/sops/age"
+nix run nixpkgs#croc -- --yes <code>
+chmod 0600 keys.txt
 sudo nix run github:nix-darwin/nix-darwin -- switch --flake "$FLAKE"
 ```
 
