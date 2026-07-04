@@ -1,7 +1,7 @@
 { ... }:
 {
   flake.modules.homeManager.ghostty =
-    { lib, pkgs, ... }:
+    { pkgs, ... }:
     let
       isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
       multiplexerConflicts =
@@ -38,8 +38,7 @@
           clipboard-read = "allow";
           clipboard-write = "allow";
           shell-integration-features = "ssh-terminfo,ssh-env,sudo";
-        }
-        // lib.optionalAttrs isDarwin { macos-option-as-alt = true; };
+        };
       };
     };
 }
