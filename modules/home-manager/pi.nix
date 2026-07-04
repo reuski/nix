@@ -105,37 +105,37 @@
       home.file.".pi/agent/AGENTS.md".text = ''
         # Operational Directives
 
-        ## Protocol
+        ## Conventions
 
-        - No filler.
-        - Batch tool calls.
-        - Prefer `rg` and `rg --files`.
-        - Read before planning.
-        - State blockers only with evidence.
+        - Use precise, concise names.
+        - Prefer functional shape where it clarifies.
+        - Keep strict ownership boundaries.
+        - Prefer upstream options and libraries over custom code.
+        - Comments only for algorithmic rationale.
+        - Add only what is used.
 
-        ## Engineering
+        ## Workflow
 
-        - Bleeding-edge features.
-        - Precise and concise names.
-        - No comments except algorithmic rationale.
-        - YAGNI.
-        - KISS.
-        - Functional shape where it clarifies.
-        - Strict ownership boundaries.
-
-        ## Lifecycle
-
-        - Discover.
+        - Read target files before editing.
+        - Batch independent tool calls in one block.
         - Patch atomically.
-        - Delete dead config.
-        - Verify immediately.
-        - Report changed files and validation.
+        - Delete superseded code and config.
+        - Verify after every edit.
+        - Report changed files and validation output.
 
         ## Safety
 
-        - Gate destructive actions: force push, `git reset --hard`, `rm -rf`, overwriting `.env`/lockfiles, package removal, `sudo`, service stop.
-        - Confirm with `ACTION / COMMAND / REASON` before executing.
-        - Do not over-ask for recoverable git-tracked edits.
+        - Gate destructive actions: force push, `git reset --hard`, `rm -rf`, overwriting `.env` or lockfiles, package removal, `sudo`, service stop.
+        - Confirm as `ACTION / COMMAND / REASON` before executing.
+        - Edit git-tracked files without asking.
+        - Commit only when explicitly asked.
+        - Never print decrypted secrets or plaintext credentials.
+
+        ## Output
+
+        - Answer directly. No filler, preambles, or restating the task.
+        - Plain ASCII text: no emojis, no decorative em dashes, no unicode bullets or dividers.
+        - State blockers only with evidence.
       '';
 
       home.file.".pi/agent/themes/gruvbox.json".source =
