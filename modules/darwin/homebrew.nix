@@ -17,7 +17,6 @@
           upgrade = true;
           cleanup = "uninstall";
         };
-        taps = [ "imputnet/helium" ];
       };
     };
 }

@@ -7,7 +7,7 @@
         "cleanshot"
         "firefox@developer-edition"
         "ghostty"
-        "helium"
+        "helium-browser"
         "raycast"
         "tableplus"
         "zed"

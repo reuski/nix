@@ -30,13 +30,40 @@
           mru-spaces = false;
           tilesize = 36;
           launchanim = false;
-          persistent-apps = [ ];
+          mineffect = "scale";
+          minimize-to-application = true;
+          expose-group-apps = true;
+          orientation = "bottom";
+          wvous-tl-corner = 1;
+          wvous-tr-corner = 1;
+          wvous-bl-corner = 1;
+          wvous-br-corner = 1;
+          persistent-apps = [
+            "/System/Applications/Finder.app"
+            "/Applications/Ghostty.app"
+            "/Applications/Firefox Developer Edition.app"
+            "/Applications/Helium.app"
+            "/Applications/Zed.app"
+          ];
         };
         finder = {
           FXPreferredViewStyle = "clmv";
           ShowPathbar = true;
           _FXShowPosixPathInTitle = true;
+          AppleShowAllFiles = true;
+          _FXSortFoldersFirst = true;
+          FXEnableExtensionChangeWarning = false;
+          ShowStatusBar = true;
+          QuitMenuItem = true;
+          NewWindowTarget = "Home";
         };
+        WindowManager = {
+          StandardHideWidgets = true;
+          StageManagerHideWidgets = true;
+          GloballyEnabled = false;
+          EnableStandardClickToShowDesktop = false;
+        };
+        controlcenter.BatteryShowPercentage = true;
         loginwindow.GuestEnabled = false;
         trackpad.Clicking = true;
       };
