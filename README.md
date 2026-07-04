@@ -209,7 +209,7 @@ install -d -m 0700 "$HOME/Library/Application Support/sops/age"
 cd "$HOME/Library/Application Support/sops/age"
 nix run nixpkgs#croc -- --yes <code>
 chmod 0600 keys.txt
-nix shell nixpkgs#age -c age-keygen -y keys.txt   # must equal &abraxas in .sops.yaml
+nix shell nixpkgs#age -c age-keygen -y keys.txt
 sudo nix run github:nix-darwin/nix-darwin#darwin-rebuild -- switch --flake "$FLAKE"
 ```
 
@@ -232,15 +232,15 @@ launchctl kickstart -k "gui/$(id -u)/org.nix-community.home.sops-nix"
 
 ## Host Notes
 
+`abraxas`:
+
+```sh
+chsh -s /run/current-system/sw/bin/fish
+```
+
 `shodan`:
 
 ```sh
 sudo tailscale up
 sudo systemctl restart web-beebud web-wahuu-games caddy
-```
-
-`abraxas`:
-
-```sh
-chsh -s /run/current-system/sw/bin/fish
 ```

@@ -84,29 +84,35 @@
                 orange "${gruvbox.orange}"
             }
         }
+      ''
+      + (
+        if pkgs.stdenv.hostPlatform.isDarwin then
+          ""
+        else
+          ''
+            keybinds clear-defaults=true {
+                locked {
+                    bind "Alt g" { SwitchToMode "Normal"; }
+                    bind "Alt n" { NewPane; }
+                    bind "Alt t" { NewTab; }
+                    bind "Alt w" { CloseFocus; }
+                    bind "Alt h" { MoveFocus "Left"; }
+                    bind "Alt l" { MoveFocus "Right"; }
+                    bind "Alt j" { MoveFocus "Down"; }
+                    bind "Alt k" { MoveFocus "Up"; }
+                    bind "Alt H" { MovePane "Left"; }
+                    bind "Alt L" { MovePane "Right"; }
+                    bind "Alt J" { MovePane "Down"; }
+                    bind "Alt K" { MovePane "Up"; }
+                    bind "Alt f" { ToggleFloatingPanes; }
+                }
 
-        keybinds clear-defaults=true {
-            locked {
-                bind "Alt g" { SwitchToMode "Normal"; }
-                bind "Alt n" { NewPane; }
-                bind "Alt t" { NewTab; }
-                bind "Alt w" { CloseFocus; }
-                bind "Alt h" { MoveFocus "Left"; }
-                bind "Alt l" { MoveFocus "Right"; }
-                bind "Alt j" { MoveFocus "Down"; }
-                bind "Alt k" { MoveFocus "Up"; }
-                bind "Alt H" { MovePane "Left"; }
-                bind "Alt L" { MovePane "Right"; }
-                bind "Alt J" { MovePane "Down"; }
-                bind "Alt K" { MovePane "Up"; }
-                bind "Alt f" { ToggleFloatingPanes; }
+                shared_except "locked" {
+                    bind "Alt g" "Esc" "Enter" { SwitchToMode "Locked"; }
+                }
             }
-
-            shared_except "locked" {
-                bind "Alt g" "Esc" "Enter" { SwitchToMode "Locked"; }
-            }
-        }
-      '';
+          ''
+      );
 
       xdg.configFile."zellij/layouts/main.kdl".text = ''
         layout {
