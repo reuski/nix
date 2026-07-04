@@ -11,16 +11,16 @@ git diff --check
 ```
 
 ```sh
-HOST=hiisi
+set HOST hiisi
 nix build --no-link ".#checks.x86_64-linux.nixos-$HOST" --print-build-logs
-HOST=abraxas
+set HOST abraxas
 nix build --no-link ".#checks.aarch64-darwin.darwin-$HOST" --print-build-logs
 ```
 
 ```sh
-export SOPS_AGE_KEY="$(sops -d --extract '["admin_age_key"]' secrets/admin.yaml)"
-for file in secrets/*.yaml; do sops -d "$file" >/dev/null; done
-unset SOPS_AGE_KEY
+set -x SOPS_AGE_KEY (sops -d --extract '["admin_age_key"]' secrets/admin.yaml)
+for file in secrets/*.yaml; sops -d "$file" >/dev/null; end
+set -e SOPS_AGE_KEY
 ```
 
 CI: evaluate, host builds, format PRs, input/package update PRs.
@@ -38,7 +38,7 @@ CI: evaluate, host builds, format PRs, input/package update PRs.
 ## Switch
 
 ```sh
-HOST=hiisi
+set HOST hiisi
 sudo nixos-rebuild switch \
   --flake "github:reuski/nix/main#$HOST" \
   --refresh --option tarball-ttl 0
@@ -46,7 +46,7 @@ sudo nixos-rebuild switch \
 
 ```sh
 HOST=abraxas
-darwin-rebuild switch \
+sudo darwin-rebuild switch \
   --flake "github:reuski/nix/main#$HOST" \
   --refresh --option tarball-ttl 0
 ```
@@ -102,7 +102,7 @@ Rotate the admin key: generate a new age key, replace `&admin` in [`.sops.yaml`]
 
 Rekey (after recipient changes in [`.sops.yaml`](.sops.yaml)):
 ```sh
-for file in secrets/*.yaml; do sops updatekeys --yes "$file"; done
+for file in secrets/*.yaml; sops updatekeys --yes "$file"; end
 ```
 
 CI (`.github/workflows/check.yml` `evaluate`) verifies each file's recipient set matches [`.sops.yaml`](.sops.yaml) keylessly via `.github/scripts/check-sops-recipients.py`; catches stale and over-scoped recipients on every run.
@@ -170,18 +170,37 @@ ssh "$TARGET" bash <<EOF
 EOF
 ```
 
-Darwin:
+Darwin key material (on a NixOS host):
+
+```sh
+set HOST abraxas
+set HOSTDIR "$HOME/.local/state/reuski-nix/$HOST"
+install -d -m 0700 "$HOSTDIR/sops/age"
+nix shell nixpkgs#age -c age-keygen -o "$HOSTDIR/sops/age/keys.txt"
+chmod 0600 "$HOSTDIR/sops/age/keys.txt"
+nix shell nixpkgs#age -c age-keygen -y "$HOSTDIR/sops/age/keys.txt"
+```
+
+Replace `&abraxas` in `.sops.yaml` with the printed key, then rekey:
+
+```sh
+for file in secrets/*.yaml; sops updatekeys --yes "$file"; end
+```
+
+Darwin (on the Mac):
 
 ```sh
 HOST=abraxas
 FLAKE="github:reuski/nix/main#$HOST"
 xcode-select --install
-curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm
+curl -fsSL -o /tmp/Determinate.pkg "https://install.determinate.systems/determinate-pkg/stable/Universal"
+sudo installer -pkg /tmp/Determinate.pkg -target /
 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+nix --version
 install -d -m 0700 "$HOME/Library/Application Support/sops/age"
-age-keygen -o "$HOME/Library/Application Support/sops/age/keys.txt"
+scp <nixos-host>:.local/state/reuski-nix/$HOST/sops/age/keys.txt "$HOME/Library/Application Support/sops/age/keys.txt"
 chmod 0600 "$HOME/Library/Application Support/sops/age/keys.txt"
-nix run github:nix-darwin/nix-darwin -- switch --flake "$FLAKE"
+sudo nix run github:nix-darwin/nix-darwin -- switch --flake "$FLAKE"
 ```
 
 ## Inputs
