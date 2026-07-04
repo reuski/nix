@@ -13,7 +13,7 @@
 
 - `flake.nix`: inputs, `inputs.import-tree ./modules`.
 - `modules/configurations/`: flake outputs and checks.
-- `modules/stacks/`: imports only.
+- `modules/stacks/`: composition only.
 - `modules/{nixos,darwin,home-manager,generic}/`: reusable leaves.
 - `modules/hosts/<host>/`: host entrypoints; `_*.nix` is private wiring.
 - `modules/packages/`: overlays and custom packages.
@@ -65,8 +65,7 @@ git diff --check
 
 ```sh
 nix fmt .
-nix flake check --no-build
-nix eval .#checks.aarch64-darwin --apply 'builtins.mapAttrs (_: d: d.drvPath)'
+nix flake check --no-build --all-systems
 ```
 
 ```sh

@@ -6,8 +6,7 @@ Personal NixOS, nix-darwin, and Home Manager flake. Agent rules: [AGENTS.md](AGE
 
 ```sh
 nix fmt .
-nix flake check --no-build
-nix eval .#checks.aarch64-darwin --apply 'builtins.mapAttrs (_: d: d.drvPath)'
+nix flake check --no-build --all-systems
 git diff --check
 ```
 
@@ -106,7 +105,7 @@ Rekey (after recipient changes in [`.sops.yaml`](.sops.yaml)):
 for file in secrets/*.yaml; do sops updatekeys --yes "$file"; done
 ```
 
-CI (`.github/workflows/check.yml` `evaluate`) verifies each file's recipient set matches [`.sops.yaml`](.sops.yaml) keylessly via `.github/scripts/check-sops-recipients.py`; catches stale and over-scoped recipients on every `secrets/**` change.
+CI (`.github/workflows/check.yml` `evaluate`) verifies each file's recipient set matches [`.sops.yaml`](.sops.yaml) keylessly via `.github/scripts/check-sops-recipients.py`; catches stale and over-scoped recipients on every run.
 
 ## Backups
 
@@ -200,5 +199,5 @@ nix run github:nix-darwin/nix-darwin -- switch --flake "$FLAKE"
 
 ```sh
 sudo tailscale up
-sudo systemctl restart web-service-beebud web-service-wahuu-games caddy
+sudo systemctl restart web-beebud web-wahuu-games caddy
 ```

@@ -27,7 +27,7 @@ jobs:
         run: nix flake update
         timeout-minutes: 8
 
-      - name: Bump helium browser
+      - name: Bump custom packages
         run: |
           nix-update() {
             nix run "github:NixOS/nixpkgs/$(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)#nix-update" -- "$@"
@@ -37,27 +37,17 @@ jobs:
             nix-update --flake --version=skip --url "$2" --override-filename "$3" "$4"
           }
           bump stable https://github.com/imputnet/helium-linux modules/packages/helium.nix helium-browser
-        timeout-minutes: 10
-
-      - name: Bump web apps
-        run: |
-          nix-update() {
-            nix run "github:NixOS/nixpkgs/$(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)#nix-update" -- "$@"
-          }
-          bump() {
-            nix-update --flake --version=branch --url "$1" --override-filename modules/packages/web.nix "$2"
-            nix-update --flake --version=skip  --url "$1" --override-filename modules/packages/web.nix "$2"
-          }
-          bump https://github.com/reuski/reuski.dev web-reuski-dev
-          bump https://github.com/reuski/beebud web-beebud
-          bump https://github.com/reuski/wahuu.games web-wahuu-games
-        timeout-minutes: 15
+          bump branch https://github.com/reuski/reuski.dev modules/packages/web.nix web-reuski-dev
+          bump branch https://github.com/reuski/beebud modules/packages/web.nix web-beebud
+          bump branch https://github.com/reuski/wahuu.games modules/packages/web.nix web-wahuu-games
+        timeout-minutes: 20
 
       - name: Format
         run: nix fmt .
         timeout-minutes: 5
 
-      - uses: ./.github/actions/validate
+      - name: Evaluate checks
+        run: nix flake check --no-build --all-systems
         timeout-minutes: 10
 
       - name: Build custom packages
