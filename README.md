@@ -53,13 +53,13 @@ sudo darwin-rebuild switch \
 
 ## Fleet
 
-| Unit                  | Schedule      | Scope                         |
-| --------------------- | ------------- | ----------------------------- |
-| `atticd.service`      | service       | cache API at `127.0.0.1:8090` |
-| `attic-cache.service` | boot          | create public `ukko` cache    |
+| Unit                  | Schedule      | Scope                                 |
+| --------------------- | ------------- | ------------------------------------- |
+| `atticd.service`      | service       | cache API at `127.0.0.1:8090`         |
+| `attic-cache.service` | boot          | create public `ukko` cache            |
 | `deploy.timer`        | `02:00`       | warm `sampo`/`hiisi`, deploy `shodan` |
-| `nixos-upgrade`       | `03:00`       | workstations                  |
-| `nixos-upgrade`       | `04:00-06:00` | `ukko`                        |
+| `nixos-upgrade`       | `03:00`       | workstations                          |
+| `nixos-upgrade`       | `04:00-06:00` | `ukko`                                |
 
 ```sh
 ssh root@ukko systemctl status atticd.service attic-cache.service deploy.service
@@ -101,6 +101,7 @@ Rotate a value (e.g. API key): `sops secrets/<file>.yaml`, edit, save; `restartU
 Rotate the admin key: generate a new age key, replace `&admin` in [`.sops.yaml`](.sops.yaml), then rekey all.
 
 Rekey (after recipient changes in [`.sops.yaml`](.sops.yaml)):
+
 ```sh
 for file in secrets/*.yaml; sops updatekeys --yes "$file"; end
 ```
@@ -181,10 +182,11 @@ chmod 0600 "$HOSTDIR/sops/age/keys.txt"
 nix shell nixpkgs#age -c age-keygen -y "$HOSTDIR/sops/age/keys.txt"
 ```
 
-Replace `&abraxas` in `.sops.yaml` with the printed key, then rekey:
+Replace `&abraxas` in `.sops.yaml` with the printed key, rekey, then push (the Mac pulls `github:reuski/nix/main`):
 
 ```sh
 for file in secrets/*.yaml; sops updatekeys --yes "$file"; end
+git commit -am "abraxas age key" && git push
 ```
 
 Send the key to the Mac (prints a one-time code):
@@ -207,7 +209,16 @@ install -d -m 0700 "$HOME/Library/Application Support/sops/age"
 cd "$HOME/Library/Application Support/sops/age"
 nix run nixpkgs#croc -- --yes <code>
 chmod 0600 keys.txt
-sudo nix run github:nix-darwin/nix-darwin -- switch --flake "$FLAKE"
+nix shell nixpkgs#age -c age-keygen -y keys.txt   # must equal &abraxas in .sops.yaml
+sudo nix run github:nix-darwin/nix-darwin#darwin-rebuild -- switch --flake "$FLAKE"
+```
+
+Secrets decrypt via the per-user launchd agent `org.nix-community.home.sops-nix`; if one is missing after switch, read its log and re-run it:
+
+```sh
+ls "$HOME/.config/sops-nix/secrets/ssh/id_ed25519"
+cat "$HOME/Library/Logs/SopsNix/stderr"
+launchctl kickstart -k "gui/$(id -u)/org.nix-community.home.sops-nix"
 ```
 
 ## Inputs
@@ -226,4 +237,10 @@ sudo nix run github:nix-darwin/nix-darwin -- switch --flake "$FLAKE"
 ```sh
 sudo tailscale up
 sudo systemctl restart web-beebud web-wahuu-games caddy
+```
+
+`abraxas`:
+
+```sh
+chsh -s /run/current-system/sw/bin/fish
 ```

@@ -1,9 +1,18 @@
 { ... }:
 {
   flake.modules.homeManager.ghostty =
-    { pkgs, ... }:
+    { lib, pkgs, ... }:
     let
       isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+      multiplexerConflicts =
+        if isDarwin then
+          [
+            "cmd+t=unbind"
+            "cmd+d=unbind"
+            "cmd+shift+d=unbind"
+          ]
+        else
+          [ "ctrl+shift+t=unbind" ];
     in
     {
       programs.ghostty = {
@@ -22,14 +31,15 @@
           window-padding-y = 6;
           cursor-style = "bar";
           copy-on-select = true;
-          keybind = [ "ctrl+v=paste_from_clipboard" ];
+          keybind = [ "ctrl+v=paste_from_clipboard" ] ++ multiplexerConflicts;
           confirm-close-surface = false;
           gtk-single-instance = true;
           shell-integration = "fish";
           clipboard-read = "allow";
           clipboard-write = "allow";
           shell-integration-features = "ssh-terminfo,ssh-env,sudo";
-        };
+        }
+        // lib.optionalAttrs isDarwin { macos-option-as-alt = true; };
       };
     };
 }
