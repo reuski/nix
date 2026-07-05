@@ -39,7 +39,6 @@
           wvous-bl-corner = 1;
           wvous-br-corner = 1;
           persistent-apps = [
-            "/System/Applications/Finder.app"
             "/Applications/Helium.app"
             "/Applications/Firefox Developer Edition.app"
             "/Applications/Ghostty.app"

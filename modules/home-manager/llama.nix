@@ -5,7 +5,7 @@
     let
       inherit (pkgs.stdenv) isDarwin;
       cp = pkgs.cudaPackages;
-      toolchain = if isDarwin then pkgs.stdenv.cc else cp.backendStdenv.cc;
+      toolchain = cp.backendStdenv.cc;
       tls = pkgs.openssl;
       cudaInc = lib.concatStringsSep ":" [
         "${lib.getDev cp.cuda_cudart}/include"
@@ -36,6 +36,8 @@
             "-DGGML_METAL_NDEBUG=ON"
             "-DGGML_METAL_EMBED_LIBRARY=ON"
             "-DGGML_OPENMP=OFF"
+            "-DCMAKE_C_COMPILER=/usr/bin/clang"
+            "-DCMAKE_CXX_COMPILER=/usr/bin/clang++"
           ]
         else
           [
@@ -48,6 +50,10 @@
         export CMAKE_PREFIX_PATH="${lib.getDev tls}:${lib.getLib tls}''${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
         export LD_LIBRARY_PATH="${runLibPath}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
         export DYLD_LIBRARY_PATH="${runLibPath}''${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
+        ${lib.optionalString isDarwin ''
+          export CC="/usr/bin/clang"
+          export CXX="/usr/bin/clang++"
+        ''}
       '';
 
       cudaEnv = lib.optionalString (!isDarwin) ''
@@ -67,10 +73,10 @@
             cmake
             ninja
             git
-            toolchain
             ccache
           ]
           ++ lib.optionals (!isDarwin) [
+            toolchain
             cp.cuda_nvcc
             cp.cccl
             cp.cuda_cudart
