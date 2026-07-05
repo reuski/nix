@@ -30,7 +30,7 @@
           clipboard-write = "allow";
           shell-integration-features = "ssh-terminfo,ssh-env,sudo";
         }
-        // lib.optionalAttrs isDarwin { macos-option-as-alt = true; };
+        // lib.optionalAttrs isDarwin { macos-option-as-alt = "left"; };
       };
     };
 }

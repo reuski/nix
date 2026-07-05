@@ -29,6 +29,7 @@
           "Sessionx.vim"
           ".netrwhist"
           ".direnv/"
+          ".envrc"
           ".env"
           ".env.local"
           ".env.*.local"
