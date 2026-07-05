@@ -22,18 +22,7 @@
           window-padding-y = 6;
           cursor-style = "bar";
           copy-on-select = true;
-          keybind = [
-            "ctrl+v=paste_from_clipboard"
-          ]
-          ++ lib.optionals isDarwin [
-            "super+t=ignore"
-            "ctrl+shift+two=text:@"
-            "ctrl+shift+three=text:\\xc2\\xa3"
-            "ctrl+shift+seven=text:|"
-            "ctrl+shift+eight=text:["
-            "ctrl+shift+nine=text:]"
-            "ctrl+shift+e=text:\\xe2\\x82\\xac"
-          ];
+          keybind = [ "ctrl+v=paste_from_clipboard" ];
           confirm-close-surface = false;
           gtk-single-instance = true;
           shell-integration = "fish";
@@ -41,7 +30,7 @@
           clipboard-write = "allow";
           shell-integration-features = "ssh-terminfo,ssh-env,sudo";
         }
-        // lib.optionalAttrs isDarwin { macos-option-as-alt = true; };
+        // lib.optionalAttrs isDarwin { macos-option-as-alt = "left"; };
       };
     };
 }
