@@ -43,6 +43,7 @@
             "/Applications/Firefox Developer Edition.app"
             "/Applications/Ghostty.app"
             "/Applications/Zed.app"
+            "/Users/${config.profile.username}/Applications/Slack.app"
           ];
         };
         finder = {
