@@ -5,6 +5,35 @@
     {
       programs.git = {
         enable = true;
+        ignores = [
+          ".DS_Store"
+          ".AppleDouble"
+          ".LSOverride"
+          "._*"
+          ".Spotlight-V100"
+          ".TemporaryItems"
+          ".Trashes"
+          ".fseventsd"
+          ".localized"
+          "__MACOSX/"
+          ".directory"
+          ".Trash-*"
+          ".fuse_hidden*"
+          ".nfs*"
+          "nohup.out"
+          "*~"
+          "[._]*.s[a-v][a-z]"
+          "[._]*.sw[a-p]"
+          "[._]*.un~"
+          "Session.vim"
+          "Sessionx.vim"
+          ".netrwhist"
+          ".direnv/"
+          ".env"
+          ".env.local"
+          ".env.*.local"
+          ".pi-subagents/"
+        ];
         settings = {
           user.name = config.profile.fullName;
           user.email = config.profile.email;

@@ -17,6 +17,8 @@ in
 
       nixpkgs.hostPlatform = "aarch64-darwin";
 
+      profile.email = "sami@valohai.com";
+
       home-manager.users.${config.profile.username} = {
         imports = [
           homeManager.dev

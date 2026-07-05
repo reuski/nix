@@ -4,11 +4,10 @@
     { config, pkgs, ... }:
     {
       homebrew.casks = [
-        "cleanshot"
+        "macshot"
         "firefox@developer-edition"
         "ghostty"
         "helium-browser"
-        "raycast"
         "tableplus"
         "zed"
       ];
