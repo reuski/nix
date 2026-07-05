@@ -1,15 +1,18 @@
 { ... }:
 {
   flake.modules.darwin.users =
-    { config, pkgs, ... }:
+    { config, ... }:
+    let
+      fish = "/etc/profiles/per-user/${config.profile.username}/bin/fish";
+    in
     {
       users.users.${config.profile.username} = {
         name = config.profile.username;
         home = config.profile.homeDirectory;
-        shell = pkgs.fish;
+        shell = fish;
       };
 
-      environment.shells = [ pkgs.fish ];
+      environment.shells = [ fish ];
       programs.fish.enable = true;
     };
 }

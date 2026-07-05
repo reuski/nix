@@ -1,7 +1,12 @@
 { ... }:
 {
   flake.modules.homeManager.ghostty =
-    { lib, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
     in
@@ -30,7 +35,10 @@
           clipboard-write = "allow";
           shell-integration-features = "ssh-terminfo,ssh-env,sudo";
         }
-        // lib.optionalAttrs isDarwin { macos-option-as-alt = "left"; };
+        // lib.optionalAttrs isDarwin {
+          command = "/etc/profiles/per-user/${config.home.username}/bin/fish";
+          macos-option-as-alt = "left";
+        };
       };
     };
 }

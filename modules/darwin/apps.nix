@@ -6,7 +6,7 @@
       homebrew.casks = [
         "macshot"
         "firefox@developer-edition"
-        "ghostty"
+        "ghostty@tip"
         "helium-browser"
         "tableplus"
         "zed"
