@@ -17,10 +17,23 @@ in
         ./_desktop.nix
       ];
 
-      home-manager.users.${config.profile.username}.imports = [
-        homeManager.dev
-        homeManager.llama
-      ];
+      home-manager.users.${config.profile.username} = {
+        imports = [
+          homeManager.dev
+          homeManager.llama
+        ];
+
+        llama = {
+          model = {
+            repo = "unsloth/Qwen3.6-27B-MTP-GGUF";
+            file = "Qwen3.6-27B-UD-Q4_K_XL.gguf";
+          };
+          params = {
+            flashAttention = "on";
+            mtpDraftTokens = 2;
+          };
+        };
+      };
 
       system.stateVersion = config.system.nixos.release;
     };

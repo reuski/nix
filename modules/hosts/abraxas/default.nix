@@ -25,6 +25,12 @@ in
           homeManager.postgres
           homeManager.redis
         ];
+
+        llama.model = {
+          repo = "unsloth/Qwen3.6-35B-A3B-GGUF";
+          file = "Qwen3.6-35B-A3B-UD-Q6_K_XL.gguf";
+          mmproj = "mmproj-F16.gguf";
+        };
       };
 
       system.stateVersion = 6;

@@ -1,12 +1,21 @@
 { ... }:
 {
   flake.modules.homeManager.llama =
-    { pkgs, lib, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
-      inherit (pkgs.stdenv) isDarwin;
+      cfg = config.llama;
+      inherit (lib) mkOption types;
+      inherit (pkgs.stdenv.hostPlatform) isDarwin;
+
       cp = pkgs.cudaPackages;
       toolchain = cp.backendStdenv.cc;
       tls = pkgs.openssl;
+
       cudaInc = lib.concatStringsSep ":" [
         "${lib.getDev cp.cuda_cudart}/include"
         "${lib.getDev cp.cccl}/include"
@@ -29,13 +38,20 @@
         ]
       );
 
-      backendFlags = lib.concatStringsSep " " (
+      baseCmakeFlags = [
+        "-DBUILD_SHARED_LIBS=OFF"
+        "-DLLAMA_BUILD_TESTS=OFF"
+        "-DLLAMA_BUILD_EXAMPLES=OFF"
+        "-DLLAMA_BUILD_APP=OFF"
+        "-DLLAMA_BUILD_UI=OFF"
+        "-DGGML_LTO=ON"
+      ];
+      backendCmakeFlags =
         if isDarwin then
           [
-            "-DGGML_METAL=ON"
             "-DGGML_METAL_NDEBUG=ON"
-            "-DGGML_METAL_EMBED_LIBRARY=ON"
             "-DGGML_OPENMP=OFF"
+            "-DCMAKE_OSX_ARCHITECTURES=arm64"
             "-DCMAKE_C_COMPILER=/usr/bin/clang"
             "-DCMAKE_CXX_COMPILER=/usr/bin/clang++"
           ]
@@ -43,8 +59,61 @@
           [
             "-DGGML_CUDA=ON"
             "-DCMAKE_CUDA_ARCHITECTURES=native"
-          ]
-      );
+          ];
+      cmakeFlags = baseCmakeFlags ++ backendCmakeFlags;
+      cmakeFlagsHash = builtins.hashString "sha256" (lib.concatStringsSep "\n" cmakeFlags);
+
+      shellArrayItems =
+        values: lib.concatStringsSep "\n" (map (value: "            ${lib.escapeShellArg value}") values);
+      optionalArg = condition: values: lib.optionals condition values;
+      optionalChangedArg =
+        value: default: flag:
+        optionalArg (value != default) [
+          flag
+          (toString value)
+        ];
+      llamaCppDefaults = {
+        host = "127.0.0.1";
+        port = 8080;
+        context = 0;
+        gpuLayers = "auto";
+        flashAttention = "auto";
+        parallel = -1;
+        temperature = "0.80";
+        topK = 40;
+        minP = "0.05";
+      };
+      serverArgs = [
+        "--hf-repo"
+        cfg.model.repo
+        "--hf-file"
+        cfg.model.file
+        "--reasoning"
+        "on"
+        "--no-ui"
+        "--no-slots"
+      ]
+      ++ optionalChangedArg cfg.model.alias cfg.model.repo "--alias"
+      ++ optionalChangedArg cfg.host llamaCppDefaults.host "--host"
+      ++ optionalChangedArg cfg.port llamaCppDefaults.port "--port"
+      ++ optionalChangedArg cfg.params.gpuLayers llamaCppDefaults.gpuLayers "--gpu-layers"
+      ++ optionalChangedArg cfg.params.context llamaCppDefaults.context "--ctx-size"
+      ++ optionalChangedArg cfg.params.flashAttention llamaCppDefaults.flashAttention "--flash-attn"
+      ++ optionalChangedArg cfg.params.parallel llamaCppDefaults.parallel "--parallel"
+      ++ optionalChangedArg cfg.params.temperature llamaCppDefaults.temperature "--temp"
+      ++ optionalChangedArg cfg.params.topK llamaCppDefaults.topK "--top-k"
+      ++ optionalChangedArg cfg.params.minP llamaCppDefaults.minP "--min-p"
+      ++ optionalArg (cfg.model.mmproj == null) [ "--no-mmproj" ]
+      ++ optionalArg (cfg.model.mmproj != null) [
+        "--mmproj-url"
+        "https://huggingface.co/${cfg.model.repo}/resolve/main/${cfg.model.mmproj}"
+      ]
+      ++ optionalArg (cfg.params.mtpDraftTokens != null) [
+        "--spec-type"
+        "draft-mtp"
+        "--spec-draft-n-max"
+        (toString cfg.params.mtpDraftTokens)
+      ];
 
       buildEnv = ''
         export CMAKE_PREFIX_PATH="${lib.getDev tls}:${lib.getLib tls}''${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
@@ -59,7 +128,6 @@
       cudaEnv = lib.optionalString (!isDarwin) ''
         export CUDACXX="${lib.getExe' cp.cuda_nvcc "nvcc"}"
         export CUDAHOSTCXX="${lib.getExe' cp.backendStdenv.cc "g++"}"
-        # split-layout: nvcc's own include lacks cuda_runtime.h/<nv/target>; expose cudart+cccl.
         export CPATH="${cudaInc}''${CPATH:+:$CPATH}"
         export LIBRARY_PATH="${cudaLib}''${LIBRARY_PATH:+:$LIBRARY_PATH}"
         export CUDAToolkit_ROOT="${cudaRoots}"
@@ -86,59 +154,39 @@
           ${buildEnv}
           ${cudaEnv}
           llama_dir="$HOME/.local/src/llama.cpp"
-          server="$llama_dir/build/bin/llama-server"
+          build_dir="$llama_dir/build"
+          server="$build_dir/bin/llama-server"
+          flags_stamp="$build_dir/.pi-cmake-flags-${cmakeFlagsHash}"
+          export LLAMA_CACHE="''${LLAMA_CACHE:-$HOME/.cache/llama.cpp}"
+
+          cmake_flags=(
+          ${shellArrayItems cmakeFlags}
+          )
 
           build_llama() {
-            cmake -S "$llama_dir" -B "$llama_dir/build" -G Ninja \
-              -DBUILD_SHARED_LIBS=OFF \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DLLAMA_BUILD_TESTS=OFF \
-              -DLLAMA_BUILD_EXAMPLES=OFF \
-              -DLLAMA_BUILD_APP=OFF \
-              -DGGML_BUILD_TESTS=OFF \
-              -DGGML_BUILD_EXAMPLES=OFF \
-              -DLLAMA_OPENSSL=ON \
-              ${backendFlags}
-            cmake --build "$llama_dir/build" --target llama-server
+            cmake -S "$llama_dir" -B "$build_dir" -G Ninja "''${cmake_flags[@]}"
+            cmake --build "$build_dir" --target llama-server --parallel --clean-first
+            rm -f "$build_dir"/.pi-cmake-flags-*
+            touch "$flags_stamp"
           }
 
           if [ ! -d "$llama_dir/.git" ]; then
             mkdir -p "''${llama_dir%/*}"
-            git clone https://github.com/ggml-org/llama.cpp.git "$llama_dir"
+            git clone --depth=1 https://github.com/ggml-org/llama.cpp.git "$llama_dir"
           fi
 
-          git -C "$llama_dir" fetch origin
+          git -C "$llama_dir" fetch --depth=1 origin master
+          target="$(git -C "$llama_dir" rev-parse origin/master)"
 
-          if [ "$(git -C "$llama_dir" rev-parse HEAD)" != "$(git -C "$llama_dir" rev-parse origin/master)" ]; then
-            git -C "$llama_dir" reset --hard origin/master
+          if [ "$(git -C "$llama_dir" rev-parse HEAD)" != "$target" ]; then
+            git -C "$llama_dir" reset --hard "$target"
             build_llama
-          elif [ ! -x "$server" ]; then
+          elif [ ! -x "$server" ] || [ ! -e "$flags_stamp" ]; then
             build_llama
           fi
-
-          model="''${LLAMA_MODEL:-unsloth/Qwen3.6-27B-MTP-GGUF:UD-Q6_K_XL}"
 
           args=(
-            -hf "$model"
-            --host 127.0.0.1
-            --port 8080
-            -ngl all
-            -c 8192
-            -fa on
-            -np 1
-            --no-mmproj
-            --spec-type draft-mtp
-            --spec-draft-n-max 2
-            --temp 0.6
-            --top-k 20
-            --top-p 0.95
-            --min-p 0.0
-            --presence-penalty 0.0
-            --repeat-penalty 1.0
-            --reasoning on
-            --reasoning-budget -1
-            --jinja
-            --no-ui
+          ${shellArrayItems serverArgs}
           )
 
           exec "$server" "''${args[@]}" "$@"
@@ -151,6 +199,68 @@
       };
     in
     {
-      home.packages = [ llama ];
+      options.llama = {
+        model = {
+          repo = mkOption { type = types.str; };
+          file = mkOption { type = types.str; };
+          mmproj = mkOption {
+            type = types.nullOr types.str;
+            default = null;
+          };
+          alias = mkOption {
+            type = types.str;
+            default = cfg.model.repo;
+            description = "Model name reported by llama-server.";
+          };
+        };
+        host = mkOption {
+          type = types.str;
+          default = "127.0.0.1";
+        };
+        port = mkOption {
+          type = types.port;
+          default = 8080;
+        };
+        params = {
+          context = mkOption {
+            type = types.ints.positive;
+            default = 16384;
+          };
+          gpuLayers = mkOption {
+            type = types.str;
+            default = "all";
+          };
+          flashAttention = mkOption {
+            type = types.enum [
+              "auto"
+              "on"
+              "off"
+            ];
+            default = "auto";
+          };
+          parallel = mkOption {
+            type = types.ints.positive;
+            default = 1;
+          };
+          temperature = mkOption {
+            type = types.str;
+            default = "0.6";
+          };
+          topK = mkOption {
+            type = types.ints.positive;
+            default = 20;
+          };
+          minP = mkOption {
+            type = types.str;
+            default = "0.00";
+          };
+          mtpDraftTokens = mkOption {
+            type = types.nullOr types.ints.positive;
+            default = null;
+          };
+        };
+      };
+
+      config.home.packages = [ llama ];
     };
 }
