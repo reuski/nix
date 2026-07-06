@@ -27,7 +27,12 @@
           window-padding-y = 6;
           cursor-style = "bar";
           copy-on-select = true;
-          keybind = [ "ctrl+v=paste_from_clipboard" ];
+          keybind = [
+            "ctrl+v=paste_from_clipboard"
+            "alt+left=unbind"
+            "alt+right=unbind"
+            "super+t=ignore"
+          ];
           confirm-close-surface = false;
           gtk-single-instance = true;
           shell-integration = "fish";
