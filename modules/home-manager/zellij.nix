@@ -12,7 +12,7 @@
       xdg.configFile."zellij/config.kdl".text = ''
         theme "gruvbox-dark"
         default_layout "main"
-        default_mode "normal"
+        default_mode "locked"
         simplified_ui true
         pane_frames false
         mouse_mode true
@@ -21,6 +21,19 @@
         session_serialization false
         show_startup_tips false
         show_release_notes false
+
+        keybinds {
+            locked {
+                bind "Alt t" { NewTab; }
+                bind "Alt w" { CloseFocus; }
+                bind "Alt n" { NewPane; }
+                bind "Alt h" "Alt Left" { MoveFocusOrTab "Left"; }
+                bind "Alt l" "Alt Right" { MoveFocusOrTab "Right"; }
+                bind "Alt j" "Alt Down" { MoveFocus "Down"; }
+                bind "Alt k" "Alt Up" { MoveFocus "Up"; }
+                bind "Alt f" { ToggleFloatingPanes; }
+            }
+        }
 
         plugins {
             zjstatus location="file:${pkgs.zellijPlugins.zjstatus}" {

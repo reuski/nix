@@ -27,13 +27,13 @@ CI: evaluate, host builds, format PRs, input/package update PRs.
 
 ## Targets
 
-| Host      | Class      | System           | Role            |
-| --------- | ---------- | ---------------- | --------------- |
-| `hiisi`   | NixOS      | `x86_64-linux`   | Niri laptop     |
-| `sampo`   | NixOS      | `x86_64-linux`   | Plasma desktop  |
-| `shodan`  | NixOS      | `x86_64-linux`   | VPS             |
-| `ukko`    | NixOS      | `x86_64-linux`   | Home server     |
-| `abraxas` | nix-darwin | `aarch64-darwin` | Mac workstation |
+| Host      | Class      | System           | Role           |
+| --------- | ---------- | ---------------- | -------------- |
+| `hiisi`   | NixOS      | `x86_64-linux`   | Niri laptop    |
+| `sampo`   | NixOS      | `x86_64-linux`   | Plasma desktop |
+| `shodan`  | NixOS      | `x86_64-linux`   | VPS            |
+| `ukko`    | NixOS      | `x86_64-linux`   | Home server    |
+| `abraxas` | nix-darwin | `aarch64-darwin` | Macbook        |
 
 ## Switch
 

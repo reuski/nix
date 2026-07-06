@@ -31,6 +31,7 @@
             "super+t=ignore"
             "alt+left=unbind"
             "alt+right=unbind"
+            "alt+n=unbind"
           ];
           confirm-close-surface = false;
           gtk-single-instance = true;
