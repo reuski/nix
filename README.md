@@ -235,7 +235,7 @@ launchctl kickstart -k "gui/$(id -u)/org.nix-community.home.sops-nix"
 `abraxas`:
 
 ```sh
-chsh -s /run/current-system/sw/bin/fish
+chsh -s /etc/profiles/per-user/reuski/bin/fish
 ```
 
 ```sh

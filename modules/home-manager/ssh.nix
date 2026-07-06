@@ -10,6 +10,8 @@
           "${config.home.homeDirectory}/.config/sops-nix/secrets/ssh/id_ed25519";
     in
     {
+      home.packages = [ pkgs.openssh ];
+
       programs.ssh = {
         enable = true;
         enableDefaultConfig = false;

@@ -29,9 +29,9 @@
           keybind = [
             "ctrl+v=paste_from_clipboard"
             "super+t=ignore"
+            "super+n=ignore"
             "alt+left=unbind"
             "alt+right=unbind"
-            "alt+n=unbind"
           ];
           confirm-close-surface = false;
           gtk-single-instance = true;
