@@ -14,11 +14,10 @@
       programs.ghostty = {
         enable = true;
         package = if isDarwin then null else pkgs.ghostty;
-        enableFishIntegration = !isDarwin;
 
         settings = {
           font-family = "Hack Nerd Font";
-          font-size = 12;
+          font-size = 14;
           theme = "Gruvbox Dark";
           background-opacity = 0.95;
           window-width = 140;
@@ -29,9 +28,9 @@
           copy-on-select = true;
           keybind = [
             "ctrl+v=paste_from_clipboard"
+            "super+t=ignore"
             "alt+left=unbind"
             "alt+right=unbind"
-            "super+t=ignore"
           ];
           confirm-close-surface = false;
           gtk-single-instance = true;

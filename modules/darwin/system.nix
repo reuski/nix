@@ -26,9 +26,11 @@
         };
         dock = {
           autohide = true;
+          autohide-delay = 0.0;
+          autohide-time-modifier = 0.2;
           show-recents = false;
           mru-spaces = false;
-          tilesize = 36;
+          tilesize = 64;
           launchanim = false;
           mineffect = "scale";
           minimize-to-application = true;

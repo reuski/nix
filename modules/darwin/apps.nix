@@ -4,12 +4,12 @@
     { config, pkgs, ... }:
     {
       homebrew.casks = [
-        "macshot"
-        "firefox@developer-edition"
         "ghostty"
-        "helium-browser"
-        "tableplus"
         "zed"
+        "helium-browser"
+        "firefox@developer-edition"
+        "macshot"
+        "tableplus"
       ];
 
       home-manager.users.${config.profile.username}.home.packages = with pkgs; [
