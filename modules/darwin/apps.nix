@@ -9,7 +9,7 @@
         "helium-browser"
         "firefox@developer-edition"
         "macshot"
-        "tableplus"
+        "tablepro"
       ];
 
       home-manager.users.${config.profile.username}.home.packages = with pkgs; [
