@@ -60,6 +60,7 @@ sudo darwin-rebuild switch \
 | `deploy.timer`        | `02:00`       | warm `sampo`/`hiisi`, deploy `shodan` |
 | `nixos-upgrade`       | `03:00`       | workstations                          |
 | `nixos-upgrade`       | `04:00-06:00` | `ukko`                                |
+| `darwin-auto-switch`  | `04:30`       | `abraxas`, Homebrew activation        |
 
 ```sh
 ssh root@ukko systemctl status atticd.service attic-cache.service deploy.service
@@ -195,25 +196,40 @@ Send the key to the Mac (prints a one-time code):
 nix run nixpkgs#croc -- send "$HOSTDIR/sops/age/keys.txt"
 ```
 
-Darwin (on the Mac):
+Darwin fresh install (on the Mac):
 
 ```sh
 HOST=abraxas
 FLAKE="github:reuski/nix/main#$HOST"
+
 xcode-select --install
-curl -fsSL -o /tmp/Determinate.pkg "https://install.determinate.systems/determinate-pkg/stable/Universal"
-sudo installer -pkg /tmp/Determinate.pkg -target /
+curl -L https://nixos.org/nix/install | sh -s -- --daemon
 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 nix --version
+```
+
+```sh
 install -d -m 0700 "$HOME/Library/Application Support/sops/age"
 cd "$HOME/Library/Application Support/sops/age"
 nix run nixpkgs#croc -- --yes <code>
 chmod 0600 keys.txt
 nix shell nixpkgs#age -c age-keygen -y keys.txt
-sudo nix run github:nix-darwin/nix-darwin#darwin-rebuild -- switch --flake "$FLAKE"
 ```
 
-Secrets decrypt via the per-user launchd agent `org.nix-community.home.sops-nix`; if one is missing after switch, read its log and re-run it:
+```sh
+sudo nix --extra-experimental-features "nix-command flakes" run \
+  github:nix-darwin/nix-darwin/master#darwin-rebuild -- \
+  switch --flake "$FLAKE" --refresh --option tarball-ttl 0
+```
+
+Post-install:
+
+```sh
+sudo darwin-rebuild switch \
+  --flake "$FLAKE" --refresh --option tarball-ttl 0
+```
+
+Secrets decrypt via the per-user launchd agent `org.nix-community.home.sops-nix`:
 
 ```sh
 ls "$HOME/.config/sops-nix/secrets/ssh/id_ed25519"

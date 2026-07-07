@@ -4,10 +4,19 @@
     { config, ... }:
     {
       system.primaryUser = config.profile.username;
+      system.tools = {
+        darwin-option.enable = false;
+        darwin-uninstaller.enable = false;
+      };
       system.startup.chime = false;
       time.timeZone = config.profile.timeZone;
 
-      documentation.enable = false;
+      documentation = {
+        enable = false;
+        doc.enable = false;
+        info.enable = false;
+        man.enable = false;
+      };
 
       system.defaults = {
         NSGlobalDomain = {
@@ -45,7 +54,6 @@
             "/Applications/Firefox Developer Edition.app"
             "/Applications/Ghostty.app"
             "/Applications/Zed.app"
-            "/Users/${config.profile.username}/Applications/Slack.app"
           ];
         };
         finder = {

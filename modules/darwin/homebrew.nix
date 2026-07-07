@@ -12,8 +12,9 @@
 
       homebrew = {
         enable = true;
+        greedyCasks = true;
         onActivation = {
-          autoUpdate = false;
+          autoUpdate = true;
           upgrade = true;
           cleanup = "uninstall";
         };
