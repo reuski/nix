@@ -323,7 +323,10 @@ in
   };
 
   systemd.services.skaldi = {
-    environment.PULSE_SERVER = "unix:/run/pulse/native";
+    environment = {
+      PIPEWIRE_RUNTIME_DIR = "/run/pipewire";
+      PULSE_SERVER = "unix:/run/pulse/native";
+    };
     serviceConfig.SupplementaryGroups = lib.mkForce [
       "pipewire"
     ];
