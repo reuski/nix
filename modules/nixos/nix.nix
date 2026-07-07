@@ -54,7 +54,6 @@
         enable = true;
         flake = "github:reuski/nix/main#${config.networking.hostName}";
         flags = [
-          "--refresh"
           "--option"
           "tarball-ttl"
           "0"
