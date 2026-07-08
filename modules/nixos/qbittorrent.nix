@@ -19,6 +19,8 @@
         types
         ;
       port = toString cfg.webuiPort;
+      qbtSetPortUp = "/bin/sh -c 'wget -qO- --retry-connrefused --timeout=10 --post-data \"json={\\\"listen_port\\\":{{PORT}},\\\"current_network_interface\\\":{{VPN_INTERFACE}},\\\"random_port\\\":false,\\\"upnp\\\":false}\" http://127.0.0.1:${port}/api/v2/app/setPreferences'";
+      qbtSetPortDown = "/bin/sh -c 'wget -qO- --retry-connrefused --timeout=10 --post-data \"json={\\\"listen_port\\\":0,\\\"current_network_interface\\\":\\\"lo\\\"}\" http://127.0.0.1:${port}/api/v2/app/setPreferences'";
       piaCa = pkgs.fetchurl {
         url = "https://raw.githubusercontent.com/pia-foss/manual-connections/master/ca.rsa.4096.crt";
         hash = "sha256-Mumx0UM+qXYU8qFMbjWOP1fAVwzJ9rLugSaZumlsZqs=";
@@ -127,11 +129,20 @@
               addCapabilities = [ "NET_ADMIN" ];
               devices = [ "/dev/net/tun" ];
               autoUpdate = "registry";
+              startWithPod = true;
+              healthCmd = "wget -q -O /dev/null --timeout=10 http://127.0.0.1:9999/";
+              healthInterval = "1m";
+              healthRetries = 5;
+              healthTimeout = "15s";
+              healthStartPeriod = "40s";
+              healthOnFailure = "kill";
               environments = {
                 VPN_SERVICE_PROVIDER = "custom";
                 VPN_TYPE = "wireguard";
                 VPN_PORT_FORWARDING = "on";
                 VPN_PORT_FORWARDING_PROVIDER = "private internet access";
+                VPN_PORT_FORWARDING_UP_COMMAND = qbtSetPortUp;
+                VPN_PORT_FORWARDING_DOWN_COMMAND = qbtSetPortDown;
                 FIREWALL_OUTBOUND_SUBNETS = "192.168.1.0/24";
                 TZ = config.profile.timeZone;
               };
@@ -162,6 +173,7 @@
               name = "qbittorrent";
               pod = quadlet.pods.vpn.ref;
               autoUpdate = "registry";
+              startWithPod = true;
               environments = media.containerEnv // {
                 WEBUI_PORT = port;
               };
