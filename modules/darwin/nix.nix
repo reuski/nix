@@ -3,6 +3,7 @@
   flake.modules.darwin.nix =
     {
       config,
+      lib,
       pkgs,
       ...
     }:
@@ -10,20 +11,43 @@
       autoSwitch = pkgs.writeShellApplication {
         name = "darwin-auto-switch";
         runtimeInputs = [
-          config.system.build.darwin-rebuild
           pkgs.coreutils
         ];
         text = ''
           set -eu
 
           lock=/var/run/darwin-auto-switch.lock
-          if ! mkdir "$lock" 2>/dev/null; then
+          acquired=0
+          if mkdir "$lock" 2>/dev/null; then
+            acquired=1
+          else
+            pid=
+            if [ -s "$lock/pid" ]; then
+              pid=$(cat "$lock/pid" 2>/dev/null || true)
+            fi
+            case "$pid" in
+              ""|*[!0-9]*) ;;
+              *)
+                if kill -0 "$pid" 2>/dev/null; then
+                  exit 0
+                fi
+                ;;
+            esac
+
+            rm -f "$lock/pid" 2>/dev/null || true
+            rmdir "$lock" 2>/dev/null || true
+            if mkdir "$lock" 2>/dev/null; then
+              acquired=1
+            fi
+          fi
+          if [ "$acquired" != 1 ]; then
             exit 0
           fi
-          trap 'rmdir "$lock" 2>/dev/null || true' EXIT
+          trap 'rm -f "$lock/pid" 2>/dev/null || true; rmdir "$lock" 2>/dev/null || true' EXIT
+          printf '%s\n' "$$" > "$lock/pid"
 
           export HOME=/var/root
-          darwin-rebuild switch --flake github:reuski/nix/main#${config.networking.hostName} --refresh --option tarball-ttl 0
+          ${lib.getExe config.system.build.darwin-rebuild} switch --flake github:reuski/nix/main#${config.networking.hostName} --refresh --option tarball-ttl 0
         '';
       };
     in
@@ -40,8 +64,6 @@
         ];
         trusted-users = [ "@admin" ];
       };
-
-      environment.systemPackages = [ autoSwitch ];
 
       nix.gc = {
         automatic = true;
@@ -67,7 +89,7 @@
       };
 
       launchd.daemons.darwin-auto-switch = {
-        command = "/run/current-system/sw/bin/darwin-auto-switch";
+        command = lib.getExe autoSwitch;
         serviceConfig = {
           RunAtLoad = false;
           StartCalendarInterval = [
