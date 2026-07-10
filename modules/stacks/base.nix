@@ -23,7 +23,7 @@ in
 
       home.username = config.profile.username;
       home.homeDirectory = config.profile.homeDirectory;
-      home.stateVersion = config.home.version.release;
+      home.stateVersion = "26.11";
 
       fonts.fontconfig.enable = false;
 

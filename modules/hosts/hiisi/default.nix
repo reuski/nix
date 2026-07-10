@@ -17,6 +17,6 @@ in
 
       home-manager.users.${config.profile.username}.imports = [ homeManager.dev ];
 
-      system.stateVersion = config.system.nixos.release;
+      system.stateVersion = "26.11";
     };
 }

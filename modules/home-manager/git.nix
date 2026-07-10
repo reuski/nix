@@ -6,6 +6,7 @@
       programs.git = {
         enable = true;
         ignores = [
+          "AGENTS.md"
           ".DS_Store"
           ".AppleDouble"
           ".LSOverride"

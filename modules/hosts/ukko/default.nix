@@ -4,14 +4,19 @@ let
 in
 {
   configurations.nixos.ukko.module =
-    { config, ... }:
+    { ... }:
     {
       imports = [
         inputs.disko.nixosModules.disko
         ./_disko.nix
         ./_hardware.nix
         ./_network.nix
+        ./_dns.nix
+        ./_secrets.nix
         ./_services.nix
+        ./_audio.nix
+        ./_heimdash.nix
+        ./_proxy.nix
         nixos.boot
         nixos.server
         nixos.metal
@@ -52,6 +57,6 @@ in
 
       alerts.ntfy = "http://127.0.0.1:2586/alerts";
 
-      system.stateVersion = config.system.nixos.release;
+      system.stateVersion = "26.11";
     };
 }
