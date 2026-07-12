@@ -26,6 +26,7 @@
       };
 
       home.pointerCursor = {
+        enable = true;
         gtk.enable = true;
         package = pkgs.graphite-cursors;
         name = "graphite-dark";

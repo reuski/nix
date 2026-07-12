@@ -1,8 +1,11 @@
 { config, lib, ... }:
 let
   localAddress = "192.168.1.11";
+  tailnetDomain = "tail2fc4c2.ts.net";
 in
 {
+  services.tailscale.extraSetFlags = [ "--accept-dns=false" ];
+
   networking.firewall = {
     allowedTCPPorts = [ 53 ];
     allowedUDPPorts = [ 53 ];
@@ -10,7 +13,11 @@ in
 
   services.resolved.enable = lib.mkForce false;
   networking.resolvconf.enable = lib.mkForce false;
-  environment.etc."resolv.conf".text = "nameserver 127.0.0.1\noptions edns0\n";
+  environment.etc."resolv.conf".text = ''
+    search ${tailnetDomain}
+    nameserver 127.0.0.1
+    options edns0
+  '';
 
   services.adguardhome = {
     enable = true;
@@ -21,6 +28,7 @@ in
         bind_hosts = [ "0.0.0.0" ];
         port = 53;
         upstream_dns = [
+          "[/${tailnetDomain}/]100.100.100.100"
           "https://dns.quad9.net/dns-query"
           "https://dnsforge.de/dns-query"
         ];
@@ -28,8 +36,10 @@ in
         bootstrap_dns = [
           "9.9.9.9"
           "149.112.112.112"
-          "2620:fe::fe"
-          "2620:fe::9"
+        ];
+        fallback_dns = [
+          "9.9.9.9"
+          "149.112.112.112"
         ];
         enable_dnssec = true;
         allowed_clients = [
@@ -111,5 +121,10 @@ in
       "valheim.reuski.dev"
       "mumble.reuski.dev"
     ];
+  };
+
+  systemd.services.deploy = {
+    after = [ "adguardhome.service" ];
+    requires = [ "adguardhome.service" ];
   };
 }
