@@ -56,7 +56,7 @@
         keyboard = {
           model = lib.mkDefault "pc105";
           layout = lib.mkDefault "us";
-          variant = lib.mkDefault "altgr-weur";
+          variant = lib.mkDefault "altgr-intl";
           options = lib.mkDefault "";
         };
         colors.gruvbox = {
