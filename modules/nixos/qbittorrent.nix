@@ -20,7 +20,7 @@
         types
         ;
       port = toString cfg.webuiPort;
-      qbtSetPortUp = "/bin/sh -c 'wget -qO- --retry-connrefused --timeout=10 --post-data \"json={\\\"listen_port\\\":{{PORT}},\\\"current_network_interface\\\":{{VPN_INTERFACE}},\\\"random_port\\\":false,\\\"upnp\\\":false}\" http://127.0.0.1:${port}/api/v2/app/setPreferences'";
+      qbtSetPortUp = "/bin/sh -c 'wget -qO- --retry-connrefused --timeout=10 --post-data \"json={\\\"listen_port\\\":{{PORT}},\\\"current_network_interface\\\":\\\"{{VPN_INTERFACE}}\\\",\\\"random_port\\\":false,\\\"upnp\\\":false}\" http://127.0.0.1:${port}/api/v2/app/setPreferences'";
       qbtSetPortDown = "/bin/sh -c 'wget -qO- --retry-connrefused --timeout=10 --post-data \"json={\\\"listen_port\\\":0,\\\"current_network_interface\\\":\\\"lo\\\"}\" http://127.0.0.1:${port}/api/v2/app/setPreferences'";
       piaCa = pkgs.fetchurl {
         url = "https://raw.githubusercontent.com/pia-foss/manual-connections/master/ca.rsa.4096.crt";
