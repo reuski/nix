@@ -1,9 +1,6 @@
-{ config, ... }:
-let
-  inherit (config.flake.modules) homeManager;
-in
+{ ... }:
 {
-  flake.modules.homeManager.dev =
+  flake.modules.homeManager.zed-editor =
     { lib, pkgs, ... }:
     let
       isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
@@ -23,28 +20,6 @@ in
       };
     in
     {
-      imports = [ homeManager.pi ];
-
-      home.packages = with pkgs; [
-        delve
-        gh
-        go
-        golangci-lint
-        govulncheck
-        nil
-        nixfmt
-        python314
-        ruff
-        ty
-        uv
-        zig
-      ];
-
-      programs.bun = {
-        enable = true;
-        enableGitIntegration = true;
-      };
-
       programs.zed-editor = {
         enable = true;
         package = if isDarwin then null else pkgs.zed-editor;
@@ -145,11 +120,6 @@ in
 
           lsp = {
             biome.settings.require_config_file = true;
-            nil.formatting.command = [
-              (lib.getExe pkgs.nixfmt)
-            ];
-            ty.binary.path = lib.getExe pkgs.ty;
-            ruff.binary.path = lib.getExe pkgs.ruff;
             gopls.settings = {
               gofumpt = true;
               staticcheck = true;
@@ -233,8 +203,11 @@ in
               formatter.language_server.name = "zls";
             };
             Nix = {
-              language_servers = [ "nil" ];
-              formatter.external.command = lib.getExe pkgs.nixfmt;
+              language_servers = [
+                "nixd"
+                "!nil"
+              ];
+              formatter.external.command = "nixfmt";
             };
           };
         };

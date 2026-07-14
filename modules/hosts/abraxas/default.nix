@@ -24,8 +24,6 @@ in
           homeManager.dev
           homeManager.llama
           homeManager.colima
-          homeManager.postgres
-          homeManager.redis
         ];
 
         llama.model = {

@@ -268,20 +268,6 @@ unset SOPS_AGE_KEY
 
 ## Host Notes
 
-`abraxas`:
-
-```sh
-initdb -D ~/.local/state/postgres --auth-local=peer --auth-host=scram-sha-256 --encoding=UTF8
-pg_ctl -D ~/.local/state/postgres -l ~/.local/state/postgres/server.log start
-createdb <name>
-pg_ctl -D ~/.local/state/postgres stop
-```
-
-```sh
-redis-server --dir ~/.local/state/redis --daemonize yes
-redis-cli shutdown
-```
-
 `shodan`:
 
 ```sh

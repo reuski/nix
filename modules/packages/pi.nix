@@ -10,7 +10,7 @@
         final.fd
       ];
       text = ''
-        exec bun x @earendil-works/pi-coding-agent@latest "$@"
+        exec ${final.lib.getExe final.bun} x @earendil-works/pi-coding-agent@latest "$@"
       '';
       meta = {
         description = "Pi Coding Agent";
@@ -25,10 +25,11 @@
       name = "pi-acp";
       runtimeInputs = [
         final.bun
+        final.nodejs
         final.pi-coding-agent
       ];
       text = ''
-        exec bun x pi-acp "$@"
+        exec ${final.lib.getExe final.bun} x pi-acp "$@"
       '';
       meta = {
         description = "ACP adapter wrapper for Pi Coding Agent";

@@ -12,7 +12,6 @@ in
         homeManager.zellij
         homeManager.fish
         homeManager.bat
-        homeManager.direnv
         homeManager.delta
         homeManager.vim
         homeManager.eza

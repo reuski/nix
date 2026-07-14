@@ -3,3 +3,5 @@
 *.decrypted.yaml
 *.decrypted.yml
 **/age/keys.txt
+.direnv/
+!/.envrc
