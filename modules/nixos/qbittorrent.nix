@@ -13,6 +13,7 @@
       quadlet = config.virtualisation.quadlet;
       inherit (lib)
         getExe
+        getExe'
         mkEnableOption
         mkIf
         mkOption
@@ -135,7 +136,6 @@
               healthRetries = 5;
               healthTimeout = "15s";
               healthStartPeriod = "40s";
-              healthOnFailure = "kill";
               environments = {
                 VPN_SERVICE_PROVIDER = "custom";
                 VPN_TYPE = "wireguard";
@@ -193,6 +193,22 @@
         proxy.services.qbittorrent.port = cfg.webuiPort;
 
         systemd.services.gluetun.serviceConfig.ExecStartPre = getExe piaWireguardConfig;
+
+        systemd.services.qbittorrent-refresh = {
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = "${getExe' pkgs.systemd "systemctl"} restart vpn-pod.service";
+          };
+        };
+
+        systemd.timers.qbittorrent-refresh = {
+          wantedBy = [ "timers.target" ];
+          timerConfig = {
+            OnCalendar = "daily";
+            Persistent = true;
+            RandomizedDelaySec = "5m";
+          };
+        };
 
         media.directories = {
           "/var/lib/gluetun".mode = "0750";
