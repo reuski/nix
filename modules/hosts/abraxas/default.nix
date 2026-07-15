@@ -8,6 +8,7 @@ in
     {
       imports = [
         darwin.mac
+        ./_colima.nix
         ./_desktop.nix
       ];
 
@@ -23,7 +24,6 @@ in
         imports = [
           homeManager.dev
           homeManager.llama
-          homeManager.colima
         ];
 
         llama.model = {
