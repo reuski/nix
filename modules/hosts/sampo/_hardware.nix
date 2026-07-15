@@ -30,6 +30,7 @@
     "usbcore.autosuspend=-1"
     "pcie_port_pm=off"
     "pcie_aspm.policy=performance"
+    "clearcpuid=umip"
   ];
 
   services.scx = {
