@@ -16,6 +16,18 @@
       programs.plasma = {
         enable = true;
 
+        input.keyboard = {
+          layouts = [
+            { inherit (config.profile.keyboard) layout variant; }
+          ];
+          model = config.profile.keyboard.model;
+          options =
+            let
+              o = config.profile.keyboard.options;
+            in
+            if o == "" then [ ] else lib.splitString "," o;
+        };
+
         workspace = {
           colorScheme = "OxygenDark";
           theme = "oxygen";
