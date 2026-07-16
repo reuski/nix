@@ -10,6 +10,7 @@ in
         darwin.mac
         ./_colima.nix
         ./_desktop.nix
+        ./_vanta.nix
       ];
 
       networking.hostName = "abraxas";
