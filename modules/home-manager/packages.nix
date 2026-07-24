@@ -7,6 +7,7 @@
 
       home.packages = with pkgs; [
         helium-browser
+        flare-signal
         wl-clipboard
         brightnessctl
         playerctl
