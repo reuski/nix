@@ -63,7 +63,7 @@
         | .EnableDecodingColorDepth10Hevc = true
         | .EnableDecodingColorDepth10Vp9 = true
         | .EnableDecodingColorDepth10Av1 = true
-        | .AllowHevcEncoding = true
+        | .AllowHevcEncoding = false
         | .AllowAv1Encoding = false
         | .EnableTonemapping = true
         | .EnableVppTonemapping = true

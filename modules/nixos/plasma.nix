@@ -50,5 +50,10 @@
       ];
 
       environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
+      xdg.portal.extraPortals = lib.mkForce [
+        pkgs.kdePackages.kwallet
+        pkgs.kdePackages.xdg-desktop-portal-kde
+      ];
     };
 }

@@ -33,7 +33,7 @@
           new=$(mktemp)
           trap 'rm -f "$score" "$detail" "$warns" "$meta" "$new"' EXIT
 
-          collect() { grep -iE 'warning|deprecat' "$1" >> "$warns" || true; }
+          collect() { grep -iE 'warning:' "$1" >> "$warns" || true; }
           mark() { printf '%s %s %s\n' "$1" "$2" "$3" >> "$score"; }
 
           ${lib.optionalString (cfg.targets != [ ]) ''
@@ -41,7 +41,7 @@
 
             activate() {
               nixos-rebuild switch --flake "${flake}#$1" \
-                --target-host "root@$1" --refresh --option tarball-ttl 0 \
+                --target-host "root@$1" --refresh --fallback --option tarball-ttl 0 \
                 --max-jobs 1 --cores ${toString cfg.cores}
             }
 
@@ -71,10 +71,10 @@
             warm() {
               local out
               out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
-                --refresh --option tarball-ttl 0 --no-link --print-out-paths \
+                --refresh --fallback --option tarball-ttl 0 --no-link --print-out-paths \
                 --max-jobs 1 --cores ${toString cfg.cores} 2> "$2") \
               || out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
-                --refresh --option tarball-ttl 0 --no-link --print-out-paths \
+                --refresh --fallback --option tarball-ttl 0 --no-link --print-out-paths \
                 --max-jobs 1 --cores ${toString cfg.cores} 2>> "$2") \
               || return 1
               attic push "local:${cfg.cache}" "$out" >> "$2" 2>&1
