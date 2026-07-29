@@ -10,7 +10,7 @@ let
     key:
     {
       name,
-      kind,
+      kind ? null,
       checkPath ? null,
       credential ? null,
       entity ? null,
@@ -52,6 +52,10 @@ in
       navidrome-credentials.path = config.sops.templates."navidrome-heimdash-credentials".path;
     };
     services = [
+      (card "actual" {
+        name = "Actual Budget";
+        checkPath = "/health";
+      })
       (card "adguard" {
         name = "AdGuard";
         kind = "adguard";

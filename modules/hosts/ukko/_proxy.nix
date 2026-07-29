@@ -19,6 +19,7 @@
     domain = "home.reuski.dev";
     dnsEnvironmentFile = config.sops.templates."acme-cloudflare-env".path;
     services = {
+      actual.port = config.services.actual.settings.port;
       adguard.port = 3000;
       attic.port = 8090;
       ntfy.port = 2586;

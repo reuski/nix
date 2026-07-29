@@ -47,6 +47,15 @@ in
     environmentFile = config.sops.templates."navidrome-env".path;
   };
 
+  services.actual = {
+    enable = true;
+    settings = {
+      hostname = "127.0.0.1";
+      port = 5006;
+      trustedProxies = [ "127.0.0.1/32" ];
+    };
+  };
+
   maintainerr.enable = true;
 
   calibre.enable = true;
@@ -79,6 +88,7 @@ in
     stampPath = "/var/lib/heimdash/backup-stamp";
     paths = [
       "/var/backup/vaultwarden"
+      "/var/lib/private/actual"
       "/var/lib/valheim/saves/worlds_local"
       "/var/lib/home-assistant"
       "/var/lib/navidrome"
