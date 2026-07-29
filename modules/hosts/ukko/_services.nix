@@ -6,6 +6,7 @@
 }:
 let
   tsHost = "ukko.tail2fc4c2.ts.net";
+  sabnzbdDownloadDir = "${config.media.libraryDir}/usenet";
   linkdingDataDir = config.services.linkding.dataDir;
   linkdingBackup = "${linkdingDataDir}/backup.sqlite3";
   linkdingBackupTemp = "${linkdingBackup}.tmp";
@@ -89,6 +90,30 @@ in
   };
   servarr.enable = true;
 
+  services.sabnzbd = {
+    enable = true;
+    user = config.media.user;
+    group = config.media.group;
+    allowConfigWrite = true;
+    secretValues."@sabnzbd_api_key@" = config.sops.secrets."sabnzbd/api-key".path;
+    settings.misc = {
+      host = "127.0.0.1";
+      port = 8081;
+      api_key = "@sabnzbd_api_key@";
+      download_dir = "${sabnzbdDownloadDir}/incomplete";
+      complete_dir = "${sabnzbdDownloadDir}/complete";
+      permissions = "775";
+      inet_exposure = "none";
+      host_whitelist = config.proxy.services.sabnzbd.domain;
+    };
+  };
+
+  media.directories = {
+    ${sabnzbdDownloadDir} = { };
+    "${sabnzbdDownloadDir}/incomplete" = { };
+    "${sabnzbdDownloadDir}/complete" = { };
+  };
+
   backup = {
     enable = true;
     repository = "rclone:filen:nixbackup/ukko";
@@ -108,6 +133,7 @@ in
       "/var/lib/radarr"
       "/var/lib/lidarr"
       "/var/lib/prowlarr"
+      "/var/lib/sabnzbd"
       "/var/lib/maintainerr"
       "/var/lib/trek/data/backups"
     ];

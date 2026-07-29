@@ -12,6 +12,14 @@
     "linkding/admin-password" = { };
     "pia/username".restartUnits = [ "gluetun.service" ];
     "pia/password".restartUnits = [ "gluetun.service" ];
+    "sabnzbd/api-key" = {
+      owner = config.media.user;
+      group = config.media.group;
+      restartUnits = [
+        "sabnzbd.service"
+        "heimdash.service"
+      ];
+    };
     "valheim/password".restartUnits = [ "valheim.service" ];
     "mumble/password".restartUnits = [ "murmur.service" ];
     "trek/encryption-key".restartUnits = [ "trek.service" ];

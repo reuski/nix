@@ -46,6 +46,7 @@ in
       jellyfin-api-key.path = config.sops.secrets."jellyfin/api-key".path;
       audiobookshelf-api-key.path = config.sops.secrets."audiobookshelf/api-key".path;
       qbittorrent-api-key.path = config.sops.secrets."qbittorrent/api-key".path;
+      sabnzbd-api-key.path = config.sops.secrets."sabnzbd/api-key".path;
       home-assistant-token.path = config.sops.secrets."home-assistant/token".path;
       vaultwarden-admin-token.path = config.sops.secrets."vaultwarden/admin-token".path;
       calibre-credentials.path = config.sops.secrets."calibre/credentials".path;
@@ -75,6 +76,11 @@ in
         name = "qBittorrent";
         kind = "qbittorrent";
         credential = "qbittorrent-api-key";
+      })
+      (card "sabnzbd" {
+        name = "SABnzbd";
+        kind = "sabnzbd";
+        credential = "sabnzbd-api-key";
       })
       (card "jellyfin" {
         name = "Jellyfin";
