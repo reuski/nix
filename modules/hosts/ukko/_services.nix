@@ -53,6 +53,16 @@ in
 
   tome.enable = true;
 
+  trek = {
+    enable = true;
+    url = "https://${tsHost}:8443";
+    allowedOrigins = [
+      "https://${tsHost}:8443"
+      "https://trek.home.reuski.dev"
+    ];
+    environmentFile = config.sops.templates."trek-env".path;
+  };
+
   vaultwarden = {
     enable = true;
     domain = "https://${tsHost}:8222";
@@ -77,6 +87,7 @@ in
       "/var/lib/lidarr"
       "/var/lib/prowlarr"
       "/var/lib/maintainerr"
+      "/var/lib/trek/data/backups"
     ];
   };
 

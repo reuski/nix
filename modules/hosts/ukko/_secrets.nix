@@ -13,6 +13,7 @@
     "pia/password".restartUnits = [ "gluetun.service" ];
     "valheim/password".restartUnits = [ "valheim.service" ];
     "mumble/password".restartUnits = [ "murmur.service" ];
+    "trek/encryption-key".restartUnits = [ "trek.service" ];
     "navidrome/admin-password".restartUnits = [
       "navidrome.service"
       "skaldi.service"
@@ -56,6 +57,10 @@
     "navidrome-env" = {
       content = "ND_DEVAUTOCREATEADMINPASSWORD=${config.sops.placeholder."navidrome/admin-password"}";
       restartUnits = [ "navidrome.service" ];
+    };
+    "trek-env" = {
+      content = "ENCRYPTION_KEY=${config.sops.placeholder."trek/encryption-key"}";
+      restartUnits = [ "trek.service" ];
     };
     "navidrome-heimdash-credentials" = {
       content = "admin:${config.sops.placeholder."navidrome/admin-password"}";

@@ -54,6 +54,11 @@ in
             type = types.nullOr types.str;
             default = null;
           };
+          containerConfig = mkOption {
+            type = types.attrsOf types.anything;
+            default.networks = [ "host" ];
+            description = "Additional upstream Quadlet container options.";
+          };
           environment = mkOption {
             type = types.attrsOf types.str;
             default = { };
@@ -90,22 +95,22 @@ in
       options.quadlets = mkOption {
         type = types.attrsOf quadletType;
         default = { };
-        description = "Reverse-proxied podman/quadlet payloads with shared identity and state handling.";
+        description = "Podman/Quadlet payloads with shared identity and state handling.";
       };
 
       config = mkIf (cfg != { }) {
         virtualisation.quadlet.containers = mapAttrs (name: c: {
-          containerConfig = {
-            inherit name;
-            inherit (c) image;
-            networks = [ "host" ];
-            autoUpdate = "registry";
-            environments =
-              (if c.identity then media.containerEnv else { TZ = config.profile.timeZone; }) // c.environment;
-            inherit (c) environmentFiles;
-            volumes = stateVolume c ++ c.volumes;
-          }
-          // optionalAttrs (c.user != null) { inherit (c) user; };
+          containerConfig =
+            c.containerConfig
+            // {
+              inherit name;
+              inherit (c) image environmentFiles;
+              autoUpdate = "registry";
+              environments =
+                (if c.identity then media.containerEnv else { TZ = config.profile.timeZone; }) // c.environment;
+              volumes = stateVolume c ++ c.volumes;
+            }
+            // optionalAttrs (c.user != null) { inherit (c) user; };
         }) cfg;
 
         proxy.services = mapAttrs (_: c: { inherit (c) port; }) (filterAttrs (_: c: c.port != null) cfg);

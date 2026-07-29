@@ -4,7 +4,6 @@
   ...
 }:
 let
-  tsHost = "ukko.tail2fc4c2.ts.net";
   inherit (lib) optionalAttrs;
 
   card =
@@ -15,18 +14,22 @@ let
       checkPath ? null,
       credential ? null,
       entity ? null,
+      stamp ? null,
+      urlPath ? "",
     }:
     let
       p = config.proxy.services.${key};
-      url = "https://${p.domain}";
+      origin = "https://${p.domain}";
     in
     {
-      inherit name url kind;
+      inherit name kind;
+      url = "${origin}${urlPath}";
       api = "http://${p.host}:${toString p.port}";
     }
-    // optionalAttrs (checkPath != null) { check = "${url}${checkPath}"; }
+    // optionalAttrs (checkPath != null) { check = "${origin}${checkPath}"; }
     // optionalAttrs (credential != null) { inherit credential; }
-    // optionalAttrs (entity != null) { inherit entity; };
+    // optionalAttrs (entity != null) { inherit entity; }
+    // optionalAttrs (stamp != null) { inherit stamp; };
 in
 {
   services.heimdash = {
@@ -102,6 +105,11 @@ in
         kind = "tome";
         checkPath = "";
       })
+      (card "trek" {
+        name = "TREK";
+        kind = "trek";
+        checkPath = "/api/health";
+      })
       (card "valheim" {
         name = "Valheim";
         kind = "valheim";
@@ -137,21 +145,19 @@ in
         checkPath = "/ping";
         credential = "prowlarr-api-key";
       })
-      {
+      (card "vaultwarden" {
         name = "Vaultwarden";
-        url = "https://${tsHost}:8222";
-        check = "http://127.0.0.1:8222/alive";
-        api = "http://127.0.0.1:8222";
         kind = "vaultwarden";
+        checkPath = "/alive";
         credential = "vaultwarden-admin-token";
-      }
-      {
+      })
+      (card "attic" {
         name = "Attic";
-        url = "https://${tsHost}:8090/ukko";
-        check = "http://127.0.0.1:8090/ukko/nix-cache-info";
         kind = "attic";
+        checkPath = "/ukko/nix-cache-info";
+        urlPath = "/ukko";
         stamp = "/var/lib/heimdash/attic-primed";
-      }
+      })
       {
         name = "Backup";
         url = "https://drive.filen.io";

@@ -30,6 +30,7 @@ in
         nixos.navidrome
         nixos.calibre
         nixos.tome
+        nixos.trek
         nixos.maintainerr
         nixos.servarr
         nixos.qbittorrent
