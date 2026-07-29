@@ -1,6 +1,14 @@
-{ config, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   tsHost = "ukko.tail2fc4c2.ts.net";
+  linkdingDataDir = config.services.linkding.dataDir;
+  linkdingBackup = "${linkdingDataDir}/backup.sqlite3";
+  linkdingBackupTemp = "${linkdingBackup}.tmp";
 in
 {
   nixpkgs.overlays = [
@@ -56,6 +64,8 @@ in
     };
   };
 
+  services.linkding.enable = true;
+
   maintainerr.enable = true;
 
   calibre.enable = true;
@@ -89,6 +99,8 @@ in
     paths = [
       "/var/backup/vaultwarden"
       "/var/lib/private/actual"
+      linkdingBackup
+      "${linkdingDataDir}/assets"
       "/var/lib/valheim/saves/worlds_local"
       "/var/lib/home-assistant"
       "/var/lib/navidrome"
@@ -99,6 +111,23 @@ in
       "/var/lib/maintainerr"
       "/var/lib/trek/data/backups"
     ];
+  };
+
+  services.restic.backups.ukko.backupPrepareCommand = ''
+    ${lib.getExe' pkgs.coreutils "rm"} -f ${linkdingBackupTemp}
+    ${lib.getExe pkgs.sqlite} ${linkdingDataDir}/db.sqlite3 ".backup '${linkdingBackupTemp}'"
+    ${lib.getExe' pkgs.coreutils "mv"} -f ${linkdingBackupTemp} ${linkdingBackup}
+    ${lib.getExe' pkgs.coreutils "chown"} --reference=${linkdingDataDir}/db.sqlite3 ${linkdingBackup}
+    ${lib.getExe' pkgs.coreutils "chmod"} --reference=${linkdingDataDir}/db.sqlite3 ${linkdingBackup}
+  '';
+
+  systemd.services.linkding-setup.serviceConfig.EnvironmentFile = lib.mkAfter [
+    config.sops.templates."linkding-env".path
+  ];
+
+  systemd.services.restic-backups-ukko = {
+    after = [ "linkding-setup.service" ];
+    wants = [ "linkding.service" ];
   };
 
   hass.enable = true;

@@ -9,6 +9,7 @@
     "backup/rclone-conf".restartUnits = [ "restic-backups-ukko.service" ];
     "cloudflare/dns-token".restartUnits = [ "cloudflare-dyndns.service" ];
     "jellyfin/admin-password".restartUnits = [ "jellyfin-setup.service" ];
+    "linkding/admin-password" = { };
     "pia/username".restartUnits = [ "gluetun.service" ];
     "pia/password".restartUnits = [ "gluetun.service" ];
     "valheim/password".restartUnits = [ "valheim.service" ];
@@ -58,6 +59,10 @@
       content = "ND_DEVAUTOCREATEADMINPASSWORD=${config.sops.placeholder."navidrome/admin-password"}";
       restartUnits = [ "navidrome.service" ];
     };
+    "linkding-env".content = ''
+      LD_SUPERUSER_NAME=${config.profile.username}
+      LD_SUPERUSER_PASSWORD=${config.sops.placeholder."linkding/admin-password"}
+    '';
     "trek-env" = {
       content = "ENCRYPTION_KEY=${config.sops.placeholder."trek/encryption-key"}";
       restartUnits = [ "trek.service" ];

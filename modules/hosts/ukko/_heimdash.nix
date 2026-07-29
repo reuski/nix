@@ -56,6 +56,10 @@ in
         name = "Actual Budget";
         checkPath = "/health";
       })
+      (card "linkding" {
+        name = "Linkding";
+        checkPath = "/health";
+      })
       (card "adguard" {
         name = "AdGuard";
         kind = "adguard";

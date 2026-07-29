@@ -3,6 +3,7 @@
   tailnet.services = {
     hass.port = 8123;
     audiobookshelf.port = 8000;
+    linkding.port = config.services.linkding.port;
     vaultwarden.port = 8222;
     navidrome.port = 4533;
     trek = {
@@ -22,6 +23,7 @@
       actual.port = config.services.actual.settings.port;
       adguard.port = 3000;
       attic.port = 8090;
+      linkding.port = config.services.linkding.port;
       ntfy.port = 2586;
       vaultwarden.port = 8222;
       heimdash.domain = "home.reuski.dev";
