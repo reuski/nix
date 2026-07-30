@@ -34,6 +34,7 @@ in
         nixos.maintainerr
         nixos.servarr
         nixos.qbittorrent
+        nixos.sabnzbd
         nixos.hass
         nixos.vaultwarden
         nixos.valheim

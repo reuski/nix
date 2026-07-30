@@ -25,7 +25,6 @@
       attic.port = 8090;
       linkding.port = config.services.linkding.port;
       ntfy.port = 2586;
-      sabnzbd.port = config.services.sabnzbd.settings.misc.port;
       vaultwarden.port = 8222;
       heimdash.domain = "home.reuski.dev";
     };
