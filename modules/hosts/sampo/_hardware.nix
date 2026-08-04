@@ -24,8 +24,6 @@
 
   boot.kernelPackages = lib.mkForce pkgs.linuxPackages_zen;
   boot.kernelParams = [
-    "nvidia-drm.modeset=1"
-    "nvidia-drm.fbdev=1"
     "nowatchdog"
     "usbcore.autosuspend=-1"
     "pcie_port_pm=off"
@@ -44,14 +42,13 @@
 
   services.fwupd.enable = true;
 
-  hardware.graphics.extraPackages = [ pkgs.nvidia-vaapi-driver ];
-
   services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
     modesetting.enable = true;
     open = true;
     powerManagement.enable = true;
+    videoAcceleration = true;
     package = config.boot.kernelPackages.nvidiaPackages.production;
   };
 

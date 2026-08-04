@@ -129,6 +129,7 @@
 
           makeWrapper $out/opt/helium/helium $out/bin/helium-browser \
             --prefix LD_LIBRARY_PATH : "${lib.getLib libglvnd}/lib:$out/opt/helium:${addDriverRunpath.driverLink}/lib" \
+            --suffix VK_ADD_DRIVER_FILES : "${addDriverRunpath.driverLink}/share/vulkan/icd.d" \
             --add-flags "--ozone-platform=wayland" \
             --add-flags "--enable-features=WaylandWindowDecorations" \
             --add-flags "--enable-wayland-ime=true";
