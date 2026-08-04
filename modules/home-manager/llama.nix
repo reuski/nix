@@ -45,6 +45,8 @@
         "-DLLAMA_BUILD_APP=OFF"
         "-DLLAMA_BUILD_UI=OFF"
         "-DGGML_LTO=ON"
+        "-DCMAKE_C_COMPILER_LAUNCHER=ccache"
+        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
       ];
       backendCmakeFlags =
         if isDarwin then
@@ -59,6 +61,7 @@
           [
             "-DGGML_CUDA=ON"
             "-DCMAKE_CUDA_ARCHITECTURES=native"
+            "-DCMAKE_CUDA_COMPILER_LAUNCHER=ccache"
           ];
       cmakeFlags = baseCmakeFlags ++ backendCmakeFlags;
       cmakeFlagsHash = builtins.hashString "sha256" (lib.concatStringsSep "\n" cmakeFlags);
@@ -164,9 +167,9 @@
           )
 
           build_llama() {
+            rm -rf "$build_dir"
             cmake -S "$llama_dir" -B "$build_dir" -G Ninja "''${cmake_flags[@]}"
-            cmake --build "$build_dir" --target llama-server --parallel --clean-first
-            rm -f "$build_dir"/.pi-cmake-flags-*
+            cmake --build "$build_dir" --target llama-server --parallel
             touch "$flags_stamp"
           }
 
