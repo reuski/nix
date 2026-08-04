@@ -7,6 +7,7 @@
         stdenv,
         stdenvNoCC,
         fetchurl,
+        addDriverRunpath,
         autoPatchelfHook,
         makeWrapper,
         alsa-lib,
@@ -22,6 +23,7 @@
         glib,
         gtk3,
         libdrm,
+        libglvnd,
         libnotify,
         libpulseaudio,
         libsecret,
@@ -126,7 +128,7 @@
             $out/share/icons/hicolor/256x256/apps/helium.png
 
           makeWrapper $out/opt/helium/helium $out/bin/helium-browser \
-            --prefix LD_LIBRARY_PATH : $out/opt/helium \
+            --prefix LD_LIBRARY_PATH : "${lib.getLib libglvnd}/lib:$out/opt/helium:${addDriverRunpath.driverLink}/lib" \
             --add-flags "--ozone-platform=wayland" \
             --add-flags "--enable-features=WaylandWindowDecorations" \
             --add-flags "--enable-wayland-ime=true";
