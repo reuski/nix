@@ -1,4 +1,7 @@
 { config, ... }:
+let
+  actual = config.proxy.services.actual;
+in
 {
   tailnet.services = {
     hass.port = 8123;
@@ -20,7 +23,10 @@
     domain = "home.reuski.dev";
     dnsEnvironmentFile = config.sops.templates."acme-cloudflare-env".path;
     services = {
-      actual.port = config.services.actual.settings.port;
+      actual = {
+        domain = "actual.reuski.dev";
+        port = config.services.actual.settings.port;
+      };
       adguard.port = 3000;
       attic.port = 8090;
       linkding.port = config.services.linkding.port;
@@ -30,5 +36,8 @@
     };
   };
 
-  services.caddy.globalConfig = "grace_period 1m";
+  services.caddy = {
+    globalConfig = "grace_period 1m";
+    virtualHosts.${actual.domain}.extraConfig = "reverse_proxy ${actual.host}:${toString actual.port}";
+  };
 }

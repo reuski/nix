@@ -77,6 +77,11 @@ in
             enabled = true;
           }
           {
+            domain = "actual.reuski.dev";
+            answer = localAddress;
+            enabled = true;
+          }
+          {
             domain = "valheim.reuski.dev";
             answer = localAddress;
             enabled = true;
@@ -118,6 +123,7 @@ in
     enable = true;
     apiTokenFile = config.sops.secrets."cloudflare/dns-token".path;
     domains = [
+      "actual.reuski.dev"
       "valheim.reuski.dev"
       "mumble.reuski.dev"
     ];
