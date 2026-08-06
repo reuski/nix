@@ -1,6 +1,7 @@
 { config, ... }:
 let
   actual = config.proxy.services.actual;
+  acme = config.security.acme.certs.${config.proxy.domain};
 in
 {
   tailnet.services = {
@@ -36,8 +37,13 @@ in
     };
   };
 
+  security.acme.certs.${config.proxy.domain}.extraDomainNames = [ actual.domain ];
+
   services.caddy = {
     globalConfig = "grace_period 1m";
-    virtualHosts.${actual.domain}.extraConfig = "reverse_proxy ${actual.host}:${toString actual.port}";
+    virtualHosts.${actual.domain}.extraConfig = ''
+      tls ${acme.directory}/fullchain.pem ${acme.directory}/key.pem
+      reverse_proxy ${actual.host}:${toString actual.port}
+    '';
   };
 }

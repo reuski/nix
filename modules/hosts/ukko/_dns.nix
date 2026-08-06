@@ -1,6 +1,11 @@
 { config, lib, ... }:
 let
   localAddress = "192.168.1.11";
+  publicDomains = [
+    "actual.reuski.dev"
+    "valheim.reuski.dev"
+    "mumble.reuski.dev"
+  ];
   tailnetDomain = "tail2fc4c2.ts.net";
 in
 {
@@ -76,22 +81,12 @@ in
             answer = "192.168.1.2";
             enabled = true;
           }
-          {
-            domain = "actual.reuski.dev";
-            answer = localAddress;
-            enabled = true;
-          }
-          {
-            domain = "valheim.reuski.dev";
-            answer = localAddress;
-            enabled = true;
-          }
-          {
-            domain = "mumble.reuski.dev";
-            answer = localAddress;
-            enabled = true;
-          }
-        ];
+        ]
+        ++ map (domain: {
+          inherit domain;
+          answer = localAddress;
+          enabled = true;
+        }) publicDomains;
       };
       filters = [
         {
@@ -122,11 +117,7 @@ in
   services.cloudflare-dyndns = {
     enable = true;
     apiTokenFile = config.sops.secrets."cloudflare/dns-token".path;
-    domains = [
-      "actual.reuski.dev"
-      "valheim.reuski.dev"
-      "mumble.reuski.dev"
-    ];
+    domains = publicDomains;
   };
 
   systemd.services.deploy = {
