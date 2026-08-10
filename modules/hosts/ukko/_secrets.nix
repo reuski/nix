@@ -8,6 +8,7 @@
     "backup/restic-password".restartUnits = [ "restic-backups-ukko.service" ];
     "backup/rclone-conf".restartUnits = [ "restic-backups-ukko.service" ];
     "cloudflare/dns-token".restartUnits = [ "cloudflare-dyndns.service" ];
+    "degoog/settings-password".restartUnits = [ "degoog.service" ];
     "jellyfin/admin-password".restartUnits = [ "jellyfin-setup.service" ];
     "linkding/admin-password" = { };
     "pia/username".restartUnits = [ "gluetun.service" ];
@@ -50,6 +51,10 @@
     "acme-cloudflare-env" = {
       content = "CF_DNS_API_TOKEN=${config.sops.placeholder."cloudflare/dns-token"}";
       restartUnits = [ "acme-home.reuski.dev.service" ];
+    };
+    "degoog-env" = {
+      content = "DEGOOG_SETTINGS_PASSWORDS=${config.sops.placeholder."degoog/settings-password"}";
+      restartUnits = [ "degoog.service" ];
     };
     "vaultwarden-env" = {
       content = "ADMIN_TOKEN=${config.sops.placeholder."vaultwarden/admin-token"}";

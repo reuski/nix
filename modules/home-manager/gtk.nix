@@ -4,8 +4,8 @@
     { pkgs, ... }:
     let
       gruvboxDarkGtkTheme = {
-        package = pkgs.gruvbox-gtk-theme;
-        name = "Gruvbox-Dark";
+        package = pkgs.gruvbox-dark-gtk;
+        name = "gruvbox-dark";
       };
     in
     {

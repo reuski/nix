@@ -89,6 +89,11 @@ in
   };
   servarr.enable = true;
 
+  degoog = {
+    enable = true;
+    environmentFile = config.sops.templates."degoog-env".path;
+  };
+
   backup = {
     enable = true;
     repository = "rclone:filen:nixbackup/ukko";
@@ -110,17 +115,21 @@ in
       "/var/lib/prowlarr"
       "/var/lib/sabnzbd"
       "/var/lib/maintainerr"
+      "/var/lib/degoog"
       "/var/lib/trek/data/backups"
     ];
   };
 
-  services.restic.backups.ukko.backupPrepareCommand = ''
-    ${lib.getExe' pkgs.coreutils "rm"} -f ${linkdingBackupTemp}
-    ${lib.getExe pkgs.sqlite} ${linkdingDataDir}/db.sqlite3 ".backup '${linkdingBackupTemp}'"
-    ${lib.getExe' pkgs.coreutils "mv"} -f ${linkdingBackupTemp} ${linkdingBackup}
-    ${lib.getExe' pkgs.coreutils "chown"} --reference=${linkdingDataDir}/db.sqlite3 ${linkdingBackup}
-    ${lib.getExe' pkgs.coreutils "chmod"} --reference=${linkdingDataDir}/db.sqlite3 ${linkdingBackup}
-  '';
+  services.restic.backups.ukko = {
+    exclude = [ "/var/lib/degoog/indexer" ];
+    backupPrepareCommand = ''
+      ${lib.getExe' pkgs.coreutils "rm"} -f ${linkdingBackupTemp}
+      ${lib.getExe pkgs.sqlite} ${linkdingDataDir}/db.sqlite3 ".backup '${linkdingBackupTemp}'"
+      ${lib.getExe' pkgs.coreutils "mv"} -f ${linkdingBackupTemp} ${linkdingBackup}
+      ${lib.getExe' pkgs.coreutils "chown"} --reference=${linkdingDataDir}/db.sqlite3 ${linkdingBackup}
+      ${lib.getExe' pkgs.coreutils "chmod"} --reference=${linkdingDataDir}/db.sqlite3 ${linkdingBackup}
+    '';
+  };
 
   systemd.services.linkding-setup.serviceConfig.EnvironmentFile = lib.mkAfter [
     config.sops.templates."linkding-env".path

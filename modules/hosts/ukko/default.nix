@@ -33,6 +33,7 @@ in
         nixos.trek
         nixos.maintainerr
         nixos.servarr
+        nixos.degoog
         nixos.qbittorrent
         nixos.sabnzbd
         nixos.hass

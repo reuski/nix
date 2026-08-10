@@ -63,6 +63,10 @@
           "flakes"
         ];
         trusted-users = [ "@admin" ];
+        extra-substituters = [ "https://reuski.cachix.org" ];
+        extra-trusted-public-keys = [
+          "reuski.cachix.org-1:eIWz4qd8JPuIm9XZxbfSQ802IhhJv2EarUiIG0IXSTs="
+        ];
       };
 
       nix.gc = {

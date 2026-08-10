@@ -3,14 +3,12 @@
   flake.modules.nixos.niri =
     { lib, pkgs, ... }:
     let
-      niriPackage = pkgs.niri-unstable;
+      niriPackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
       niriSession = lib.getExe' niriPackage "niri-session";
       tuigreet = lib.getExe pkgs.tuigreet;
     in
     {
       imports = [ inputs.niri.nixosModules.niri ];
-
-      nixpkgs.overlays = [ inputs.niri.overlays.niri ];
 
       niri-flake.cache.enable = false;
 

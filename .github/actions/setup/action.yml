@@ -1,12 +1,14 @@
 name: setup
-description: Install Determinate Nix (bundled Magic Nix Cache) and configure substituters. Run after actions/checkout.
+description: Install Nix and configure substituters. Run after actions/checkout.
 
 runs:
   using: composite
   steps:
-    - uses: DeterminateSystems/determinate-nix-action@629b284231c2a82554b724e357e47fc6020833c8 # v3.21.2
+    - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
       with:
-        extra-conf: |
+        github_access_token: ${{ github.token }}
+        extra_nix_config: |
+          experimental-features = nix-command flakes
           download-buffer-size = 536870912
           extra-substituters = https://niri.cachix.org https://noctalia.cachix.org https://vicinae.cachix.org https://ghostty.cachix.org
           extra-trusted-public-keys = niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964= noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4= vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc= ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns=

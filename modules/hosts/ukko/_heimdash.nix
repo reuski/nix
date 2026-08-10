@@ -61,6 +61,10 @@ in
         name = "Linkding";
         checkPath = "/health";
       })
+      (card "degoog" {
+        name = "Degoog";
+        checkPath = "/readyz";
+      })
       (card "adguard" {
         name = "AdGuard";
         kind = "adguard";

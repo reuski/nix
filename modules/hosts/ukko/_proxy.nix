@@ -8,6 +8,10 @@ in
     hass.port = 8123;
     audiobookshelf.port = 8000;
     linkding.port = config.services.linkding.port;
+    degoog = {
+      port = config.proxy.services.degoog.port;
+      https = 443;
+    };
     vaultwarden.port = 8222;
     navidrome.port = 4533;
     trek = {
@@ -30,6 +34,7 @@ in
       };
       adguard.port = 3000;
       attic.port = 8090;
+      degoog.accessLog = false;
       linkding.port = config.services.linkding.port;
       ntfy.port = 2586;
       vaultwarden.port = 8222;

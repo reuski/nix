@@ -34,6 +34,7 @@
       route = name: service: ''
         @${name} host ${service.domain}
         handle @${name} {
+          ${optionalString (!service.accessLog) "log_skip"}
           ${headers}
           reverse_proxy ${service.host}:${toString service.port}
         }
@@ -63,6 +64,10 @@
               default = "127.0.0.1";
             };
             port = mkOption { type = types.port; };
+            accessLog = mkOption {
+              type = types.bool;
+              default = true;
+            };
           };
         }
       );

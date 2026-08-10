@@ -28,6 +28,7 @@
         substituters =
           lib.optional (config.networking.hostName != "ukko") "https://ukko.tail2fc4c2.ts.net:8090/ukko"
           ++ [
+            "https://reuski.cachix.org"
             "https://noctalia.cachix.org"
             "https://vicinae.cachix.org"
             "https://ghostty.cachix.org"
@@ -37,6 +38,7 @@
             config.networking.hostName != "ukko"
           ) "ukko:NjZT4Lc1JJvioCv4z6Qv8zDmX+v25+e2r/9qGjTzHkU="
           ++ [
+            "reuski.cachix.org-1:eIWz4qd8JPuIm9XZxbfSQ802IhhJv2EarUiIG0IXSTs="
             "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
             "vicinae.cachix.org-1:1kDrfienkGHPYbkpNj1mWTr7Fm1+zcenzgTizIcI3oc="
             "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="

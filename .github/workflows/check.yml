@@ -54,6 +54,8 @@ jobs:
     needs: evaluate
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    env:
+      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -68,6 +70,13 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
 
+      - name: Configure cachix
+        if: ${{ env.CACHIX_AUTH_TOKEN != '' }}
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
+        with:
+          name: reuski # cachix cache name (app.cachix.org)
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
       - name: Build ${{ matrix.host }}
         run: /usr/bin/time -v nix build --no-link ".#checks.x86_64-linux.nixos-${{ matrix.host }}" --print-build-logs
 
@@ -78,11 +87,20 @@ jobs:
     needs: evaluate
     runs-on: macos-latest
     timeout-minutes: 35
+    env:
+      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+
+      - name: Configure cachix
+        if: ${{ env.CACHIX_AUTH_TOKEN != '' }}
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
+        with:
+          name: reuski # cachix cache name (app.cachix.org)
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Build abraxas
         run: /usr/bin/time -l nix build --no-link ".#checks.aarch64-darwin.darwin-abraxas" --print-build-logs
