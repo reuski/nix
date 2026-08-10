@@ -5,8 +5,20 @@ in
 {
   configurations.nixos.sampo.module =
     { config, pkgs, ... }:
+    let
+      protonGeRoot = pkgs.linkFarm "proton-ge-root" [
+        {
+          name = "share/proton-ge";
+          path = pkgs.proton-ge-bin.steamcompattool;
+        }
+      ];
+    in
     {
       programs.steam.extraCompatPackages = [ pkgs.proton-cachyos ];
+      environment.systemPackages = [
+        protonGeRoot
+        pkgs.umu-launcher
+      ];
 
       nix.settings = {
         extra-substituters = [ "https://attic.xuyh0120.win/lantian" ];
