@@ -6,7 +6,11 @@ in
   configurations.nixos.sampo.module =
     { config, pkgs, ... }:
     let
-      protonGeRoot = pkgs.linkFarm "proton-ge-root" [
+      protonRoots = pkgs.linkFarm "proton-roots" [
+        {
+          name = "share/proton-cachyos";
+          path = pkgs.proton-cachyos.steamcompattool;
+        }
         {
           name = "share/proton-ge";
           path = pkgs.proton-ge-bin.steamcompattool;
@@ -16,7 +20,7 @@ in
     {
       programs.steam.extraCompatPackages = [ pkgs.proton-cachyos ];
       environment.systemPackages = [
-        protonGeRoot
+        protonRoots
         pkgs.umu-launcher
       ];
 
@@ -41,6 +45,11 @@ in
           homeManager.dev
           homeManager.llama
         ];
+
+        xdg.configFile = {
+          "heroic/tools/proton/Nix-Proton-CachyOS".source = pkgs.proton-cachyos.steamcompattool;
+          "heroic/tools/proton/Nix-Proton-GE".source = pkgs.proton-ge-bin.steamcompattool;
+        };
 
         llama = {
           model = {
