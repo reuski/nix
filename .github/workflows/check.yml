@@ -79,12 +79,7 @@ jobs:
           skipAddingSubstituter: true
 
       - name: Build ${{ matrix.host }}
-        run: |
-          args=()
-          if [[ "${{ matrix.host }}" == "sampo" ]]; then
-            args+=(--accept-flake-config)
-          fi
-          /usr/bin/time -v nix build "${args[@]}" --no-link ".#checks.x86_64-linux.nixos-${{ matrix.host }}" --print-build-logs
+        run: /usr/bin/time -v nix build --no-link ".#checks.x86_64-linux.nixos-${{ matrix.host }}" --print-build-logs
 
       - name: Size ${{ matrix.host }}
         run: nix path-info --closure-size --human-readable ".#checks.x86_64-linux.nixos-${{ matrix.host }}"
