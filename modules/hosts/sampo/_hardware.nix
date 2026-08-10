@@ -1,3 +1,4 @@
+{ inputs }:
 {
   config,
   lib,
@@ -22,7 +23,10 @@
     "ntsync"
   ];
 
-  boot.kernelPackages = lib.mkForce pkgs.linuxPackages_zen;
+  boot.kernelPackages = lib.mkForce (
+    pkgs.linuxPackagesFor
+      inputs.nix-cachyos-kernel.packages.${pkgs.stdenv.hostPlatform.system}.linux-cachyos-latest-lto-x86_64-v3
+  );
   boot.kernelParams = [
     "nowatchdog"
     "usbcore.autosuspend=-1"

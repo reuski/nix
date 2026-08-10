@@ -4,12 +4,19 @@ let
 in
 {
   configurations.nixos.sampo.module =
-    { config, ... }:
+    { config, pkgs, ... }:
     {
+      programs.steam.extraCompatPackages = [ pkgs.proton-cachyos ];
+
+      nix.settings = {
+        extra-substituters = [ "https://attic.xuyh0120.win/lantian" ];
+        extra-trusted-public-keys = [ "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=" ];
+      };
+
       imports = [
         inputs.disko.nixosModules.disko
         ./_disko.nix
-        ./_hardware.nix
+        (import ./_hardware.nix { inherit inputs; })
         ./_network.nix
         nixos.desktop
         nixos.gaming

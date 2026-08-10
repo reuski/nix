@@ -76,9 +76,15 @@ jobs:
         with:
           name: reuski # cachix cache name (app.cachix.org)
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipAddingSubstituter: true
 
       - name: Build ${{ matrix.host }}
-        run: /usr/bin/time -v nix build --no-link ".#checks.x86_64-linux.nixos-${{ matrix.host }}" --print-build-logs
+        run: |
+          args=()
+          if [[ "${{ matrix.host }}" == "sampo" ]]; then
+            args+=(--accept-flake-config)
+          fi
+          /usr/bin/time -v nix build "${args[@]}" --no-link ".#checks.x86_64-linux.nixos-${{ matrix.host }}" --print-build-logs
 
       - name: Size ${{ matrix.host }}
         run: nix path-info --closure-size --human-readable ".#checks.x86_64-linux.nixos-${{ matrix.host }}"
@@ -101,6 +107,7 @@ jobs:
         with:
           name: reuski # cachix cache name (app.cachix.org)
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipAddingSubstituter: true
 
       - name: Build abraxas
         run: /usr/bin/time -l nix build --no-link ".#checks.aarch64-darwin.darwin-abraxas" --print-build-logs

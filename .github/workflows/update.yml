@@ -39,6 +39,8 @@ jobs:
             nix-update --flake --version=skip --url "$2" --override-filename "$3" "$4"
           }
           bump stable https://github.com/imputnet/helium-linux modules/packages/helium.nix helium-browser
+          proton_cachyos_version="$(curl --fail --silent --show-error --location https://api.github.com/repos/CachyOS/proton-cachyos/releases/latest | jq -r .tag_name)"
+          bump "$proton_cachyos_version" https://github.com/CachyOS/proton-cachyos modules/packages/proton-cachyos.nix proton-cachyos
           bump branch https://github.com/reuski/reuski.dev modules/packages/web.nix web-reuski-dev
           bump branch https://github.com/reuski/beebud modules/packages/web.nix web-beebud
           bump branch https://github.com/reuski/wahuu.games modules/packages/web.nix web-wahuu-games
@@ -58,11 +60,13 @@ jobs:
         with:
           name: reuski # cachix cache name (app.cachix.org)
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipAddingSubstituter: true
 
       - name: Build custom packages
         run: |
           nix build --no-link --print-build-logs \
             .#helium-browser \
+            '.#proton-cachyos^steamcompattool' \
             .#web-reuski-dev \
             .#web-beebud \
             .#web-wahuu-games

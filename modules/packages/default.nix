@@ -4,6 +4,7 @@
     config.flake.overlays.upstream
     config.flake.overlays.helium-browser
     config.flake.overlays.python-validity
+    config.flake.overlays.proton-cachyos
     config.flake.overlays.pi
     config.flake.overlays.web
   ];
@@ -15,7 +16,7 @@
         inherit (pkgs) pi-coding-agent pi-acp;
       }
       // lib.optionalAttrs (lib.hasSuffix "-linux" system) {
-        inherit (pkgs) helium-browser python-validity;
+        inherit (pkgs) helium-browser proton-cachyos python-validity;
         inherit (pkgs) web-beebud web-reuski-dev web-wahuu-games;
       };
     };
