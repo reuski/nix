@@ -33,6 +33,11 @@
           containerConfig = {
             networks = [ ];
             publishPorts = [ "127.0.0.1:${toString port}:${toString port}" ];
+            healthCmd = "curl -fsS http://127.0.0.1:${toString port}/readyz";
+            healthInterval = "30s";
+            healthRetries = 3;
+            healthStartPeriod = "40s";
+            healthTimeout = "5s";
             healthOnFailure = "kill";
           };
           environment.DEGOOG_DISTRUST_PROXY = "0";
