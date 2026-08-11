@@ -4,34 +4,27 @@ let
 in
 {
   configurations.nixos.sampo.module =
-    { config, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
-      protonVariants = [
-        {
-          id = "cachyos";
-          name = "CachyOS";
-          package = pkgs.proton-cachyos;
-        }
-        {
-          id = "ge";
-          name = "GE";
-          package = pkgs.proton-ge-bin;
-        }
-        {
-          id = "cachyos-linuwux";
-          name = "CachyOS-LinUwUx";
-          package = pkgs.proton-cachyos-linuwux;
-        }
-      ];
+      protonVariants = {
+        CachyOS = pkgs.proton-cachyos;
+        GE = pkgs.proton-ge-bin;
+        CachyOS-LinUwUx = pkgs.proton-cachyos-linuwux;
+      };
       protonRoots = pkgs.linkFarm "proton-roots" (
-        map (variant: {
-          name = "share/proton-${variant.id}";
-          path = variant.package.steamcompattool;
+        lib.mapAttrsToList (name: package: {
+          name = "share/proton-${lib.toLower name}";
+          path = package.steamcompattool;
         }) protonVariants
       );
     in
     {
-      programs.steam.extraCompatPackages = map (variant: variant.package) protonVariants;
+      programs.steam.extraCompatPackages = builtins.attrValues protonVariants;
       environment.systemPackages = [
         protonRoots
         pkgs.umu-launcher
@@ -59,12 +52,12 @@ in
           homeManager.llama
         ];
 
-        xdg.configFile = builtins.listToAttrs (
-          map (variant: {
-            name = "heroic/tools/proton/Nix-Proton-${variant.name}";
-            value.source = variant.package.steamcompattool;
-          }) protonVariants
-        );
+        xdg.configFile = lib.mapAttrs' (
+          name: package:
+          lib.nameValuePair "heroic/tools/proton/Nix-Proton-${name}" {
+            source = package.steamcompattool;
+          }
+        ) protonVariants;
 
         llama = {
           model = {

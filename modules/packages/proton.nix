@@ -7,7 +7,8 @@
         {
           pname,
           version,
-          src,
+          url,
+          hash,
           upstreamName,
           displayName,
           description,
@@ -15,7 +16,9 @@
           license,
         }:
         final.stdenvNoCC.mkDerivation {
-          inherit pname version src;
+          inherit pname version;
+
+          src = final.fetchurl { inherit url hash; };
 
           outputs = [
             "out"
@@ -50,10 +53,8 @@
       proton-cachyos = mkProton rec {
         pname = "proton-cachyos";
         version = "cachyos-11.0-20260703-slr";
-        src = final.fetchurl {
-          url = "https://github.com/CachyOS/proton-cachyos/releases/download/${version}/proton-${version}-x86_64_v3.tar.xz";
-          hash = "sha256-A+zUK9fUdOm6RDzoly2WeKH6Osvykg12HzU5eUbs4oQ=";
-        };
+        url = "https://github.com/CachyOS/proton-cachyos/releases/download/${version}/proton-${version}-x86_64_v3.tar.xz";
+        hash = "sha256-A+zUK9fUdOm6RDzoly2WeKH6Osvykg12HzU5eUbs4oQ=";
         upstreamName = "proton-${version}-x86_64_v3";
         displayName = "Proton CachyOS x86_64-v3";
         description = "CachyOS Proton build for the Steam Linux Runtime (x86-64-v3)";
@@ -64,10 +65,8 @@
       proton-cachyos-linuwux = mkProton rec {
         pname = "proton-cachyos-linuwux";
         version = "proton-cachyos-11.0-20260703-slr-LinUwUx";
-        src = final.fetchurl {
-          url = "https://github.com/xshaduwulfx/proton-linuwux/releases/download/${version}/${version}.tar.gz";
-          hash = "sha256-Lu55imTqIOaHlfLtGkY3OzM9HXV6awREuM2whRk8zno=";
-        };
+        url = "https://github.com/xshaduwulfx/proton-linuwux/releases/download/${version}/${version}.tar.gz";
+        hash = "sha256-Lu55imTqIOaHlfLtGkY3OzM9HXV6awREuM2whRk8zno=";
         upstreamName = version;
         displayName = "Proton CachyOS LinUwUx";
         description = "Proton-CachyOS build patched with LinUwUx.patch";
