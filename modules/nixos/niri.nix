@@ -6,6 +6,10 @@
       niriPackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
       niriSession = lib.getExe' niriPackage "niri-session";
       tuigreet = lib.getExe pkgs.tuigreet;
+      greetdSession = pkgs.writeShellScript "greetd-niri-session" ''
+        . /etc/set-environment
+        exec ${niriSession}
+      '';
     in
     {
       imports = [ inputs.niri.nixosModules.niri ];
@@ -27,7 +31,7 @@
       services.greetd = {
         enable = true;
         settings.default_session = {
-          command = "${tuigreet} --time --remember --remember-user-session --cmd ${niriSession}";
+          command = "${tuigreet} --time --remember --remember-user-session --cmd ${greetdSession}";
           user = "greeter";
         };
       };
