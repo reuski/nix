@@ -1,7 +1,11 @@
 { ... }:
 {
-  flake.modules.homeManager.zed-editor =
-    { lib, pkgs, ... }:
+  flake.modules.homeManager.zed =
+    {
+      lib,
+      pkgs,
+      ...
+    }:
     let
       isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
       biomeStack = [

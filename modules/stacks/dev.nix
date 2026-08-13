@@ -9,7 +9,7 @@ in
       homeManager.devenv
       homeManager.gh
       homeManager.pi
-      homeManager.zed-editor
+      homeManager.zed
     ];
   };
 }
