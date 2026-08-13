@@ -104,15 +104,17 @@
 
       serviceHosts =
         _name: service:
-        {
-          ${service.domain}.extraConfig = ''
-            encode zstd gzip
-            ${headers}
-            ${service.extraConfig}
-            reverse_proxy 127.0.0.1:${toString service.port}
-          '';
-        }
-        // redirectHosts service;
+        optionalAttrs (service.domain != null) (
+          {
+            ${service.domain}.extraConfig = ''
+              encode zstd gzip
+              ${headers}
+              ${service.extraConfig}
+              reverse_proxy 127.0.0.1:${toString service.port}
+            '';
+          }
+          // redirectHosts service
+        );
 
       virtualHosts = mergeAttrsList (
         (mapAttrsToList siteHosts cfg.sites) ++ (mapAttrsToList serviceHosts cfg.services)
@@ -128,10 +130,13 @@
         ) cfg.sites)
         ++ (mapAttrsToList (
           _: s:
-          [
-            s.domain
-          ]
-          ++ s.aliases
+          if s.domain == null then
+            [ ]
+          else
+            [
+              s.domain
+            ]
+            ++ s.aliases
         ) cfg.services)
       );
       servicePorts = mapAttrsToList (_: s: s.port) cfg.services;
@@ -172,6 +177,11 @@
           type = types.attrsOf (
             types.submodule {
               options = hostOptions // {
+                domain = mkOption {
+                  type = types.nullOr types.str;
+                  default = null;
+                  description = "Public domain; null for a loopback-only service.";
+                };
                 package = mkOption {
                   type = types.package;
                   description = "Derivation providing bin/web-<name>.";

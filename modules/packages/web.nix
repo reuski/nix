@@ -1,4 +1,8 @@
-{ lib, ... }:
+{
+  inputs,
+  lib,
+  ...
+}:
 {
   flake.overlays.web =
     final: _prev:
@@ -42,25 +46,14 @@
         {
           pname,
           version,
-          owner,
-          repo,
-          rev,
-          hash,
+          src,
           depsHash,
-          buildScript ? "build",
+          buildCommand ? "bun run build",
           installPhase,
         }:
         stdenvNoCC.mkDerivation (
           finalAttrs:
           let
-            src = fetchFromGitHub {
-              inherit
-                owner
-                repo
-                rev
-                hash
-                ;
-            };
             deps = bunDeps {
               inherit src;
               hash = finalAttrs.depsHash;
@@ -87,7 +80,7 @@
               runHook preBuild
               export HOME=$TMPDIR
               export BUN_INSTALL_CACHE_DIR=$TMPDIR/cache
-              bun run ${lib.escapeShellArg buildScript}
+              ${buildCommand}
               runHook postBuild
             '';
             installPhase = ''
@@ -104,10 +97,12 @@
       web-reuski-dev = bunApp {
         pname = "reuski-dev";
         version = "0-unstable-2026-06-30";
-        owner = "reuski";
-        repo = "reuski.dev";
-        rev = "910b001d50553d4957bc982aee63de726ba59fe2";
-        hash = "sha256-j7v4qEjofg6EH99Tdb6vOHq1iPo9VrpJPJJlXEvdklI=";
+        src = fetchFromGitHub {
+          owner = "reuski";
+          repo = "reuski.dev";
+          rev = "910b001d50553d4957bc982aee63de726ba59fe2";
+          hash = "sha256-j7v4qEjofg6EH99Tdb6vOHq1iPo9VrpJPJJlXEvdklI=";
+        };
         depsHash = "sha256-KIsFYH+6fAIUZ7ZdryBZDA7RIw5+M+/DHtHXD2HY2+U=";
         installPhase = ''
           cp -r _site $out
@@ -117,10 +112,12 @@
       web-beebud = bunApp {
         pname = "beebud";
         version = "0-unstable-2026-06-30";
-        owner = "reuski";
-        repo = "beebud";
-        rev = "a18d639d655c3d4d827e96663b44b4d80fe31a6e";
-        hash = "sha256-6YYxqx7rPlu4JgZAIganb8TIqf82lyXyW2m12s3wXyI=";
+        src = fetchFromGitHub {
+          owner = "reuski";
+          repo = "beebud";
+          rev = "a18d639d655c3d4d827e96663b44b4d80fe31a6e";
+          hash = "sha256-6YYxqx7rPlu4JgZAIganb8TIqf82lyXyW2m12s3wXyI=";
+        };
         depsHash = "sha256-kWm3thvDSgxodii94PHKFE7YvF+xi01/ADW9xz6PwqI=";
         installPhase = ''
           mkdir -p $out
@@ -131,13 +128,33 @@
         '';
       };
 
+      web-juttu = bunApp {
+        pname = "juttu";
+        version = "0-unstable-2026-08-13";
+        src = inputs.juttu.outPath;
+        depsHash = "sha256-B2+Ukdvqcv5CEwBmHgpeuzCLXY30HF1Ir0Qfu6eBMi8=";
+        # vite's bin shim shebangs to /usr/bin/env node (absent in the Nix
+        # sandbox); run vite's JS entry under bun directly. Env validation is
+        # lazy, so the build needs no secrets.
+        buildCommand = "bun ./node_modules/vite/bin/vite.js build";
+        installPhase = ''
+          mkdir -p $out
+          cp -r build $out/build
+          ln -s "$nodeModules" $out/node_modules
+          makeWrapper ${lib.getExe bun} $out/bin/web-juttu \
+            --add-flags "$out/build/index.js"
+        '';
+      };
+
       web-wahuu-games = bunApp {
         pname = "wahuu-games";
         version = "0-unstable-2026-05-10";
-        owner = "reuski";
-        repo = "wahuu.games";
-        rev = "2188815f57a49e4319fc0852e796a598a03aa1f4";
-        hash = "sha256-7VxG/elF4x7Vdc3dAItS60gix0MYjxI5TcGV/ND3mhE=";
+        src = fetchFromGitHub {
+          owner = "reuski";
+          repo = "wahuu.games";
+          rev = "2188815f57a49e4319fc0852e796a598a03aa1f4";
+          hash = "sha256-7VxG/elF4x7Vdc3dAItS60gix0MYjxI5TcGV/ND3mhE=";
+        };
         depsHash = "sha256-vUP1Far2eWpog8ste0MH4xBVC+369JkMGDyP60OQLiU=";
         installPhase = ''
           mkdir -p $out/bin

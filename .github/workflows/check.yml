@@ -41,6 +41,10 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
 
+      - uses: ./.github/actions/private-ssh
+        with:
+          key: ${{ secrets.NIX_BUILDER_KEY }}
+
       - name: Verify sops recipients
         run: python3 .github/scripts/check-sops-recipients.py
 
@@ -77,6 +81,10 @@ jobs:
           name: reuski # cachix cache name (app.cachix.org)
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           skipAddingSubstituter: true
+
+      - uses: ./.github/actions/private-ssh
+        with:
+          key: ${{ secrets.NIX_BUILDER_KEY }}
 
       - name: Build ${{ matrix.host }}
         run: /usr/bin/time -v nix build --no-link ".#checks.x86_64-linux.nixos-${{ matrix.host }}" --print-build-logs

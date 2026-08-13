@@ -20,6 +20,7 @@ in
         nixos.boot
         nixos.server
         nixos.metal
+        nixos.github
         nixos.proxy
         nixos.tailnet
         nixos.quadlets

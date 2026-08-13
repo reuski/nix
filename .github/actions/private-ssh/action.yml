@@ -1,0 +1,26 @@
+name: private-ssh
+description: Configure SSH for private git+ssh flake inputs using the shared builder key.
+
+inputs:
+  key:
+    description: PEM private deploy key with read access to private repos.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure SSH for private flake inputs
+      shell: bash
+      env:
+        KEY: ${{ inputs.key }}
+      run: |
+        mkdir -p ~/.ssh && chmod 700 ~/.ssh
+        printf '%s\n' "$KEY" > ~/.ssh/github_builder_key
+        chmod 600 ~/.ssh/github_builder_key
+        echo "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" >> ~/.ssh/known_hosts
+        cat > ~/.ssh/config <<'EOF'
+        Host github.com
+          IdentitiesOnly yes
+          IdentityFile ~/.ssh/github_builder_key
+        EOF
+        chmod 600 ~/.ssh/config

@@ -31,8 +31,16 @@
         port = 3000;
         envFile = config.sops.secrets."web/wahuu-games/env".path;
       };
+
+      juttu = {
+        package = pkgs.web-juttu;
+        port = 3003;
+        envFile = config.sops.secrets."web/juttu/env".path;
+      };
     };
   };
+
+  tailnet.services.juttu.port = config.web.services.juttu.port;
 
   sops.secrets = {
     "web/beebud/env" = {
@@ -46,6 +54,12 @@
       group = config.web.group;
       mode = "0400";
       restartUnits = [ "web-wahuu-games.service" ];
+    };
+    "web/juttu/env" = {
+      owner = config.web.user;
+      group = config.web.group;
+      mode = "0400";
+      restartUnits = [ "web-juttu.service" ];
     };
   };
 }

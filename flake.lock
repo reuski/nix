@@ -272,6 +272,27 @@
         "type": "github"
       }
     },
+    "juttu": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786630242,
+        "narHash": "sha256-9TGLWitV3nvZfbWFAz7aH5IyV0Fu8pw5Zb4d27KV/gQ=",
+        "ref": "main",
+        "rev": "cc6d9b9189a961f16b4605b306ccc76428fee5b8",
+        "revCount": 14,
+        "type": "git",
+        "url": "ssh://git@github.com/reuski/juttu.git"
+      },
+      "original": {
+        "ref": "main",
+        "type": "git",
+        "url": "ssh://git@github.com/reuski/juttu.git"
+      }
+    },
     "niri": {
       "inputs": {
         "niri-stable": "niri-stable",
@@ -620,6 +641,7 @@
         "heimdash": "heimdash",
         "home-manager": "home-manager_2",
         "import-tree": "import-tree",
+        "juttu": "juttu",
         "niri": "niri",
         "nix-cachyos-kernel": "nix-cachyos-kernel",
         "nix-homebrew": "nix-homebrew",

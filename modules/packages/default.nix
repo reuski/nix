@@ -22,7 +22,12 @@
           proton-cachyos-linuwux
           python-validity
           ;
-        inherit (pkgs) web-beebud web-reuski-dev web-wahuu-games;
+        inherit (pkgs)
+          web-beebud
+          web-juttu
+          web-reuski-dev
+          web-wahuu-games
+          ;
       };
     };
 }

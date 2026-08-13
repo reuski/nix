@@ -12,6 +12,7 @@ in
         ./_hardware.nix
         nixos.server
         nixos.web
+        nixos.tailnet
         ./_services.nix
       ];
 

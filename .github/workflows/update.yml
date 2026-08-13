@@ -25,6 +25,10 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
 
+      - uses: ./.github/actions/private-ssh
+        with:
+          key: ${{ secrets.NIX_BUILDER_KEY }}
+
       - name: Update inputs
         run: nix flake update
         timeout-minutes: 8
