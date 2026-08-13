@@ -65,7 +65,7 @@
           "@system-service"
           "~@privileged"
         ];
-        SystemCallErrno = "EPERM";
+        SystemCallErrorNumber = "EPERM";
       };
 
       hostOptions = {
