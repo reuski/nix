@@ -11,7 +11,7 @@
       gruvbox = config.profile.colors.gruvbox;
       fishHex = color: builtins.substring 1 6 color;
       sopsEnv =
-        if pkgs.stdenv.isLinux then
+        if pkgs.stdenv.hostPlatform.isLinux then
           "/run/secrets/env"
         else
           "${config.home.homeDirectory}/.config/sops-nix/secrets/env";

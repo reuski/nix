@@ -4,7 +4,7 @@
     { config, pkgs, ... }:
     let
       identityFile =
-        if pkgs.stdenv.isLinux then
+        if pkgs.stdenv.hostPlatform.isLinux then
           "/run/secrets/ssh/id_ed25519"
         else
           "${config.home.homeDirectory}/.config/sops-nix/secrets/ssh/id_ed25519";

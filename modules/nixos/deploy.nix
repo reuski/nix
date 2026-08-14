@@ -40,9 +40,14 @@
             export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
 
             activate() {
-              nixos-rebuild switch --flake "${flake}#$1" \
-                --target-host "root@$1" --refresh --fallback --option tarball-ttl 0 \
-                --max-jobs 1 --cores ${toString cfg.cores}
+              local attempt
+              for attempt in 1 2 3; do
+                nixos-rebuild switch --flake "${flake}#$1" \
+                  --target-host "root@$1" --refresh --fallback --option tarball-ttl 0 \
+                  --max-jobs 1 --cores ${toString cfg.cores} && return 0
+                [ "$attempt" -lt 3 ] && sleep $(( attempt * 30 ))
+              done
+              return 1
             }
 
             reboot_if_stale() {
@@ -54,7 +59,7 @@
 
             ${lib.concatMapStringsSep "\n" (h: ''
               log=$(mktemp)
-              if activate ${h} > "$log" 2>&1 || activate ${h} > "$log" 2>&1; then
+              if activate ${h} > "$log" 2>&1; then
                 mark ACT ${h} OK
                 reboot_if_stale ${h} || true
               else
@@ -69,15 +74,17 @@
 
           ${lib.optionalString (cfg.warm != [ ]) ''
             warm() {
-              local out
-              out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
-                --refresh --fallback --option tarball-ttl 0 --no-link --print-out-paths \
-                --max-jobs 1 --cores ${toString cfg.cores} 2> "$2") \
-              || out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
-                --refresh --fallback --option tarball-ttl 0 --no-link --print-out-paths \
-                --max-jobs 1 --cores ${toString cfg.cores} 2>> "$2") \
-              || return 1
-              attic push "local:${cfg.cache}" "$out" >> "$2" 2>&1
+              local out attempt
+              for attempt in 1 2 3; do
+                if out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
+                    --refresh --fallback --option tarball-ttl 0 --no-link --print-out-paths \
+                    --max-jobs 1 --cores ${toString cfg.cores} 2>> "$2"); then
+                  attic push "local:${cfg.cache}" "$out" >> "$2" 2>&1
+                  return 0
+                fi
+                [ "$attempt" -lt 3 ] && sleep $(( attempt * 30 ))
+              done
+              return 1
             }
 
             # shellcheck disable=SC2154
