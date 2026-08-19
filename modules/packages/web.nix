@@ -17,12 +17,15 @@
 
       bunDeps =
         {
+          name,
           src,
           hash,
         }:
         stdenvNoCC.mkDerivation {
-          name = "bun-deps";
-          inherit src;
+          inherit
+            name
+            src
+            ;
           nativeBuildInputs = [
             bun
             cacert
@@ -36,7 +39,7 @@
           dontBuild = true;
           installPhase = ''
             export HOME=$TMPDIR
-            bun install --frozen-lockfile --no-progress
+            bun install --frozen-lockfile --no-progress --ignore-scripts
             mkdir -p $out
             cp -r node_modules $out/
           '';
@@ -55,6 +58,7 @@
           finalAttrs:
           let
             deps = bunDeps {
+              name = "${pname}-${finalAttrs.version}-bun-deps";
               inherit src;
               hash = finalAttrs.depsHash;
             };
@@ -130,12 +134,9 @@
 
       web-juttu = bunApp {
         pname = "juttu";
-        version = "0-unstable-2026-08-13";
+        version = "0-unstable-${builtins.substring 0 7 (inputs.juttu.rev or "unknown")}";
         src = inputs.juttu.outPath;
-        depsHash = "sha256-B2+Ukdvqcv5CEwBmHgpeuzCLXY30HF1Ir0Qfu6eBMi8=";
-        # vite's bin shim shebangs to /usr/bin/env node (absent in the Nix
-        # sandbox); run vite's JS entry under bun directly. Env validation is
-        # lazy, so the build needs no secrets.
+        depsHash = "sha256-1KKPGHDLzhB7NKDcP2VILWbI6zjVDuzzXGXbmoEHHIQ=";
         buildCommand = "bun ./node_modules/vite/bin/vite.js build";
         installPhase = ''
           mkdir -p $out

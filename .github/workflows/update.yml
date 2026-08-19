@@ -52,6 +52,43 @@ jobs:
           bump branch https://github.com/reuski/wahuu.games modules/packages/web.nix web-wahuu-games
         timeout-minutes: 20
 
+      - name: Refresh web deps hashes
+        run: |
+          refresh() {
+            local attr=$1 out got
+            local name=${attr#web-}
+            if out=$(nix build --impure --no-link "path:$PWD#$attr.npmDeps" 2>&1); then
+              echo "$name: deps hash up to date"
+              return 0
+            fi
+            got=$(printf '%s\n' "$out" | grep -oE 'got: +sha256-[A-Za-z0-9+/=]+' | head -n1 | awk '{ print $2 }')
+            if [ -z "$got" ]; then
+              echo "$name: deps probe failed"
+              printf '%s\n' "$out" | tail -n 5
+              return 1
+            fi
+            python3 - "$name" "$got" <<'PY'
+          import pathlib, re, sys
+
+          name, got = sys.argv[1], sys.argv[2]
+          path = pathlib.Path("modules/packages/web.nix")
+          source = path.read_text()
+          pattern = re.compile(
+              r"(\bweb-" + re.escape(name) + r" = bunApp \{.*?depsHash = )\"sha256-[A-Za-z0-9+/=]+\"",
+              re.S,
+          )
+          source, count = pattern.subn(lambda m: m.group(1) + f'"{got}"', source, count=1)
+          assert count == 1, f"depsHash for {name} not found"
+          path.write_text(source)
+          PY
+            echo "$name: deps hash -> $got"
+          }
+          refresh web-juttu
+          refresh web-beebud
+          refresh web-reuski-dev
+          refresh web-wahuu-games
+        timeout-minutes: 20
+
       - name: Format
         run: nix fmt .
         timeout-minutes: 5
@@ -76,6 +113,7 @@ jobs:
             '.#proton-cachyos-linuwux^steamcompattool' \
             .#web-reuski-dev \
             .#web-beebud \
+            .#web-juttu \
             .#web-wahuu-games
         timeout-minutes: 20
 

@@ -54,8 +54,6 @@
     linkConfig.RequiredForOnline = false;
   };
 
-  services.thermald.enable = true;
-
   environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
   environment.systemPackages = with pkgs; [
     intel-gpu-tools
