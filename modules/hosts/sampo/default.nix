@@ -56,8 +56,8 @@ in
 
         llama = {
           model = {
-            repo = "unsloth/Qwen3.6-27B-MTP-GGUF";
-            file = "Qwen3.6-27B-UD-Q4_K_XL.gguf";
+            repo = "0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF";
+            file = "RVN-Q4_K_M-mtp.gguf";
           };
           params = {
             flashAttention = "on";

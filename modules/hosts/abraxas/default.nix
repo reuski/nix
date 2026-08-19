@@ -28,8 +28,8 @@ in
         ];
 
         llama.model = {
-          repo = "unsloth/Qwen3.6-35B-A3B-GGUF";
-          file = "Qwen3.6-35B-A3B-UD-Q6_K_XL.gguf";
+          repo = "unsloth/Qwen3.8-27B-GGUF";
+          file = "Qwen3.8-27B-UD-Q8_K_XL.gguf";
           mmproj = "mmproj-F16.gguf";
         };
       };
