@@ -45,6 +45,7 @@
   hardware.enableRedistributableFirmware = lib.mkDefault true;
 
   services.fwupd.enable = true;
+  services.lact.enable = true;
 
   services.xserver.videoDrivers = [ "nvidia" ];
 
