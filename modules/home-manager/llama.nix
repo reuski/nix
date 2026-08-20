@@ -79,12 +79,8 @@
         host = "127.0.0.1";
         port = 8080;
         context = 0;
-        gpuLayers = "auto";
         flashAttention = "auto";
         parallel = -1;
-        temperature = "0.80";
-        topK = 40;
-        minP = "0.05";
       };
       serverArgs = [
         "--hf-repo"
@@ -93,19 +89,16 @@
         cfg.model.file
         "--reasoning"
         "on"
+        "--reasoning-effort"
+        "low"
         "--no-ui"
         "--no-slots"
       ]
-      ++ optionalChangedArg cfg.model.alias cfg.model.repo "--alias"
       ++ optionalChangedArg cfg.host llamaCppDefaults.host "--host"
       ++ optionalChangedArg cfg.port llamaCppDefaults.port "--port"
-      ++ optionalChangedArg cfg.params.gpuLayers llamaCppDefaults.gpuLayers "--gpu-layers"
       ++ optionalChangedArg cfg.params.context llamaCppDefaults.context "--ctx-size"
       ++ optionalChangedArg cfg.params.flashAttention llamaCppDefaults.flashAttention "--flash-attn"
       ++ optionalChangedArg cfg.params.parallel llamaCppDefaults.parallel "--parallel"
-      ++ optionalChangedArg cfg.params.temperature llamaCppDefaults.temperature "--temp"
-      ++ optionalChangedArg cfg.params.topK llamaCppDefaults.topK "--top-k"
-      ++ optionalChangedArg cfg.params.minP llamaCppDefaults.minP "--min-p"
       ++ optionalArg (cfg.model.mmproj == null) [ "--no-mmproj" ]
       ++ optionalArg (cfg.model.mmproj != null) [
         "--mmproj-url"
@@ -210,11 +203,6 @@
             type = types.nullOr types.str;
             default = null;
           };
-          alias = mkOption {
-            type = types.str;
-            default = cfg.model.repo;
-            description = "Model name reported by llama-server.";
-          };
         };
         host = mkOption {
           type = types.str;
@@ -229,10 +217,6 @@
             type = types.ints.positive;
             default = 16384;
           };
-          gpuLayers = mkOption {
-            type = types.str;
-            default = "all";
-          };
           flashAttention = mkOption {
             type = types.enum [
               "auto"
@@ -244,18 +228,6 @@
           parallel = mkOption {
             type = types.ints.positive;
             default = 1;
-          };
-          temperature = mkOption {
-            type = types.str;
-            default = "0.6";
-          };
-          topK = mkOption {
-            type = types.ints.positive;
-            default = 20;
-          };
-          minP = mkOption {
-            type = types.str;
-            default = "0.00";
           };
           mtpDraftTokens = mkOption {
             type = types.nullOr types.ints.positive;

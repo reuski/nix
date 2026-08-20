@@ -32,6 +32,11 @@ in
           file = "Qwen3.8-27B-UD-Q8_K_XL.gguf";
           mmproj = "mmproj-F16.gguf";
         };
+
+        llama.params = {
+          context = 32768;
+          mtpDraftTokens = 1;
+        };
       };
 
       system.stateVersion = 6;
