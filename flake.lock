@@ -159,11 +159,11 @@
         "zon2nix": "zon2nix"
       },
       "locked": {
-        "lastModified": 1787193618,
-        "narHash": "sha256-EL+jVA/uZZo3l/UZO/7XRq1LaaWF7mohHrCeLCXb6R0=",
+        "lastModified": 1787245934,
+        "narHash": "sha256-i+/v/DHPeZUJTSZZm0lWa8RNCYwpb7my4V0SZWrnpr8=",
         "owner": "ghostty-org",
         "repo": "ghostty",
-        "rev": "9ae02a326f62bd88f7f5508cf1807c67e7775cb5",
+        "rev": "e6605009bb956eb7a24d5fd3fd5a40b99d1c1892",
         "type": "github"
       },
       "original": {
@@ -279,11 +279,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1787076493,
-        "narHash": "sha256-QsVHX5ZkNAa2IA6OpWL227YpjF6KpeInuoYcb4CJLgc=",
+        "lastModified": 1787234098,
+        "narHash": "sha256-EElZfiT0JLOQ4d3a1Gpm8jeLcjz5RTascz3Pihv7Fg0=",
         "ref": "main",
-        "rev": "404b78ea398975fecd45916e5b800d1da9cb5b5d",
-        "revCount": 24,
+        "rev": "ad7014c79e2cce8cb001baa38c8c996d166c6389",
+        "revCount": 25,
         "type": "git",
         "url": "ssh://git@github.com/reuski/juttu.git"
       },
@@ -567,11 +567,11 @@
         "nixpkgs": "nixpkgs_5"
       },
       "locked": {
-        "lastModified": 1787196493,
-        "narHash": "sha256-vlpv5X3qOzoTGtJxejXkIdivgnJ3jI+3Gn1neD6y/mI=",
+        "lastModified": 1787234716,
+        "narHash": "sha256-O07tHqxugZ/XE/90kx/UCZ0YCbHSI88v2ct2ezuCKi4=",
         "owner": "noctalia-dev",
         "repo": "noctalia",
-        "rev": "02286bbdcfa81dc3675c9de1d7203a466fcaf0eb",
+        "rev": "a064c063f204518619b8c032c944138a0349966b",
         "type": "github"
       },
       "original": {
@@ -774,11 +774,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1786962391,
-        "narHash": "sha256-Of1YU59mj9BZwQi7lbj/+XGaCs+MTGFCZ12bgcNbEu0=",
+        "lastModified": 1787232541,
+        "narHash": "sha256-Tl++tyDcMn8qFUQB9OmyuPUGWUMCff3wLDqtdysoeJc=",
         "owner": "vicinaehq",
         "repo": "vicinae",
-        "rev": "1f6de859a4142e24e73f7cc8a70df1a6e8d77a0e",
+        "rev": "db651f6c8c6e1b07198ec4cea94206d754db37d2",
         "type": "github"
       },
       "original": {
