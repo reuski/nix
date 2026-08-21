@@ -149,14 +149,14 @@
 
       web-wahuu-games = bunApp {
         pname = "wahuu-games";
-        version = "0-unstable-2026-05-10";
+        version = "0-unstable-2026-08-21";
         src = fetchFromGitHub {
           owner = "reuski";
           repo = "wahuu.games";
-          rev = "2188815f57a49e4319fc0852e796a598a03aa1f4";
-          hash = "sha256-7VxG/elF4x7Vdc3dAItS60gix0MYjxI5TcGV/ND3mhE=";
+          rev = "a03e3ce42142b3c6f09b841691d3ec86a1aaa674";
+          hash = "sha256-ESfV+PD0VogT1/3L0oVUcB6ahFGwSWFmYlJg8YdHhGA=";
         };
-        depsHash = "sha256-vUP1Far2eWpog8ste0MH4xBVC+369JkMGDyP60OQLiU=";
+        depsHash = "sha256-6OlNNRGbdcQ/pI1HySGO5rl4U3q/5VRFCREBQeut5Co=";
         installPhase = ''
           mkdir -p $out/bin
           cp -r src dist index.html $out/
