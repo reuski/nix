@@ -20,7 +20,13 @@ in
 
       system.autoUpgrade.enable = lib.mkForce false;
 
-      services.tailscale.extraSetFlags = [ "--ssh" ];
+      services.tailscale = {
+        useRoutingFeatures = "client";
+        extraSetFlags = [
+          "--ssh"
+          "--accept-routes=true"
+        ];
+      };
 
       systemd.network.networks."10-wan".networkConfig = {
         DHCP = lib.mkForce "ipv4";

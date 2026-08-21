@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -41,6 +42,11 @@
   };
 
   tailnet.services.juttu.port = config.web.services.juttu.port;
+
+  systemd.services.web-juttu.serviceConfig.RestrictAddressFamilies = lib.mkForce [
+    "AF_INET"
+    "AF_UNIX"
+  ];
 
   sops.secrets = {
     "web/beebud/env" = {
