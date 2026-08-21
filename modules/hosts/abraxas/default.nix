@@ -27,15 +27,13 @@ in
           homeManager.llama
         ];
 
-        llama.model = {
-          repo = "unsloth/Qwen3.8-27B-GGUF";
-          file = "Qwen3.8-27B-UD-Q8_K_XL.gguf";
-          mmproj = "mmproj-F16.gguf";
-        };
-
-        llama.params = {
-          context = 32768;
-          mtpDraftTokens = 1;
+        llama = {
+          model = {
+            repo = "unsloth/Qwen3.8-27B-GGUF";
+            file = "Qwen3.8-27B-UD-Q8_K_XL.gguf";
+            mmproj = "mmproj-F16.gguf";
+          };
+          params.mtpDraftTokens = 1;
         };
       };
 

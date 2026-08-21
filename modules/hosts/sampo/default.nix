@@ -59,10 +59,7 @@ in
             repo = "0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF";
             file = "RVN-Q4_K_M-mtp.gguf";
           };
-          params = {
-            flashAttention = "on";
-            mtpDraftTokens = 2;
-          };
+          params.mtpDraftTokens = 2;
         };
       };
 

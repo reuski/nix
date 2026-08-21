@@ -204,18 +204,22 @@
             baseUrl = "http://localhost:8080";
             api = "openai-completions";
             apiKey = "llama";
-            compat = {
-              supportsDeveloperRole = false;
-              supportsReasoningEffort = false;
-              supportsUsageInStreaming = true;
-              maxTokensField = "max_tokens";
-            };
             models = [
               {
                 id = "local";
                 name = "llama-server";
+                reasoning = true;
+                thinkingLevelMap = {
+                  off = "none";
+                  minimal = null;
+                  low = "low";
+                  medium = "medium";
+                  high = "xhigh";
+                  xhigh = "xhigh";
+                  max = null;
+                };
                 input = [ "text" ];
-                contextWindow = 65536;
+                contextWindow = 32768;
                 maxTokens = 16384;
               }
             ];

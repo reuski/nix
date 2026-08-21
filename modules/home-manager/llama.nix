@@ -79,7 +79,6 @@
         host = "127.0.0.1";
         port = 8080;
         context = 0;
-        flashAttention = "auto";
         parallel = -1;
       };
       serverArgs = [
@@ -87,17 +86,14 @@
         cfg.model.repo
         "--hf-file"
         cfg.model.file
-        "--reasoning"
-        "on"
-        "--reasoning-effort"
-        "low"
+        "--min-p"
+        "0"
         "--no-ui"
         "--no-slots"
       ]
       ++ optionalChangedArg cfg.host llamaCppDefaults.host "--host"
       ++ optionalChangedArg cfg.port llamaCppDefaults.port "--port"
       ++ optionalChangedArg cfg.params.context llamaCppDefaults.context "--ctx-size"
-      ++ optionalChangedArg cfg.params.flashAttention llamaCppDefaults.flashAttention "--flash-attn"
       ++ optionalChangedArg cfg.params.parallel llamaCppDefaults.parallel "--parallel"
       ++ optionalArg (cfg.model.mmproj == null) [ "--no-mmproj" ]
       ++ optionalArg (cfg.model.mmproj != null) [
@@ -215,15 +211,7 @@
         params = {
           context = mkOption {
             type = types.ints.positive;
-            default = 16384;
-          };
-          flashAttention = mkOption {
-            type = types.enum [
-              "auto"
-              "on"
-              "off"
-            ];
-            default = "auto";
+            default = 32768;
           };
           parallel = mkOption {
             type = types.ints.positive;
