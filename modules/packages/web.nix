@@ -153,8 +153,8 @@
         src = fetchFromGitHub {
           owner = "reuski";
           repo = "wahuu.games";
-          rev = "a03e3ce42142b3c6f09b841691d3ec86a1aaa674";
-          hash = "sha256-ESfV+PD0VogT1/3L0oVUcB6ahFGwSWFmYlJg8YdHhGA=";
+          rev = "4a1096d6969dd8034aceed5dec686344d78949c2";
+          hash = "sha256-nMJej2+ytUi01n3H1PWzfHe3ajWeEmUI4JmCc91Gn0k=";
         };
         depsHash = "sha256-6OlNNRGbdcQ/pI1HySGO5rl4U3q/5VRFCREBQeut5Co=";
         installPhase = ''
