@@ -91,13 +91,15 @@
           mark() { printf '%s %s %s\n' "$1" "$2" "$3" >> "$score"; }
 
           ${lib.optionalString (cfg.targets != [ ]) ''
-            export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes"
+            export NIX_SSHOPTS="-o StrictHostKeyChecking=accept-new -o BatchMode=yes${
+              lib.optionalString (cfg.sshKey != null) " -i ${cfg.sshKey}"
+            }"
 
             activate() {
-              local attempt
+              local target=$1 dest=$2 attempt
               for attempt in 1 2 3; do
-                nixos-rebuild switch --flake "${flake}#$1" \
-                  --target-host "root@$1" --refresh --fallback --option tarball-ttl 0 \
+                nixos-rebuild switch --flake "${flake}#$target" \
+                  --target-host "$dest" --refresh --fallback --option tarball-ttl 0 \
                   --max-jobs 1 --cores ${toString cfg.cores} && return 0
                 [ "$attempt" -lt 3 ] && sleep $(( attempt * 30 ))
               done
@@ -105,25 +107,33 @@
             }
 
             reboot_if_stale() {
-              ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes "root@$1" '
+              ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes${
+                lib.optionalString (cfg.sshKey != null) " -i ${cfg.sshKey}"
+              } "$1" '
                 booted=$(readlink /run/booted-system/{kernel,initrd,kernel-modules})
                 built=$(readlink /run/current-system/{kernel,initrd,kernel-modules})
                 [ "$booted" = "$built" ] || systemctl reboot'
             }
 
-            ${lib.concatMapStringsSep "\n" (h: ''
-              log=$(mktemp)
-              if activate ${h} > "$log" 2>&1; then
-                mark ACT ${h} OK
-                reboot_if_stale ${h} || true
-              else
-                rc=1
-                mark ACT ${h} FAIL
-                { printf '%s\n' ${h}; grep -iE 'error|fatal|fail|exception' "$log" | tail -n 3; } >> "$detail"
-              fi
-              collect "$log"
-              rm -f "$log"
-            '') cfg.targets}
+            ${lib.concatMapStringsSep "\n" (
+              h:
+              let
+                dest = cfg.sshHosts.${h} or "root@${h}";
+              in
+              ''
+                log=$(mktemp)
+                if activate ${h} "${dest}" > "$log" 2>&1; then
+                  mark ACT ${h} OK
+                  reboot_if_stale "${dest}" || true
+                else
+                  rc=1
+                  mark ACT ${h} FAIL
+                  { printf '%s\n' ${h}; grep -iE 'error|fatal|fail|exception' "$log" | tail -n 3; } >> "$detail"
+                fi
+                collect "$log"
+                rm -f "$log"
+              ''
+            ) cfg.targets}
           ''}
 
           ${lib.optionalString (cfg.warm != [ ]) ''
@@ -186,7 +196,17 @@
         targets = lib.mkOption {
           type = lib.types.listOf lib.types.str;
           default = [ ];
-          description = "Hosts this machine builds, pushes, and activates over Tailscale SSH (MagicDNS names).";
+          description = "Hosts this machine builds, pushes, and activates over SSH.";
+        };
+        sshKey = lib.mkOption {
+          type = lib.types.nullOr lib.types.str;
+          default = null;
+          description = "Optional path to an SSH private key used to authenticate to targets.";
+        };
+        sshHosts = lib.mkOption {
+          type = lib.types.attrsOf lib.types.str;
+          default = { };
+          description = "Optional per-target SSH destination (user@host), overriding root@<target>.";
         };
         stampPath = lib.mkOption {
           type = lib.types.nullOr lib.types.str;

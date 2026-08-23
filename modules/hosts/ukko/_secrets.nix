@@ -8,6 +8,7 @@
     "backup/restic-password".restartUnits = [ "restic-backups-ukko.service" ];
     "backup/rclone-conf".restartUnits = [ "restic-backups-ukko.service" ];
     "cloudflare/dns-token".restartUnits = [ "cloudflare-dyndns.service" ];
+    "deploy-ssh-key" = { };
     "degoog/settings-password".restartUnits = [ "degoog.service" ];
     "jellyfin/admin-password".restartUnits = [ "jellyfin-setup.service" ];
     "linkding/admin-password" = { };

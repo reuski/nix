@@ -10,6 +10,7 @@ in
         inputs.disko.nixosModules.disko
         ./_disko.nix
         ./_hardware.nix
+        ./_ssh.nix
         nixos.server
         nixos.web
         nixos.tailnet

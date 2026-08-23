@@ -52,6 +52,8 @@ in
         cache = "ukko";
         stampPath = "/var/lib/heimdash/attic-primed";
         notify = "http://127.0.0.1:2586/updates";
+        sshKey = "/run/secrets/deploy-ssh-key";
+        sshHosts.shodan = "root@shodan.reuski.dev";
         warm = [
           "sampo"
           "hiisi"
