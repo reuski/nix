@@ -19,6 +19,7 @@
       cudaInc = lib.concatStringsSep ":" [
         "${lib.getDev cp.cuda_cudart}/include"
         "${lib.getDev cp.cccl}/include"
+        "${cp.libcublas.include}/include"
       ];
       cudaLib = lib.makeLibraryPath [
         (lib.getLib cp.cuda_cudart)
