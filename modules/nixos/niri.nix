@@ -31,7 +31,7 @@
       services.greetd = {
         enable = true;
         settings.default_session = {
-          command = "${tuigreet} --time --remember --remember-user-session --cmd ${greetdSession}";
+          command = "${tuigreet} --time --remember --cmd ${greetdSession}";
           user = "greeter";
         };
       };
