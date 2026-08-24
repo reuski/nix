@@ -1,6 +1,7 @@
 { config, ... }:
 let
   inherit (config.flake.modules) darwin homeManager;
+  localContext = 65536;
 in
 {
   configurations.darwin.abraxas.module =
@@ -33,7 +34,13 @@ in
             file = "Qwen3.8-27B-UD-Q8_K_XL.gguf";
             mmproj = "mmproj-F16.gguf";
           };
-          params.mtpDraftTokens = 1;
+          params.context = localContext;
+        };
+
+        pi.localModel = {
+          enable = true;
+          contextWindow = localContext;
+          vision = true;
         };
       };
 

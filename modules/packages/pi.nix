@@ -29,7 +29,7 @@
         final.pi-coding-agent
       ];
       text = ''
-        exec ${final.lib.getExe final.bun} x pi-acp "$@"
+        exec ${final.lib.getExe final.bun} x pi-acp@latest "$@"
       '';
       meta = {
         description = "ACP adapter wrapper for Pi Coding Agent";

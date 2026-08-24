@@ -1,8 +1,14 @@
 { ... }:
 {
   flake.modules.homeManager.pi =
-    { pkgs, lib, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
+      localModel = config.pi.localModel;
       json = pkgs.formats.json { };
       piPackages = [
         "npm:pi-mcp-adapter"
@@ -96,133 +102,136 @@
       };
     in
     {
-      home.packages = with pkgs; [
-        pi-coding-agent
-        pi-acp
-        mcp-nixos
-      ];
-
-      home.file.".pi/agent/AGENTS.md".text = ''
-        # Operational Directives
-
-        ## Conventions
-
-        - Use precise, concise names.
-        - Prefer functional shape where it clarifies.
-        - Keep strict ownership boundaries.
-        - Prefer upstream options and libraries over custom code.
-        - Comments only for algorithmic rationale.
-        - Add only what is used.
-
-        ## Workflow
-
-        - Read target files before editing.
-        - Batch independent tool calls in one block.
-        - Patch atomically.
-        - Delete superseded code and config.
-        - Verify after every edit.
-        - Report changed files and validation output.
-
-        ## Safety
-
-        - Gate destructive actions: force push, `git reset --hard`, `rm -rf`, overwriting `.env` or lockfiles, package removal, `sudo`, service stop.
-        - Confirm as `ACTION / COMMAND / REASON` before executing.
-        - Edit git-tracked files without asking.
-        - Commit only when explicitly asked.
-        - Never print decrypted secrets or plaintext credentials.
-
-        ## Output
-
-        - Answer directly. No filler, preambles, or restating the task.
-        - Plain ASCII text: no emojis, no decorative em dashes, no unicode bullets or dividers.
-        - State blockers only with evidence.
-      '';
-
-      home.file.".pi/agent/themes/gruvbox.json".source =
-        json.generate "pi-gruvbox-theme.json" gruvboxTheme;
-
-      home.file.".pi/agent/settings.json".source = json.generate "pi-settings.json" {
-        packages = piPackages;
-        theme = "gruvbox";
-        terminal.showImages = false;
-        hideThinkingBlock = true;
-        quietStartup = true;
-        collapseChangelog = true;
-        enableInstallTelemetry = false;
-        treeFilterMode = "user-only";
-        defaultThinkingLevel = "high";
-        thinkingBudgets = {
-          minimal = 1024;
-          low = 4096;
-          medium = 16384;
-          high = 32768;
-          xhigh = 65536;
+      options.pi.localModel = {
+        enable = lib.mkEnableOption "local llama.cpp model in Pi";
+        contextWindow = lib.mkOption {
+          type = lib.types.ints.positive;
+          default = 65536;
         };
-        compaction = {
-          enabled = true;
-          reserveTokens = 32768;
-          keepRecentTokens = 48000;
+        vision = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
         };
-        branchSummary = {
-          reserveTokens = 16384;
-          skipPrompt = true;
-        };
-        retry = {
-          enabled = true;
-          maxRetries = 5;
-          baseDelayMs = 2000;
-          provider.maxRetryDelayMs = 60000;
-        };
-        steeringMode = "one-at-a-time";
-        followUpMode = "one-at-a-time";
-        transport = "auto";
-        enabledModels = [
-          "zai/glm-5.2"
-          "moonshotai/kimi-k2.6"
-          "deepseek/deepseek-v4-pro"
-          "local/local"
+      };
+
+      config = {
+        home.packages = with pkgs; [
+          pi-coding-agent
+          pi-acp
+          mcp-nixos
         ];
-        markdown.codeBlockIndent = "  ";
-        defaultProvider = "zai";
-        defaultModel = "glm-5.2";
-      };
 
-      home.file.".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
-        mcpServers.nixos = {
-          command = lib.getExe' pkgs.mcp-nixos "mcp-nixos";
-          lifecycle = "lazy";
-          idleTimeout = 10;
-        };
-        mcpServers.grep = {
-          url = "https://mcp.grep.app";
-        };
-      };
+        home.file.".pi/agent/AGENTS.md".text = ''
+          # Operational Directives
 
-      home.file.".pi/agent/models.json".source = json.generate "pi-models.json" {
-        providers = {
-          local = {
-            baseUrl = "http://localhost:8080";
-            api = "openai-completions";
-            apiKey = "llama";
-            models = [
-              {
-                id = "local";
-                name = "llama-server";
-                reasoning = true;
-                thinkingLevelMap = {
-                  off = "none";
-                  minimal = null;
-                  low = "low";
-                  medium = "medium";
-                  high = "xhigh";
-                  xhigh = "xhigh";
-                  max = null;
-                };
-                input = [ "text" ];
-                contextWindow = 32768;
-                maxTokens = 16384;
-              }
-            ];
+          ## Conventions
+
+          - Use precise, concise names.
+          - Prefer functional shape where it clarifies.
+          - Keep strict ownership boundaries.
+          - Prefer upstream options and libraries over custom code.
+          - Comments only for algorithmic rationale.
+          - Add only what is used.
+
+          ## Workflow
+
+          - Read target files before editing.
+          - Batch independent tool calls in one block.
+          - Patch atomically.
+          - Delete superseded code and config.
+          - Verify after every edit.
+          - Report changed files and validation output.
+
+          ## Safety
+
+          - Gate destructive actions: force push, `git reset --hard`, `rm -rf`, overwriting `.env` or lockfiles, package removal, `sudo`, service stop.
+          - Confirm as `ACTION / COMMAND / REASON` before executing.
+          - Edit git-tracked files without asking.
+          - Commit only when explicitly asked.
+          - Never print decrypted secrets or plaintext credentials.
+
+          ## Output
+
+          - Answer directly. No filler, preambles, or restating the task.
+          - Plain ASCII text: no emojis, no decorative em dashes, no unicode bullets or dividers.
+          - State blockers only with evidence.
+        '';
+
+        home.file.".pi/agent/themes/gruvbox.json".source =
+          json.generate "pi-gruvbox-theme.json" gruvboxTheme;
+
+        home.file.".pi/agent/settings.json".source = json.generate "pi-settings.json" {
+          packages = piPackages;
+          theme = "gruvbox";
+          terminal.showImages = false;
+          hideThinkingBlock = true;
+          quietStartup = true;
+          collapseChangelog = true;
+          enableInstallTelemetry = false;
+          treeFilterMode = "user-only";
+          defaultThinkingLevel = "medium";
+          compaction = {
+            enabled = true;
+            reserveTokens = 16384;
+            keepRecentTokens = 20000;
+          };
+          branchSummary = {
+            reserveTokens = 16384;
+            skipPrompt = true;
+          };
+          steeringMode = "one-at-a-time";
+          followUpMode = "one-at-a-time";
+          transport = "auto";
+          enabledModels = [
+            "zai/glm-5.2"
+            "moonshotai/kimi-k2.6"
+            "deepseek/deepseek-v4-pro"
+          ]
+          ++ lib.optional localModel.enable "local/local";
+          markdown.codeBlockIndent = "  ";
+          defaultProvider = "zai";
+          defaultModel = "glm-5.2";
+        };
+
+        home.file.".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
+          mcpServers.nixos = {
+            command = lib.getExe' pkgs.mcp-nixos "mcp-nixos";
+            lifecycle = "lazy";
+            idleTimeout = 10;
+          };
+        };
+
+        home.file.".pi/agent/models.json".source = json.generate "pi-models.json" {
+          providers = lib.optionalAttrs localModel.enable {
+            local = {
+              baseUrl = "http://127.0.0.1:8080/v1";
+              api = "openai-completions";
+              apiKey = "llama";
+              compat = {
+                supportsDeveloperRole = false;
+                supportsReasoningEffort = true;
+                maxTokensField = "max_tokens";
+              };
+              models = [
+                {
+                  id = "local";
+                  name = "llama.cpp";
+                  reasoning = true;
+                  thinkingLevelMap = {
+                    off = "none";
+                    minimal = null;
+                    low = "low";
+                    medium = "medium";
+                    high = "xhigh";
+                    xhigh = "xhigh";
+                    max = null;
+                  };
+                  input = [ "text" ] ++ lib.optional localModel.vision "image";
+                  contextWindow = localModel.contextWindow;
+                  maxTokens = 16384;
+                }
+              ];
+            };
           };
         };
       };

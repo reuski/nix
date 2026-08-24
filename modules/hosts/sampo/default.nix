@@ -1,6 +1,7 @@
 { config, inputs, ... }:
 let
   inherit (config.flake.modules) homeManager nixos;
+  localContext = 131072;
 in
 {
   configurations.nixos.sampo.module =
@@ -56,10 +57,19 @@ in
 
         llama = {
           model = {
-            repo = "0bserverx/Qwen3.8-27B-Heretic-Abliterated-Uncensored-GGUF";
-            file = "RVN-Q4_K_M-mtp.gguf";
+            repo = "OBLITERATUS/Qwen3.8-27B-OBLITERATED";
+            file = "Qwen3.8-27B-OBLITERATED-Q4_K_M.gguf";
+            chatTemplate = "https://huggingface.co/Qwen/Qwen3.8-27B/raw/main/chat_template.jinja";
           };
-          params.mtpDraftTokens = 2;
+          params = {
+            context = localContext;
+            cacheType = "q8_0";
+          };
+        };
+
+        pi.localModel = {
+          enable = true;
+          contextWindow = localContext;
         };
       };
 
