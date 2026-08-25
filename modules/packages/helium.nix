@@ -48,11 +48,11 @@
 
       stdenvNoCC.mkDerivation (finalAttrs: {
         pname = "helium-browser";
-        version = "0.15.6.1";
+        version = "0.15.7.1";
 
         src = fetchurl {
           url = "https://github.com/imputnet/helium-linux/releases/download/${finalAttrs.version}/helium-${finalAttrs.version}-x86_64_linux.tar.xz";
-          hash = "sha256-TVzi5ZWyvFsh6ovoBhU5DW0k3wlQ5/gUDD4+ykAQPTY=";
+          hash = "sha256-MQKJLN69/g1R46Y44ADo1UvKAXxS2vKsq/XlAwBO+58=";
         };
 
         sourceRoot = "helium-${finalAttrs.version}-x86_64_linux";
