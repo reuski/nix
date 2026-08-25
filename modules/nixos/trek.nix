@@ -10,6 +10,12 @@
       cfg = config.trek;
       containerPort = 3000;
       stateDir = "/var/lib/trek";
+      # TREK runs its app as the image's `node` user (uid 1000) and its
+      # entrypoint chowns the data/uploads volumes to node:node. tmpfiles must
+      # own them the same way, otherwise activation resets them to root and the
+      # running app loses write access (file uploads fail with EACCES).
+      nodeUid = 1000;
+      nodeGid = 1000;
       inherit (lib)
         mkEnableOption
         mkIf
@@ -74,16 +80,16 @@
           stateDir = {
             path = "${stateDir}/data";
             mount = "/app/data";
-            owner = "root";
-            group = "root";
+            owner = toString nodeUid;
+            group = toString nodeGid;
           };
           volumes = [ "${stateDir}/uploads:/app/uploads" ];
         };
 
         media.directories."${stateDir}/uploads" = {
           mode = "0750";
-          owner = "root";
-          group = "root";
+          owner = toString nodeUid;
+          group = toString nodeGid;
         };
       };
     };

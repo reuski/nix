@@ -208,8 +208,12 @@
               api = "openai-completions";
               apiKey = "llama";
               compat = {
+                supportsStore = false;
                 supportsDeveloperRole = false;
-                supportsReasoningEffort = true;
+                supportsReasoningEffort = false;
+                supportsUsageInStreaming = true;
+                supportsStrictMode = false;
+                thinkingFormat = "qwen-chat-template";
                 maxTokensField = "max_tokens";
               };
               models = [
@@ -217,15 +221,6 @@
                   id = "local";
                   name = "llama.cpp";
                   reasoning = true;
-                  thinkingLevelMap = {
-                    off = "none";
-                    minimal = null;
-                    low = "low";
-                    medium = "medium";
-                    high = "xhigh";
-                    xhigh = "xhigh";
-                    max = null;
-                  };
                   input = [ "text" ] ++ lib.optional localModel.vision "image";
                   contextWindow = localModel.contextWindow;
                   maxTokens = 16384;

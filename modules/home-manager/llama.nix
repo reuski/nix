@@ -88,7 +88,6 @@
         cfg.model.file
         "--alias"
         "local"
-        "--jinja"
         "--gpu-layers"
         "all"
         "--flash-attn"
@@ -100,7 +99,6 @@
         "--reasoning-format"
         "deepseek"
         "--reasoning-preserve"
-        "--no-context-shift"
         "--metrics"
         "--temp"
         "1.0"
@@ -120,6 +118,10 @@
       ++ optionalArg (cfg.model.mmproj != null) [
         "--mmproj-url"
         "https://huggingface.co/${cfg.model.repo}/resolve/main/${cfg.model.mmproj}"
+      ]
+      ++ [
+        "--reasoning-budget"
+        (toString cfg.params.reasoningBudget)
       ];
 
       buildEnv = ''
@@ -201,13 +203,18 @@
             git -C "$llama_dir" remote add origin https://github.com/ggml-org/llama.cpp.git
           fi
 
-          git -C "$llama_dir" fetch --depth=1 origin master
-          target="$(git -C "$llama_dir" rev-parse FETCH_HEAD)"
-          git -C "$llama_dir" reset --hard "$target"
-          git -C "$llama_dir" clean -fdx
+          if git -C "$llama_dir" fetch --depth=1 origin master; then
+            target="$(git -C "$llama_dir" rev-parse FETCH_HEAD)"
+          elif git -C "$llama_dir" rev-parse --verify HEAD >/dev/null 2>&1; then
+            echo "llama.cpp fetch failed; using cached source" >&2
+            target="$(git -C "$llama_dir" rev-parse HEAD)"
+          else
+            echo "llama.cpp fetch failed and no cached source is available" >&2
+            exit 1
+          fi
 
           compiler_id="$("$CXX" --version | cksum | cut -d ' ' -f 1)"
-          build_id="${buildHash}-$compiler_id"
+          build_id="${buildHash}-$compiler_id-$target"
           build_dir="$cache_root/pi/llama.cpp-build"
           build_stamp="$build_dir/.pi-build-id"
           server="$build_dir/bin/llama-server"
@@ -215,13 +222,13 @@
           ${shellArrayItems cmakeFlags}
           )
 
-          if [ "$(cat "$build_stamp" 2>/dev/null || true)" != "$build_id" ]; then
+          if [ "$(cat "$build_stamp" 2>/dev/null || true)" != "$build_id" ] || [ ! -x "$server" ]; then
+            git -C "$llama_dir" reset --hard "$target"
+            git -C "$llama_dir" clean -fdx
             cmake --fresh -S "$llama_dir" -B "$build_dir" -G Ninja "''${cmake_flags[@]}"
-          else
-            cmake -S "$llama_dir" -B "$build_dir" -G Ninja "''${cmake_flags[@]}"
+            cmake --build "$build_dir" --target llama-server --parallel
+            printf '%s\n' "$build_id" >"$build_stamp"
           fi
-          cmake --build "$build_dir" --target llama-server --parallel
-          printf '%s\n' "$build_id" >"$build_stamp"
 
           ${lib.optionalString (cfg.model.chatTemplate != null) ''
             chat_template="$cache_root/pi/chat-template.jinja"
@@ -292,6 +299,10 @@
               "q8_0"
             ];
             default = "f16";
+          };
+          reasoningBudget = mkOption {
+            type = types.ints.positive;
+            default = 8192;
           };
         };
       };
