@@ -149,12 +149,12 @@
 
       web-wahuu-games = bunApp {
         pname = "wahuu-games";
-        version = "0-unstable-2026-08-24";
+        version = "0-unstable-2026-08-27";
         src = fetchFromGitHub {
           owner = "reuski";
           repo = "wahuu.games";
-          rev = "202fe6881af2dd644fd8bd7bad94f55e963d00e6";
-          hash = "sha256-c9uY9FErKR3/p4Q+sg3pgVREV77Ih+cals+DH5nFIVM=";
+          rev = "9614eff7bdcfabb5c1e61313999443624541c233";
+          hash = "sha256-qCZlRLJP7UfKFnDqT1YwDRsOhLZeINNhBVUv35bpbVc=";
         };
         depsHash = "sha256-6OlNNRGbdcQ/pI1HySGO5rl4U3q/5VRFCREBQeut5Co=";
         installPhase = ''
