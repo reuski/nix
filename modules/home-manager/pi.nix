@@ -122,38 +122,33 @@
         ];
 
         home.file.".pi/agent/AGENTS.md".text = ''
-          # Operational Directives
+          # Operating Rules
 
-          ## Conventions
+          ## Work
 
-          - Use precise, concise names.
-          - Prefer functional shape where it clarifies.
-          - Keep strict ownership boundaries.
-          - Prefer upstream options and libraries over custom code.
-          - Comments only for algorithmic rationale.
-          - Add only what is used.
+          - Read targets and nearby ownership before editing.
+          - Prefer precise names, narrow ownership, and upstream options.
+          - Add only used code and comments that explain algorithmic rationale.
+          - Batch independent tool calls; patch atomically; remove superseded code.
+          - Verify each edit and report changed files, commands, and results.
 
-          ## Workflow
+          ## Tools
 
-          - Read target files before editing.
-          - Batch independent tool calls in one block.
-          - Patch atomically.
-          - Delete superseded code and config.
-          - Verify after every edit.
-          - Report changed files and validation output.
+          - Use `read` for files, `rg` and `rg --files` for search, and `edit` for exact changes.
+          - Keep shell commands non-interactive, quoted, scoped, and output-bounded.
+          - Prefer repository commands and its dev shell. For a missing tool, use `nix develop -c`, then `nix shell nixpkgs#<package> -c <program>`. Use `nix run nixpkgs#<package> --` for a package's main program.
+          - Never use `nix-env` or global installs for temporary tools.
+          - Read `PI_PROVIDER`, `PI_MODEL`, and `PI_REASONING_LEVEL` instead of guessing runtime state.
 
           ## Safety
 
-          - Gate destructive actions: force push, `git reset --hard`, `rm -rf`, overwriting `.env` or lockfiles, package removal, `sudo`, service stop.
-          - Confirm as `ACTION / COMMAND / REASON` before executing.
-          - Edit git-tracked files without asking.
-          - Commit only when explicitly asked.
-          - Never print decrypted secrets or plaintext credentials.
+          - Before a destructive action, ask with `ACTION / COMMAND / REASON`.
+          - Destructive actions include force push, `git reset --hard`, `rm -rf`, overwriting `.env` or lockfiles, package removal, `sudo`, and service stop.
+          - Edit tracked files without asking; commit only when asked; never expose secrets.
 
           ## Output
 
-          - Answer directly. No filler, preambles, or restating the task.
-          - Plain ASCII text: no emojis, no decorative em dashes, no unicode bullets or dividers.
+          - Answer directly and concisely in plain ASCII.
           - State blockers only with evidence.
         '';
 
@@ -213,7 +208,15 @@
                 supportsReasoningEffort = false;
                 supportsUsageInStreaming = true;
                 supportsStrictMode = false;
-                thinkingFormat = "qwen-chat-template";
+                thinkingFormat = "chat-template";
+                chatTemplateKwargs = {
+                  enable_thinking."$var" = "thinking.enabled";
+                  preserve_thinking = true;
+                  reasoning_effort = {
+                    "$var" = "thinking.effort";
+                    omitWhenOff = true;
+                  };
+                };
                 maxTokensField = "max_tokens";
               };
               models = [
@@ -221,9 +224,23 @@
                   id = "local";
                   name = "llama.cpp";
                   reasoning = true;
+                  thinkingLevelMap = {
+                    minimal = "low";
+                    low = "low";
+                    medium = "medium";
+                    high = "xhigh";
+                    xhigh = "xhigh";
+                    max = "xhigh";
+                  };
                   input = [ "text" ] ++ lib.optional localModel.vision "image";
                   contextWindow = localModel.contextWindow;
                   maxTokens = 16384;
+                  samplingParams = {
+                    temperature = 1.0;
+                    top_k = 20;
+                    top_p = 0.95;
+                    min_p = 0.0;
+                  };
                 }
               ];
             };

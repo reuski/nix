@@ -41,10 +41,11 @@
 
       baseCmakeFlags = [
         "-DBUILD_SHARED_LIBS=OFF"
+        "-DCMAKE_BUILD_TYPE=Release"
         "-DLLAMA_BUILD_TESTS=OFF"
         "-DLLAMA_BUILD_EXAMPLES=OFF"
         "-DLLAMA_BUILD_APP=OFF"
-        "-DLLAMA_BUILD_UI=OFF"
+        "-DLLAMA_BUILD_SERVER=ON"
         "-DGGML_LTO=ON"
         "-DCMAKE_C_COMPILER_LAUNCHER=ccache"
         "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
@@ -52,6 +53,7 @@
       backendCmakeFlags =
         if isDarwin then
           [
+            "-DGGML_METAL_EMBED_LIBRARY=ON"
             "-DGGML_METAL_NDEBUG=ON"
             "-DGGML_OPENMP=OFF"
             "-DCMAKE_OSX_ARCHITECTURES=arm64"
@@ -61,7 +63,7 @@
         else
           [
             "-DGGML_CUDA=ON"
-            "-DCMAKE_CUDA_ARCHITECTURES=native"
+            "-DCMAKE_CUDA_ARCHITECTURES=${cfg.build.cudaArchitectures}"
             "-DCMAKE_CUDA_COMPILER_LAUNCHER=ccache"
           ];
       cmakeFlags = baseCmakeFlags ++ backendCmakeFlags;
@@ -96,18 +98,16 @@
         cfg.params.cacheType
         "--cache-type-v"
         cfg.params.cacheType
+        "--fit"
+        "off"
+        "--no-context-shift"
+        "--cache-ram"
+        "0"
+        "--no-cache-idle-slots"
+        "--jinja"
         "--reasoning-format"
         "deepseek"
-        "--reasoning-preserve"
         "--metrics"
-        "--temp"
-        "1.0"
-        "--top-k"
-        "20"
-        "--top-p"
-        "0.95"
-        "--min-p"
-        "0"
         "--no-ui"
       ]
       ++ optionalChangedArg cfg.host llamaCppDefaults.host "--host"
@@ -203,7 +203,7 @@
             git -C "$llama_dir" remote add origin https://github.com/ggml-org/llama.cpp.git
           fi
 
-          if git -C "$llama_dir" fetch --depth=1 origin master; then
+          if git -C "$llama_dir" fetch --depth=1 origin HEAD; then
             target="$(git -C "$llama_dir" rev-parse FETCH_HEAD)"
           elif git -C "$llama_dir" rev-parse --verify HEAD >/dev/null 2>&1; then
             echo "llama.cpp fetch failed; using cached source" >&2
@@ -216,30 +216,50 @@
           compiler_id="$("$CXX" --version | cksum | cut -d ' ' -f 1)"
           build_id="${buildHash}-$compiler_id-$target"
           build_dir="$cache_root/pi/llama.cpp-build"
-          build_stamp="$build_dir/.pi-build-id"
-          server="$build_dir/bin/llama-server"
+          build_stamp="$cache_root/pi/llama-server.build-id"
+          built_server="$build_dir/bin/llama-server"
+          server="$cache_root/pi/llama-server"
           cmake_flags=(
           ${shellArrayItems cmakeFlags}
           )
 
           if [ "$(cat "$build_stamp" 2>/dev/null || true)" != "$build_id" ] || [ ! -x "$server" ]; then
-            git -C "$llama_dir" reset --hard "$target"
-            git -C "$llama_dir" clean -fdx
-            cmake --fresh -S "$llama_dir" -B "$build_dir" -G Ninja "''${cmake_flags[@]}"
-            cmake --build "$build_dir" --target llama-server --parallel
-            printf '%s\n' "$build_id" >"$build_stamp"
+            if git -C "$llama_dir" reset --hard "$target" \
+              && git -C "$llama_dir" clean -fdx \
+              && cmake --fresh -S "$llama_dir" -B "$build_dir" -G Ninja "''${cmake_flags[@]}" \
+              && cmake --build "$build_dir" --target llama-server --parallel; then
+              server_tmp="$server.$$"
+              build_stamp_tmp="$build_stamp.$$"
+              install -m 0755 "$built_server" "$server_tmp"
+              printf '%s\n' "$build_id" >"$build_stamp_tmp"
+              mv "$server_tmp" "$server"
+              mv "$build_stamp_tmp" "$build_stamp"
+            elif [ -x "$server" ]; then
+              echo "llama.cpp update failed for $target; using cached server" >&2
+            else
+              echo "llama.cpp update failed and no cached server is available" >&2
+              exit 1
+            fi
           fi
 
           ${lib.optionalString (cfg.model.chatTemplate != null) ''
-            chat_template="$cache_root/pi/chat-template.jinja"
+            chat_template="$cache_root/pi/chat-template-${builtins.hashString "sha256" cfg.model.chatTemplate}.jinja"
             chat_template_tmp="$chat_template.$$"
-            curl --fail --location --silent --show-error \
+            if curl --fail --location --silent --show-error \
               ${lib.escapeShellArg cfg.model.chatTemplate} \
-              --output "$chat_template_tmp"
-            if [ ! -e "$chat_template" ] || ! cmp --silent "$chat_template" "$chat_template_tmp"; then
-              mv "$chat_template_tmp" "$chat_template"
+              --output "$chat_template_tmp"; then
+              if [ ! -e "$chat_template" ] || ! cmp --silent "$chat_template" "$chat_template_tmp"; then
+                mv "$chat_template_tmp" "$chat_template"
+              else
+                rm "$chat_template_tmp"
+              fi
+            elif [ -e "$chat_template" ]; then
+              rm -f "$chat_template_tmp"
+              echo "chat template update failed; using cached template" >&2
             else
-              rm "$chat_template_tmp"
+              rm -f "$chat_template_tmp"
+              echo "chat template update failed and no cached template is available" >&2
+              exit 1
             fi
           ''}
 
@@ -264,6 +284,11 @@
     in
     {
       options.llama = {
+        build.cudaArchitectures = mkOption {
+          type = types.str;
+          default = "native";
+          description = "CUDA architectures passed to CMake";
+        };
         model = {
           repo = mkOption { type = types.str; };
           file = mkOption { type = types.str; };

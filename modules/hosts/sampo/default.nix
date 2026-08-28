@@ -56,6 +56,7 @@ in
         ) protonVariants;
 
         llama = {
+          build.cudaArchitectures = "86";
           model = {
             repo = "OBLITERATUS/Qwen3.8-27B-OBLITERATED";
             file = "Qwen3.8-27B-OBLITERATED-Q4_K_M.gguf";
