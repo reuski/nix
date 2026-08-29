@@ -8,48 +8,48 @@
       ...
     }:
     let
-      autoSwitch = pkgs.writeShellApplication {
-        name = "darwin-auto-switch";
-        runtimeInputs = [
-          pkgs.coreutils
-        ];
-        text = ''
-          set -eu
+      setsid = pkgs.writeCBin "nix-darwin-setsid" ''
+        #include <sys/types.h>
+        #include <sys/wait.h>
+        #include <unistd.h>
+        #include <stdio.h>
+        #include <errno.h>
 
-          lock=/var/run/darwin-auto-switch.lock
-          acquired=0
-          if mkdir "$lock" 2>/dev/null; then
-            acquired=1
-          else
-            pid=
-            if [ -s "$lock/pid" ]; then
-              pid=$(cat "$lock/pid" 2>/dev/null || true)
-            fi
-            case "$pid" in
-              ""|*[!0-9]*) ;;
-              *)
-                if kill -0 "$pid" 2>/dev/null; then
-                  exit 0
-                fi
-                ;;
-            esac
+        int main(int argc, char **argv) {
+          if (argc < 2) {
+            fprintf(stderr, "usage: %s COMMAND [ARG...]\n", argv[0]);
+            return 2;
+          }
 
-            rm -f "$lock/pid" 2>/dev/null || true
-            rmdir "$lock" 2>/dev/null || true
-            if mkdir "$lock" 2>/dev/null; then
-              acquired=1
-            fi
-          fi
-          if [ "$acquired" != 1 ]; then
-            exit 0
-          fi
-          trap 'rm -f "$lock/pid" 2>/dev/null || true; rmdir "$lock" 2>/dev/null || true' EXIT
-          printf '%s\n' "$$" > "$lock/pid"
+          pid_t pid = fork();
+          if (pid < 0) {
+            perror("fork");
+            return 1;
+          }
 
-          export HOME=/var/root
-          ${lib.getExe config.system.build.darwin-rebuild} switch --flake github:reuski/nix/main#${config.networking.hostName} --refresh --option tarball-ttl 0
-        '';
-      };
+          if (pid == 0) {
+            if (setsid() < 0) {
+              perror("setsid");
+              _exit(1);
+            }
+            execvp(argv[1], &argv[1]);
+            perror("execvp");
+            _exit(127);
+          }
+
+          int status;
+          while (waitpid(pid, &status, 0) < 0) {
+            if (errno != EINTR)
+              return 1;
+          }
+
+          if (WIFEXITED(status))
+            return WEXITSTATUS(status);
+          if (WIFSIGNALED(status))
+            return 128 + WTERMSIG(status);
+          return 1;
+        }
+      '';
     in
     {
       nix.enable = true;
@@ -92,8 +92,12 @@
         ];
       };
 
-      launchd.daemons.darwin-auto-switch = {
-        command = lib.getExe autoSwitch;
+      launchd.daemons.nix-darwin-upgrade = {
+        script = ''
+          set -eu
+          export HOME=/var/root
+          exec ${lib.getExe setsid} ${lib.getExe config.system.build.darwin-rebuild} switch --flake github:reuski/nix/main#${config.networking.hostName} --refresh --option tarball-ttl 0
+        '';
         serviceConfig = {
           RunAtLoad = false;
           StartCalendarInterval = [
@@ -102,8 +106,8 @@
               Minute = 30;
             }
           ];
-          StandardOutPath = "/var/log/darwin-auto-switch.log";
-          StandardErrorPath = "/var/log/darwin-auto-switch.err.log";
+          StandardOutPath = "/var/log/nix-darwin-upgrade.log";
+          StandardErrorPath = "/var/log/nix-darwin-upgrade.err.log";
           Nice = 19;
           LowPriorityIO = true;
           ProcessType = "Background";
