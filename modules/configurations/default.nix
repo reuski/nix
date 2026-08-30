@@ -29,6 +29,7 @@ let
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
+              backupFileExtension = "backup";
             };
           }
           (spec.extra name)

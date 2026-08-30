@@ -58,9 +58,9 @@ in
         llama = {
           build.cudaArchitectures = "86";
           model = {
-            repo = "OBLITERATUS/Qwen3.8-27B-OBLITERATED";
-            file = "Qwen3.8-27B-OBLITERATED-Q4_K_M.gguf";
-            chatTemplate = "https://huggingface.co/Qwen/Qwen3.8-27B/raw/main/chat_template.jinja";
+            repo = "huihui-ai/Huihui-Qwen3.8-27B-abliterated-GGUF";
+            file = "Huihui-Qwen3.8-27B-abliterated-UD-Q4_K_XL.gguf";
+            mmproj = "mmproj-model-bf16.gguf";
           };
           params = {
             context = localContext;
@@ -71,6 +71,7 @@ in
         pi.localModel = {
           enable = true;
           contextWindow = localContext;
+          vision = true;
         };
       };
 
