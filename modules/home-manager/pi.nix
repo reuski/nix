@@ -10,12 +10,20 @@
     let
       localModel = config.pi.localModel;
       json = pkgs.formats.json { };
+      subagentProfile = model: thinking: fallbackModels: {
+        inherit model thinking fallbackModels;
+      };
       piPackages = [
-        "npm:pi-mcp-adapter"
+        {
+          source = "npm:pi-mcp-adapter";
+          skills = [ ];
+        }
         "npm:pi-web-access"
         "npm:pi-subagents"
-        "npm:pi-intercom"
-        "npm:context-mode"
+        {
+          source = "npm:context-mode";
+          skills = [ "+skills/context-mode/SKILL.md" ];
+        }
       ];
       gruvboxTheme = {
         "$schema" =
@@ -122,38 +130,56 @@
         ];
 
         home.file.".pi/agent/AGENTS.md".text = ''
-          # Operating Rules
+          # Rules
 
-          ## Work
-
-          - Read targets and nearby ownership before editing.
-          - Prefer precise names, narrow ownership, and upstream options.
-          - Add only used code and comments that explain algorithmic rationale.
-          - Batch independent tool calls; patch atomically; remove superseded code.
-          - Verify each edit and report changed files, commands, and results.
-
-          ## Tools
-
-          - Use `read` for files, `rg` and `rg --files` for search, and `edit` for exact changes.
-          - Keep shell commands non-interactive, quoted, scoped, and output-bounded.
-          - Prefer repository commands and its dev shell. For a missing tool, use `nix develop -c`, then `nix shell nixpkgs#<package> -c <program>`. Use `nix run nixpkgs#<package> --` for a package's main program.
-          - Never use `nix-env` or global installs for temporary tools.
-          - Read `PI_PROVIDER`, `PI_MODEL`, and `PI_REASONING_LEVEL` instead of guessing runtime state.
-
-          ## Safety
-
-          - Before a destructive action, ask with `ACTION / COMMAND / REASON`.
-          - Destructive actions include force push, `git reset --hard`, `rm -rf`, overwriting `.env` or lockfiles, package removal, `sudo`, and service stop.
+          - Inspect the target and nearby ownership before editing.
+          - Prefer existing patterns and upstream options; use precise names, narrow ownership, and only used code.
+          - Comment only for algorithmic rationale.
+          - Batch independent reads, patch atomically, and delete superseded code.
+          - Use `read`, `rg`, `rg --files`, and `edit`; keep commands non-interactive, scoped, quoted, and output-bounded.
+          - Use repository tooling or its dev shell; never install temporary tools globally.
+          - Verify every edit; report changed files, commands, and results.
+          - Before destructive work, ask with `ACTION / COMMAND / REASON`. This includes force push, `git reset --hard`, `rm -rf`, overwriting `.env` or lockfiles, package removal, `sudo`, and service stop.
           - Edit tracked files without asking; commit only when asked; never expose secrets.
-
-          ## Output
-
-          - Answer directly and concisely in plain ASCII.
-          - State blockers only with evidence.
+          - Read `PI_PROVIDER`, `PI_MODEL`, and `PI_REASONING_LEVEL` when runtime identity matters.
+          - Answer directly and concisely in plain ASCII; state blockers only with evidence.
         '';
 
         home.file.".pi/agent/themes/gruvbox.json".source =
           json.generate "pi-gruvbox-theme.json" gruvboxTheme;
+
+        home.file.".pi/agent/extensions/subagent/config.json".source =
+          json.generate "pi-subagent-config.json"
+            {
+              toolDescriptionMode = "compact";
+              forkContext = {
+                mode = "pruned";
+                model = "openai-codex/gpt-5.6-luna:low";
+              };
+              globalConcurrencyLimit = 4;
+              maxSubagentSpawnsPerRun = 8;
+            };
+
+        home.file.".pi/agent/web-search.json".source = json.generate "pi-web-search.json" {
+          workflow = "none";
+          maxInlineContentChars = 12000;
+          searxngBaseUrl = "https://ukko.tail2fc4c2.ts.net/api";
+          searchRouting = {
+            providers = [
+              "searxng"
+              "openai"
+              "exa"
+            ];
+            useCurrentModel = true;
+            fallbackOn = [
+              "unsupported"
+              "transient"
+              "quota"
+              "network"
+              "invalid-response"
+            ];
+          };
+        };
 
         home.file.".pi/agent/settings.json".source = json.generate "pi-settings.json" {
           packages = piPackages;
@@ -165,35 +191,47 @@
           enableInstallTelemetry = false;
           treeFilterMode = "user-only";
           defaultThinkingLevel = "medium";
-          compaction = {
-            enabled = true;
-            reserveTokens = 16384;
-            keepRecentTokens = 20000;
-          };
-          branchSummary = {
-            reserveTokens = 16384;
-            skipPrompt = true;
-          };
-          steeringMode = "one-at-a-time";
-          followUpMode = "one-at-a-time";
-          transport = "auto";
+          branchSummary.skipPrompt = true;
           enabledModels = [
-            "zai/glm-5.2"
-            "moonshotai/kimi-k2.6"
+            "openai-codex/gpt-5.6-luna"
+            "openai-codex/gpt-5.6-sol"
+            "zai/glm-5.3-flash"
             "deepseek/deepseek-v4-pro"
           ]
           ++ lib.optional localModel.enable "local/local";
-          markdown.codeBlockIndent = "  ";
-          defaultProvider = "zai";
-          defaultModel = "glm-5.2";
+          modelThinkingLevels = {
+            "openai-codex/gpt-5.6-sol" = "high";
+            "openai-codex/gpt-5.6-luna" = "medium";
+            "zai/glm-5.3-flash" = "medium";
+            "deepseek/deepseek-v4-pro" = "high";
+          };
+          subagents.agentOverrides = {
+            scout = subagentProfile "zai/glm-5.3-flash" "low" [
+              "openai-codex/gpt-5.6-luna:low"
+            ];
+            researcher = subagentProfile "openai-codex/gpt-5.6-luna" "medium" [
+              "zai/glm-5.3-flash:low"
+            ];
+            delegate = subagentProfile "zai/glm-5.3-flash" "low" [
+              "openai-codex/gpt-5.6-luna:low"
+            ];
+            worker = subagentProfile "openai-codex/gpt-5.6-luna" "medium" [
+              "deepseek/deepseek-v4-pro:high"
+            ];
+            reviewer = subagentProfile "openai-codex/gpt-5.6-sol" "high" [
+              "deepseek/deepseek-v4-pro:high"
+            ];
+            oracle = subagentProfile "openai-codex/gpt-5.6-sol" "high" [
+              "deepseek/deepseek-v4-pro:high"
+            ];
+          };
+          defaultProvider = "openai-codex";
+          defaultModel = "gpt-5.6-luna";
         };
 
         home.file.".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
-          mcpServers.nixos = {
-            command = lib.getExe' pkgs.mcp-nixos "mcp-nixos";
-            lifecycle = "lazy";
-            idleTimeout = 10;
-          };
+          settings.scriptMode = false;
+          mcpServers.nixos.command = lib.getExe' pkgs.mcp-nixos "mcp-nixos";
         };
 
         home.file.".pi/agent/models.json".source = json.generate "pi-models.json" {
