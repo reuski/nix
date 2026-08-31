@@ -68,11 +68,8 @@
             paths
             ;
           initialize = true;
-          pruneOpts = [
-            "--keep-hourly 24"
-            "--keep-daily 7"
-            "--keep-weekly 2"
-          ];
+          pruneOpts = [ "--keep-within 90d" ];
+          checkOpts = [ "--read-data-subset=1/7" ];
           timerConfig = {
             OnCalendar = "*-*-* 0/4:00:00";
             Persistent = true;

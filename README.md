@@ -248,10 +248,54 @@ CI `evaluate` checks recipient sets against [`.sops.yaml`](.sops.yaml) with `.gi
 
 ## Backups
 
+Ukko backs up service state for reinstall or hardware recovery; media, downloads, caches, indexes, and runtime state are excluded. Retention is 90 days. The four-hour timer initializes, unlocks, prunes, and checks successful runs; missed timer events are persistent. Failed runs notify local ntfy only; they are not retried or auto-repaired.
+
+Status:
+
+```sh
+ssh root@ukko systemctl status restic-backups-ukko.timer restic-backups-ukko.service
+ssh root@ukko journalctl -u restic-backups-ukko.service -n 100 --no-pager
+ssh root@ukko systemctl start restic-backups-ukko.service
+```
+
+Repository:
+
 ```sh
 sudo restic-ukko snapshots
-sudo restic-ukko restore latest --target /
-sudo restic-ukko restore latest --target /tmp/r --include /var/lib/navidrome
+sudo restic-ukko stats latest
+sudo restic-ukko check --read-data-subset=1/7
+```
+
+Restore to staging:
+
+```sh
+HOST=ukko
+RESTORE="$HOME/.local/state/reuski-nix/$HOST/restore"
+rm -rf "$RESTORE"
+mkdir -p "$RESTORE"
+sudo restic-ukko snapshots
+sudo restic-ukko restore latest --target "$RESTORE"
+```
+
+After installing the matching SOPS age key and configuration:
+
+```sh
+sudo systemctl stop actual linkding vaultwarden jellyfin audiobookshelf \
+  navidrome hass sonarr radarr lidarr prowlarr sabnzbd qbittorrent \
+  maintainerr calibre-web tome degoog trek valheim restic-backups-ukko
+sudo rsync -a "$RESTORE/var/" /var/
+sudo systemctl daemon-reload
+sudo systemctl start actual linkding vaultwarden jellyfin audiobookshelf \
+  navidrome hass sonarr radarr lidarr prowlarr sabnzbd qbittorrent \
+  maintainerr calibre-web tome degoog trek valheim
+```
+
+Validate before cleanup:
+
+```sh
+sudo systemctl --failed
+sudo journalctl -b -p warning..alert --no-pager
+sudo rm -rf "$RESTORE"
 ```
 
 Store the `rclone` `[filen]` config in `secrets/ukko.yaml`:

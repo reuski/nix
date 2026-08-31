@@ -106,22 +106,33 @@ in
       "/var/lib/private/actual"
       linkdingBackup
       "${linkdingDataDir}/assets"
-      "/var/lib/valheim/saves/worlds_local"
-      "/var/lib/home-assistant"
+      "/var/lib/jellyfin"
+      "/var/lib/audiobookshelf"
       "/var/lib/navidrome"
+      "/var/lib/home-assistant"
       "/var/lib/sonarr"
       "/var/lib/radarr"
       "/var/lib/lidarr"
       "/var/lib/prowlarr"
       "/var/lib/sabnzbd"
+      "/var/lib/qbittorrent"
       "/var/lib/maintainerr"
+      "/var/lib/calibre-web"
+      "/var/lib/tome"
       "/var/lib/degoog"
-      "/var/lib/trek/data/backups"
+      "/var/lib/trek/data"
+      "/var/lib/trek/uploads"
+      "/var/lib/valheim/backups"
     ];
   };
 
   services.restic.backups.ukko = {
-    exclude = [ "/var/lib/degoog/indexer" ];
+    exclude = [
+      "/var/lib/degoog/indexer"
+      "${config.media.libraryDir}/torrents"
+      "${config.media.libraryDir}/usenet/incomplete"
+      "${config.media.libraryDir}/usenet/complete"
+    ];
     backupPrepareCommand = ''
       ${lib.getExe' pkgs.coreutils "rm"} -f ${linkdingBackupTemp}
       ${lib.getExe pkgs.sqlite} ${linkdingDataDir}/db.sqlite3 ".backup '${linkdingBackupTemp}'"
