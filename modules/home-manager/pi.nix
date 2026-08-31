@@ -136,6 +136,7 @@
           - Prefer existing patterns and upstream options; use precise names, narrow ownership, and only used code.
           - Comment only for algorithmic rationale.
           - Batch independent reads, patch atomically, and delete superseded code.
+          - For non-trivial work, use focused subagents when they save parent context or add independent judgment: scout/researcher for bounded discovery, reviewer for fresh verification, worker as the sole writer, and oracle only for material decisions; keep simple work local.
           - Use `read`, `rg`, `rg --files`, and `edit`; keep commands non-interactive, scoped, quoted, and output-bounded.
           - Use repository tooling or its dev shell; never install temporary tools globally.
           - Verify every edit; report changed files, commands, and results.
