@@ -100,7 +100,7 @@
     {
       web-reuski-dev = bunApp {
         pname = "reuski-dev";
-        version = "0-unstable-2026-06-30";
+        version = "0-unstable-2026-08-31";
         src = fetchFromGitHub {
           owner = "reuski";
           repo = "reuski.dev";
@@ -115,12 +115,12 @@
 
       web-beebud = bunApp {
         pname = "beebud";
-        version = "0-unstable-2026-06-30";
+        version = "0-unstable-2026-08-31";
         src = fetchFromGitHub {
           owner = "reuski";
           repo = "beebud";
-          rev = "a18d639d655c3d4d827e96663b44b4d80fe31a6e";
-          hash = "sha256-6YYxqx7rPlu4JgZAIganb8TIqf82lyXyW2m12s3wXyI=";
+          rev = "5159629e5e2ef73d55299c67c16651497f5b17b3";
+          hash = "sha256-foxd0EbuqONcrtdRnLPXRX8KOQpRQcffnxh9uXV+Sa4=";
         };
         depsHash = "sha256-kWm3thvDSgxodii94PHKFE7YvF+xi01/ADW9xz6PwqI=";
         installPhase = ''
