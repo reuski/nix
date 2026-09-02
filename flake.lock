@@ -159,11 +159,11 @@
         "zon2nix": "zon2nix"
       },
       "locked": {
-        "lastModified": 1788283535,
-        "narHash": "sha256-enY2r7XrqVfRgVjkE84jrSJcTecy2GsbOo5ab5TKHFw=",
+        "lastModified": 1788370062,
+        "narHash": "sha256-0/eonC+DEqnQpkKZP+CkEI9saK90i3/FnMeNmO9NeIw=",
         "owner": "ghostty-org",
         "repo": "ghostty",
-        "rev": "3c1ef5b32fc5ea6b93d28493fabf193f595139cf",
+        "rev": "349f026087d948f8f898dca3231ff91438f83ab8",
         "type": "github"
       },
       "original": {
@@ -222,11 +222,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788317453,
-        "narHash": "sha256-BTVJDWIuGa5ffxQEG5WujOOm3eXPw3gZX42Wvm32gb8=",
+        "lastModified": 1788355065,
+        "narHash": "sha256-gAz5oTI7ur34CfuakQduiQd/2ZhO62Bn2XXg08nZYYQ=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "b8350fcdf54ccf553e46408053b1ac5b7038c18b",
+        "rev": "d9d750e4fc11c10cab2da677bdd31e427f3a3a71",
         "type": "github"
       },
       "original": {
@@ -279,11 +279,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788245115,
-        "narHash": "sha256-0NhL8TiOnhRGWlsSS7Q5No1ShQHNS0m3EjkiRmt9tDs=",
+        "lastModified": 1788376646,
+        "narHash": "sha256-QqEmtkw4RlF0OodYchQT+fIM/7bwvpPVHcor5zsiA68=",
         "ref": "main",
-        "rev": "e5455c81c21de8472ccf22d993c7bd30109b4632",
-        "revCount": 36,
+        "rev": "a12d7ee394e002d50ee65913a384c60653a98b79",
+        "revCount": 37,
         "type": "git",
         "url": "ssh://git@github.com/reuski/juttu.git"
       },
@@ -551,11 +551,11 @@
         "nixpkgs": "nixpkgs_5"
       },
       "locked": {
-        "lastModified": 1788318039,
-        "narHash": "sha256-U9TRtp2Qu/k7jKmSckg46BQZ8V463ckqjOiWT3D+/jo=",
+        "lastModified": 1788370456,
+        "narHash": "sha256-w06cB/wypyf1rINwVygmeyZUdBg/fjaLpu8XjLnpoAY=",
         "owner": "noctalia-dev",
         "repo": "noctalia",
-        "rev": "2314bbb7b30ed7c6d2495ae5801817690777c4f1",
+        "rev": "c5f5ab26111c665aab04b0c4f686a14c86ae0f72",
         "type": "github"
       },
       "original": {
@@ -784,11 +784,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1788292688,
-        "narHash": "sha256-Y7ROv2mkkEI9C0g/QicbNL1kTnTvRvJ7+dNfPQbTu68=",
+        "lastModified": 1788377609,
+        "narHash": "sha256-TxFPjLiNg3JHOkze/GinJ6FxAeyumEPlYhqGCK/cekg=",
         "owner": "vicinaehq",
         "repo": "vicinae",
-        "rev": "153dc88b8694d2aad818f03c9bee30b15c31e995",
+        "rev": "94e8704a063be47d26637df91f2b0481847166e9",
         "type": "github"
       },
       "original": {
