@@ -11,6 +11,7 @@ on:
       - ".github/dependabot.yml"
       - ".github/workflows/**"
       - ".github/actions/**"
+      - ".github/scripts/**"
   push:
     branches: [main]
     paths:
@@ -22,6 +23,7 @@ on:
       - ".github/dependabot.yml"
       - ".github/workflows/**"
       - ".github/actions/**"
+      - ".github/scripts/**"
   workflow_dispatch:
 
 concurrency:
@@ -40,6 +42,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+
+      - name: Check formatting
+        run: nix fmt . -- --fail-on-change
 
       - uses: ./.github/actions/private-ssh
         with:
@@ -103,6 +108,10 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+
+      - uses: ./.github/actions/private-ssh
+        with:
+          key: ${{ secrets.NIX_BUILDER_KEY }}
 
       - name: Configure cachix
         if: ${{ env.CACHIX_AUTH_TOKEN != '' }}

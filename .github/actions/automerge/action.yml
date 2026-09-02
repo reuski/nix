@@ -17,10 +17,15 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       run: |
         PR="${{ inputs.pr }}"
-        if [ "$(gh pr view "$PR" --json autoMergeRequest --jq '.autoMergeRequest != null')" = "true" ]; then
-          exit 0
-        fi
         for i in 1 2 3; do
+          state_and_auto_merge=$(gh pr view "$PR" --json state,autoMergeRequest --jq '[.state, (.autoMergeRequest != null)] | @tsv') || {
+            sleep $((i * 5))
+            continue
+          }
+          read -r state auto_merge <<< "$state_and_auto_merge"
+          if [ "$state" = "MERGED" ] || [ "$auto_merge" = "true" ]; then
+            exit 0
+          fi
           gh pr merge --auto --squash --delete-branch "$PR" && exit 0
           sleep $((i * 5))
         done

@@ -16,7 +16,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 100
     env:
       CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
     steps:
@@ -125,6 +125,9 @@ jobs:
           body: "Automated flake input refresh and package bump."
           branch: chore/update-flake
           delete-branch: true
+          add-paths: |
+            flake.lock
+            modules/packages/
 
       - if: steps.pr.outputs.pull-request-number != ''
         uses: ./.github/actions/automerge
