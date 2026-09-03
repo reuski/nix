@@ -16,6 +16,6 @@
 
       users.users.${config.profile.username}.extraGroups = [ "uinput" ];
 
-      environment.systemPackages = [ pkgs.heroic ];
+      environment.systemPackages = [ pkgs.faugus-launcher ];
     };
 }

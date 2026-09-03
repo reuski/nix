@@ -17,19 +17,10 @@ in
         GE = pkgs.proton-ge-bin;
         CachyOS-LinUwUx = pkgs.proton-cachyos-linuwux;
       };
-      protonRoots = pkgs.linkFarm "proton-roots" (
-        lib.mapAttrsToList (name: package: {
-          name = "share/proton-${lib.toLower name}";
-          path = package.steamcompattool;
-        }) protonVariants
-      );
     in
     {
       programs.steam.extraCompatPackages = builtins.attrValues protonVariants;
-      environment.systemPackages = [
-        protonRoots
-        pkgs.umu-launcher
-      ];
+      environment.systemPackages = [ pkgs.umu-launcher ];
 
       imports = [
         inputs.disko.nixosModules.disko
@@ -48,9 +39,9 @@ in
           homeManager.llama
         ];
 
-        xdg.configFile = lib.mapAttrs' (
+        xdg.dataFile = lib.mapAttrs' (
           name: package:
-          lib.nameValuePair "heroic/tools/proton/Nix-Proton-${name}" {
+          lib.nameValuePair "Steam/compatibilitytools.d/Nix-Proton-${name}" {
             source = package.steamcompattool;
           }
         ) protonVariants;

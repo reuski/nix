@@ -29,7 +29,7 @@ in
 
   systemd.tmpfiles.rules = [
     "d ${homeDirectory}/games/steam 0755 ${username} users -"
-    "d ${homeDirectory}/games/heroic 0755 ${username} users -"
+    "d ${homeDirectory}/games/windows 0755 ${username} users -"
   ];
 
   disko.devices.disk = {

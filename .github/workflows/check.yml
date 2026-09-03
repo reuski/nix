@@ -46,6 +46,9 @@ jobs:
       - name: Check formatting
         run: nix fmt . -- --fail-on-change
 
+      - name: Check diff
+        run: git diff --check
+
       - uses: ./.github/actions/private-ssh
         with:
           key: ${{ secrets.NIX_BUILDER_KEY }}
@@ -63,8 +66,6 @@ jobs:
     needs: evaluate
     runs-on: ubuntu-latest
     timeout-minutes: 35
-    env:
-      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -82,6 +83,8 @@ jobs:
       - name: Configure cachix
         if: ${{ env.CACHIX_AUTH_TOKEN != '' }}
         uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         with:
           name: reuski # cachix cache name (app.cachix.org)
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -101,8 +104,6 @@ jobs:
     needs: evaluate
     runs-on: macos-latest
     timeout-minutes: 35
-    env:
-      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -116,6 +117,8 @@ jobs:
       - name: Configure cachix
         if: ${{ env.CACHIX_AUTH_TOKEN != '' }}
         uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
+        env:
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
         with:
           name: reuski # cachix cache name (app.cachix.org)
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
