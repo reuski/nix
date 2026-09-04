@@ -52,7 +52,7 @@
         | .PreferredMetadataLanguage = "en"
       '';
       networkFilter = pkgs.writeText "jellyfin-network.jq" ''
-        .EnableRemoteAccess = false
+        .EnableRemoteAccess = true
         | .EnablePublishedServerUriByRequest = true
         | .KnownProxies = [ "127.0.0.1" ]
       '';
@@ -115,7 +115,7 @@
           api -X POST "$base/Startup/Configuration" --data '{"UICulture":"en-US","MetadataCountryCode":"FI","PreferredMetadataLanguage":"en"}' >/dev/null
           jq -nc --arg name "$admin" --arg password "$password" '{Name:$name, Password:$password}' \
             | api -X POST "$base/Startup/User" --data-binary @- >/dev/null
-          api -X POST "$base/Startup/RemoteAccess" --data '{"EnableRemoteAccess":false,"EnableAutomaticPortMapping":false}' >/dev/null
+          api -X POST "$base/Startup/RemoteAccess" --data '{"EnableRemoteAccess":true,"EnableAutomaticPortMapping":false}' >/dev/null
           api -X POST "$base/Startup/Complete" --data '{}' >/dev/null
         fi
 
