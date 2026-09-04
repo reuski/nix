@@ -3,7 +3,19 @@
   flake.modules.nixos.niri =
     { lib, pkgs, ... }:
     let
-      niriPackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
+      niriPackage =
+        inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable.overrideAttrs
+          (old: {
+            postPatch = (old.postPatch or "") + ''
+              substituteInPlace resources/niri-session \
+                --replace-fail \
+                  'systemctl --user import-environment' \
+                  'systemctl --user import-environment $(printenv | cut -d= -f1)' \
+                --replace-fail \
+                  'dbus-update-activation-environment --all' \
+                  'dbus-update-activation-environment $(printenv | cut -d= -f1)'
+            '';
+          });
       niriSession = lib.getExe' niriPackage "niri-session";
       tuigreet = lib.getExe pkgs.tuigreet;
       greetdSession = pkgs.writeShellScript "greetd-niri-session" ''

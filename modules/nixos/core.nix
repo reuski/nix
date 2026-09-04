@@ -17,11 +17,11 @@
       services.fstrim.enable = true;
       services.timesyncd.enable = true;
 
-      services.journald.extraConfig = ''
-        SystemMaxUse=500M
-        RuntimeMaxUse=100M
-        MaxRetentionSec=1month
-      '';
+      services.journald.settings.Journal = {
+        SystemMaxUse = "500M";
+        RuntimeMaxUse = "100M";
+        MaxRetentionSec = "1month";
+      };
 
       documentation.nixos.enable = false;
       documentation.man.cache.enable = false;
