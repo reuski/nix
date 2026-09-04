@@ -95,15 +95,6 @@ jobs:
         run: nix flake check --no-build --all-systems
         timeout-minutes: 10
 
-      - name: Build all NixOS hosts
-        run: |
-          nix build --no-link --keep-going --print-build-logs \
-            .#checks.x86_64-linux.nixos-hiisi \
-            .#checks.x86_64-linux.nixos-sampo \
-            .#checks.x86_64-linux.nixos-shodan \
-            .#checks.x86_64-linux.nixos-ukko
-        timeout-minutes: 45
-
       - name: Configure cachix
         if: ${{ env.CACHIX_AUTH_TOKEN != '' }}
         uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
@@ -113,6 +104,15 @@ jobs:
           name: reuski # cachix cache name (app.cachix.org)
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           skipAddingSubstituter: true
+
+      - name: Build all NixOS hosts
+        run: |
+          nix build --no-link --keep-going --print-build-logs \
+            .#checks.x86_64-linux.nixos-hiisi \
+            .#checks.x86_64-linux.nixos-sampo \
+            .#checks.x86_64-linux.nixos-shodan \
+            .#checks.x86_64-linux.nixos-ukko
+        timeout-minutes: 45
 
       - name: Build custom packages
         run: |

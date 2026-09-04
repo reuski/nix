@@ -2,16 +2,6 @@ name: check
 
 on:
   pull_request:
-    paths:
-      - "**/*.nix"
-      - "flake.lock"
-      - "flake.nix"
-      - ".sops.yaml"
-      - "secrets/**"
-      - ".github/dependabot.yml"
-      - ".github/workflows/**"
-      - ".github/actions/**"
-      - ".github/scripts/**"
   push:
     branches: [main]
     paths:
