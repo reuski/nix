@@ -159,11 +159,11 @@
         "zon2nix": "zon2nix"
       },
       "locked": {
-        "lastModified": 1788476979,
-        "narHash": "sha256-F4/7xhoQZ5CxRtAQF9vQnZJMDl3QMm8/g/r2E/zuLw8=",
+        "lastModified": 1788537433,
+        "narHash": "sha256-aS8ij0nqApe/yEdYpgbfhkeGf2cy9z9wXKOCzlkQk/8=",
         "owner": "ghostty-org",
         "repo": "ghostty",
-        "rev": "c81f0b26871c7fbbe2fc35549fdad1f64ed29094",
+        "rev": "1f5bb5769fbb5e717546073d33d3985604a315b2",
         "type": "github"
       },
       "original": {
@@ -279,11 +279,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788458595,
-        "narHash": "sha256-XjhvjI9unve/0/XJDrngunOl4KVs67/1iPiwcrPJCW0=",
+        "lastModified": 1788540924,
+        "narHash": "sha256-UZeasY5ipG0f9Hof4/vgoJ9tENeuo9Cg6mrO+3bQslo=",
         "ref": "main",
-        "rev": "a163d5b88a5b48ef2e8c4588fc05dbb794000d0b",
-        "revCount": 39,
+        "rev": "2f895a400abd1876f63aa68dcede88ba55a0bf7e",
+        "revCount": 40,
         "type": "git",
         "url": "ssh://git@github.com/reuski/juttu.git"
       },
@@ -784,11 +784,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1788529629,
-        "narHash": "sha256-cEHLqOwmMefCCftl3AeyBDhv6xGtlP3UVTpvx2vDVOc=",
+        "lastModified": 1788540680,
+        "narHash": "sha256-yi32cUpZcIq8jM3CIjw3MPgifwh/bO1BPpnbohKMpjQ=",
         "owner": "vicinaehq",
         "repo": "vicinae",
-        "rev": "3a7bb7a666efa7d938a29f65ade64e90a9ef5b25",
+        "rev": "97950cb4d36bee8931dc6855150613b5a3131198",
         "type": "github"
       },
       "original": {
