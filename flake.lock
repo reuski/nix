@@ -784,11 +784,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1788476663,
-        "narHash": "sha256-VlMHqaNKaa1FElRxxIe2yrlgvAf9BP9Bx57FtPeIo1E=",
+        "lastModified": 1788529629,
+        "narHash": "sha256-cEHLqOwmMefCCftl3AeyBDhv6xGtlP3UVTpvx2vDVOc=",
         "owner": "vicinaehq",
         "repo": "vicinae",
-        "rev": "3e55dd028056936f34902ccba9fdee1e12b9a69d",
+        "rev": "3a7bb7a666efa7d938a29f65ade64e90a9ef5b25",
         "type": "github"
       },
       "original": {
