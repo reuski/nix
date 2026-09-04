@@ -23,7 +23,7 @@
     "ntsync"
   ];
 
-  nixpkgs.overlays = [ inputs.nix-cachyos-kernel.overlays.default ];
+  nixpkgs.overlays = [ inputs.nix-cachyos-kernel.overlays.pinned ];
 
   boot.kernelPackages = lib.mkForce pkgs.cachyosKernels.linuxPackages-cachyos-latest-lto-x86_64-v3;
   boot.kernelParams = [
