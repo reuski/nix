@@ -8,11 +8,6 @@
         remotePlay.openFirewall = true;
       };
 
-      programs.gamescope = {
-        enable = true;
-        enableWsi = true;
-      };
-
       powerManagement.cpuFreqGovernor = "performance";
 
       hardware.steam-hardware.enable = true;
