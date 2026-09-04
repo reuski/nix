@@ -137,9 +137,10 @@ jobs:
           add-paths: |
             flake.lock
             modules/packages/
+          token: ${{ secrets.AUTOMATION_TOKEN }}
 
       - if: steps.pr.outputs.pull-request-number != ''
         uses: ./.github/actions/automerge
         with:
           pr: ${{ steps.pr.outputs.pull-request-number }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.AUTOMATION_TOKEN }}

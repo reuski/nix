@@ -44,8 +44,6 @@
   hardware.enableRedistributableFirmware = lib.mkDefault true;
 
   services.fwupd.enable = true;
-  services.lact.enable = true;
-
   services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
@@ -53,7 +51,7 @@
     open = true;
     powerManagement.enable = true;
     videoAcceleration = true;
-    branch = "latest";
+    branch = "stable";
   };
 
   environment.sessionVariables = {
