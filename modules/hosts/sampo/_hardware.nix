@@ -53,7 +53,7 @@
     open = true;
     powerManagement.enable = true;
     videoAcceleration = true;
-    branch = "stable";
+    branch = "latest";
   };
 
   environment.sessionVariables = {
