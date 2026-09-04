@@ -23,10 +23,9 @@
     "ntsync"
   ];
 
-  boot.kernelPackages = lib.mkForce (
-    pkgs.linuxPackagesFor
-      inputs.nix-cachyos-kernel.packages.${pkgs.stdenv.hostPlatform.system}.linux-cachyos-latest-lto-x86_64-v3
-  );
+  nixpkgs.overlays = [ inputs.nix-cachyos-kernel.overlays.default ];
+
+  boot.kernelPackages = lib.mkForce pkgs.cachyosKernels.linuxPackages-cachyos-latest-lto-x86_64-v3;
   boot.kernelParams = [
     "nowatchdog"
     "usbcore.autosuspend=-1"
@@ -54,7 +53,7 @@
     open = true;
     powerManagement.enable = true;
     videoAcceleration = true;
-    package = config.boot.kernelPackages.nvidiaPackages.production;
+    branch = "latest";
   };
 
   environment.sessionVariables = {

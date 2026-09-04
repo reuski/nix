@@ -15,8 +15,8 @@ runs:
     - shell: bash
       env:
         GH_TOKEN: ${{ inputs.token }}
+        PR: ${{ inputs.pr }}
       run: |
-        PR="${{ inputs.pr }}"
         for i in 1 2 3; do
           state_and_auto_merge=$(gh pr view "$PR" --json state,autoMergeRequest --jq '[.state, (.autoMergeRequest != null)] | @tsv') || {
             sleep $((i * 5))

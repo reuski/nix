@@ -15,15 +15,18 @@
         name = "deploy";
         runtimeInputs = [
           config.nix.package
-          pkgs.git
+          pkgs.jq
+          pkgs.coreutils
+        ]
+        ++ lib.optionals (cfg.notify != null) [
+          pkgs.curl
+          pkgs.gawk
+        ]
+        ++ lib.optionals (cfg.targets != [ ]) [
           pkgs.nixos-rebuild
           pkgs.openssh
-          pkgs.attic-client
-          pkgs.curl
-          pkgs.jq
-          pkgs.gawk
-          pkgs.coreutils
-        ];
+        ]
+        ++ lib.optionals (cfg.warm != [ ]) [ pkgs.attic-client ];
         text = ''
           rc=0
           score=$(mktemp)
@@ -31,10 +34,16 @@
           warns=$(mktemp)
           meta=$(mktemp)
           new=$(mktemp)
+          deployment_flake=${flake}
+          if ! revision=$(nix flake metadata "$deployment_flake" --refresh --json | jq -er '.locked.rev'); then
+            echo "failed to resolve deployment flake revision" >&2
+            exit 1
+          fi
+          deployment_flake="github:reuski/nix/$revision"
 
           ${lib.optionalString (cfg.notify != null) ''
             old="$STATE_DIRECTORY/inputs"
-            nix flake metadata "${flake}" --refresh --json 2>/dev/null > "$meta" || true
+            nix flake metadata "$deployment_flake" --json 2>/dev/null > "$meta" || true
             jq -r '.locks as $l | $l.nodes.root.inputs | to_entries[]
                    | select(.value | type == "string")
                    | ($l.nodes[.value].locked.rev // empty) as $rev
@@ -98,8 +107,8 @@
             activate() {
               local target=$1 dest=$2 attempt
               for attempt in 1 2 3; do
-                nixos-rebuild switch --flake "${flake}#$target" \
-                  --target-host "$dest" --refresh --fallback --option tarball-ttl 0 \
+                nixos-rebuild switch --flake "$deployment_flake#$target" \
+                  --target-host "$dest" --fallback --option tarball-ttl 0 \
                   --max-jobs 1 --cores ${toString cfg.cores} && return 0
                 [ "$attempt" -lt 3 ] && sleep $(( attempt * 30 ))
               done
@@ -114,6 +123,32 @@
                 built=$(readlink /run/current-system/{kernel,initrd,kernel-modules})
                 [ "$booted" = "$built" ] || systemctl reboot'
             }
+
+            preflight() {
+              local target=$1 attempt
+              for attempt in 1 2 3; do
+                if nix build "$deployment_flake#nixosConfigurations.$target.config.system.build.toplevel" \
+                    --fallback --option tarball-ttl 0 --no-link --print-out-paths \
+                    --max-jobs 1 --cores ${toString cfg.cores} >/dev/null; then
+                  return 0
+                fi
+                [ "$attempt" -lt 3 ] && sleep $(( attempt * 30 ))
+              done
+              return 1
+            }
+
+            preflight_failed=0
+            ${lib.concatMapStringsSep "\n" (h: ''
+              if ! preflight ${h}; then
+                rc=1
+                preflight_failed=1
+                mark PREFLIGHT ${h} FAIL
+                printf '%s\n' ${h} >> "$detail"
+              else
+                mark PREFLIGHT ${h} OK
+              fi
+            '') cfg.targets}
+            if [ "$preflight_failed" = 1 ]; then exit "$rc"; fi
 
             ${lib.concatMapStringsSep "\n" (
               h:
@@ -140,8 +175,8 @@
             warm() {
               local out attempt
               for attempt in 1 2 3; do
-                if out=$(nix build "${flake}#nixosConfigurations.$1.config.system.build.toplevel" \
-                    --refresh --fallback --option tarball-ttl 0 --no-link --print-out-paths \
+                if out=$(nix build "$deployment_flake#nixosConfigurations.$1.config.system.build.toplevel" \
+                    --fallback --option tarball-ttl 0 --no-link --print-out-paths \
                     --max-jobs 1 --cores ${toString cfg.cores} 2>> "$2"); then
                   attic push "local:${cfg.cache}" "$out" >> "$2" 2>&1
                   return 0
@@ -226,6 +261,13 @@
       };
 
       config = lib.mkIf (cfg.warm != [ ] || cfg.targets != [ ]) {
+        assertions = [
+          {
+            assertion = cfg.warm == [ ] || cfg.cache != "";
+            message = "deploy.cache must be set when deploy.warm is enabled";
+          }
+        ];
+
         systemd.services.nixos-upgrade = lib.mkIf config.system.autoUpgrade.enable {
           after = [ "deploy.service" ];
         };
