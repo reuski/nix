@@ -10,7 +10,7 @@ let
 in
 {
   networking.firewall = {
-    trustedInterfaces = lib.mkForce [ ];
+    trustedInterfaces = lib.mkForce [ "lo" ];
     interfaces.tailscale0.allowedTCPPorts = tailnetServePorts;
   };
 
