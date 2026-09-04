@@ -30,7 +30,10 @@ in
     port = 3000;
     settings = {
       dns = {
-        bind_hosts = [ "0.0.0.0" ];
+        bind_hosts = [
+          "127.0.0.1"
+          localAddress
+        ];
         port = 53;
         upstream_dns = [
           "[/${tailnetDomain}/]100.100.100.100"

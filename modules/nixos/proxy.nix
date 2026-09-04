@@ -32,7 +32,12 @@
       '';
 
       route = name: service: ''
-        @${name} host ${service.domain}
+        @${name} {
+          host ${service.domain}
+          ${optionalString (
+            !service.public
+          ) "remote_ip 192.168.1.0/24${optionalString service.tailnet " 100.64.0.0/10"}"}
+        }
         handle @${name} {
           ${optionalString (!service.accessLog) "log_skip"}
           ${headers}
@@ -67,6 +72,16 @@
             accessLog = mkOption {
               type = types.bool;
               default = true;
+            };
+            public = mkOption {
+              type = types.bool;
+              default = false;
+              description = "Allow requests from outside the local LAN and tailnet.";
+            };
+            tailnet = mkOption {
+              type = types.bool;
+              default = true;
+              description = "Allow requests from the tailnet.";
             };
           };
         }

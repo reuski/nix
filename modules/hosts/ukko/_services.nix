@@ -31,7 +31,7 @@ in
 
   jellyfin = {
     enable = true;
-    openFirewall = true;
+    openFirewall = false;
     admin.passwordFile = config.sops.secrets."jellyfin/admin-password".path;
     libraries = [
       {
@@ -67,6 +67,8 @@ in
   services.linkding.enable = true;
 
   maintainerr.enable = true;
+
+  services.skaldi.openFirewall = false;
 
   calibre.enable = true;
 

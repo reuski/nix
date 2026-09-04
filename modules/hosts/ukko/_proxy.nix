@@ -7,6 +7,7 @@ in
   tailnet.services = {
     hass.port = 8123;
     audiobookshelf.port = 8000;
+    jellyfin.port = 8096;
     linkding.port = config.services.linkding.port;
     degoog = {
       port = config.proxy.services.degoog.port;
@@ -31,9 +32,14 @@ in
       actual = {
         domain = "actual.reuski.dev";
         port = config.services.actual.settings.port;
+        public = true;
       };
       adguard.port = 3000;
       attic.port = 8090;
+      skaldi = {
+        port = 8083;
+        tailnet = false;
+      };
       degoog.accessLog = false;
       linkding.port = config.services.linkding.port;
       ntfy.port = 2586;

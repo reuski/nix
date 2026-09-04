@@ -1,5 +1,19 @@
-{ lib, ... }:
+{ config, lib, ... }:
+let
+  tailnetServePorts = lib.unique (
+    [
+      80
+      443
+    ]
+    ++ lib.mapAttrsToList (_: service: service.https) config.tailnet.services
+  );
+in
 {
+  networking.firewall = {
+    trustedInterfaces = lib.mkForce [ ];
+    interfaces.tailscale0.allowedTCPPorts = tailnetServePorts;
+  };
+
   services.tailscale = {
     useRoutingFeatures = "server";
     extraSetFlags = [
