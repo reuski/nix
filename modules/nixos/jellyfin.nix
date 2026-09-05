@@ -54,6 +54,7 @@
       networkFilter = pkgs.writeText "jellyfin-network.jq" ''
         .EnableRemoteAccess = true
         | .EnablePublishedServerUriByRequest = true
+        | .LocalNetworkAddresses = [ "127.0.0.1" ]
         | .KnownProxies = [ "127.0.0.1" ]
       '';
       encodingFilter = pkgs.writeText "jellyfin-encoding.jq" ''
@@ -220,10 +221,7 @@
           jellyfin = {
             wants = [ "network-online.target" ];
             after = [ "network-online.target" ];
-            environment = {
-              ASPNETCORE_URLS = "http://127.0.0.1:8096";
-              LIBVA_DRIVER_NAME = "iHD";
-            };
+            environment.LIBVA_DRIVER_NAME = "iHD";
             serviceConfig = {
               UMask = lib.mkForce "0002";
               SupplementaryGroups = [
