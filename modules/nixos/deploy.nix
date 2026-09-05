@@ -17,6 +17,7 @@
           config.nix.package
           pkgs.jq
           pkgs.coreutils
+          pkgs.git
         ]
         ++ lib.optionals (cfg.notify != null) [
           pkgs.curl
