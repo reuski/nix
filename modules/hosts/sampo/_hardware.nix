@@ -25,7 +25,7 @@
 
   nixpkgs.overlays = [ inputs.nix-cachyos-kernel.overlays.pinned ];
 
-  boot.kernelPackages = lib.mkForce pkgs.cachyosKernels.linuxPackages-cachyos-latest-lto-x86_64-v3;
+  boot.kernelPackages = lib.mkForce pkgs.cachyosKernels.linuxPackages-cachyos-latest;
   boot.kernelParams = [
     "nowatchdog"
     "usbcore.autosuspend=-1"
@@ -36,7 +36,8 @@
 
   services.scx = {
     enable = true;
-    scheduler = "scx_flash";
+    scheduler = "scx_lavd";
+    extraArgs = [ "--performance" ];
   };
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
@@ -44,6 +45,7 @@
   hardware.enableRedistributableFirmware = lib.mkDefault true;
 
   services.fwupd.enable = true;
+  services.lact.enable = true;
   services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.nvidia = {
@@ -51,7 +53,7 @@
     open = true;
     powerManagement.enable = true;
     videoAcceleration = true;
-    branch = "stable";
+    package = config.boot.kernelPackages.nvidiaPackages.latest;
   };
 
   environment.sessionVariables = {
