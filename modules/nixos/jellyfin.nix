@@ -221,7 +221,10 @@
           jellyfin = {
             wants = [ "network-online.target" ];
             after = [ "network-online.target" ];
-            environment.LIBVA_DRIVER_NAME = "iHD";
+            environment = {
+              ASPNETCORE_URLS = "http://127.0.0.1:8096";
+              LIBVA_DRIVER_NAME = "iHD";
+            };
             serviceConfig = {
               UMask = lib.mkForce "0002";
               SupplementaryGroups = [
