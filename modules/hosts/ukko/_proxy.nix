@@ -41,6 +41,10 @@ in
         tailnet = false;
       };
       degoog.accessLog = false;
+      jellyfin = {
+        port = 8096;
+        frameOptions = null;
+      };
       linkding.port = config.services.linkding.port;
       ntfy.port = 2586;
       vaultwarden.port = 8222;

@@ -22,10 +22,10 @@
       prefix = optionalString (!tls) "http://";
       acmeDir = "/var/lib/acme/${cfg.domain}";
 
-      headers = ''
+      headers = service: ''
         header {
           X-Content-Type-Options "nosniff"
-          X-Frame-Options "SAMEORIGIN"
+          ${optionalString (service.frameOptions != null) "X-Frame-Options \"${service.frameOptions}\""}
           Referrer-Policy "strict-origin-when-cross-origin"
           X-Robots-Tag "noindex, nofollow"
         }
@@ -40,7 +40,7 @@
         }
         handle @${name} {
           ${optionalString (!service.accessLog) "log_skip"}
-          ${headers}
+          ${headers service}
           reverse_proxy ${service.host}:${toString service.port}
         }
       '';
@@ -72,6 +72,11 @@
             accessLog = mkOption {
               type = types.bool;
               default = true;
+            };
+            frameOptions = mkOption {
+              type = types.nullOr types.str;
+              default = "SAMEORIGIN";
+              description = "X-Frame-Options value; null omits the header.";
             };
             public = mkOption {
               type = types.bool;

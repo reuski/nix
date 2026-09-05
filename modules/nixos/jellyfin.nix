@@ -54,7 +54,7 @@
       networkFilter = pkgs.writeText "jellyfin-network.jq" ''
         .EnableRemoteAccess = true
         | .EnablePublishedServerUriByRequest = true
-        | .LocalNetworkAddresses = [ "127.0.0.1" ]
+        | .LocalNetworkSubnets = [ "192.168.1.0/24" ]
         | .KnownProxies = [ "127.0.0.1" ]
       '';
       encodingFilter = pkgs.writeText "jellyfin-encoding.jq" ''
