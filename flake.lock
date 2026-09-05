@@ -159,11 +159,11 @@
         "zon2nix": "zon2nix"
       },
       "locked": {
-        "lastModified": 1788537433,
-        "narHash": "sha256-aS8ij0nqApe/yEdYpgbfhkeGf2cy9z9wXKOCzlkQk/8=",
+        "lastModified": 1788544194,
+        "narHash": "sha256-/lZBuE48OgO1rPkZz+MPk325gnCTgo/RMoZlS411kvE=",
         "owner": "ghostty-org",
         "repo": "ghostty",
-        "rev": "1f5bb5769fbb5e717546073d33d3985604a315b2",
+        "rev": "492300cad104195411d12217dd22f1cd05f31376",
         "type": "github"
       },
       "original": {
@@ -279,11 +279,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1788540924,
-        "narHash": "sha256-UZeasY5ipG0f9Hof4/vgoJ9tENeuo9Cg6mrO+3bQslo=",
+        "lastModified": 1788546997,
+        "narHash": "sha256-yOL8l0H3Qikld4VQjZtLe/ZdPP4U/elFevbIowvPw04=",
         "ref": "main",
-        "rev": "2f895a400abd1876f63aa68dcede88ba55a0bf7e",
-        "revCount": 40,
+        "rev": "0578d7861df239cd8dd493c30748457c3da3a6a1",
+        "revCount": 41,
         "type": "git",
         "url": "ssh://git@github.com/reuski/juttu.git"
       },
@@ -356,11 +356,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1788466103,
-        "narHash": "sha256-nnuXs61NLtMiU2injAVNDCbByykL1vM/zV95vaOPCDQ=",
+        "lastModified": 1788551561,
+        "narHash": "sha256-JU+5xLgelmZPLrkzz93YXuMqZkX6rryJKqf1Dr/KHzY=",
         "owner": "xddxdd",
         "repo": "nix-cachyos-kernel",
-        "rev": "b09dbbf169d66825605eeac9f7310c29fc3e1a52",
+        "rev": "5cfa9dacb5fe3218b355103e966437eb6a089748",
         "type": "github"
       },
       "original": {
@@ -487,11 +487,11 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1788456250,
-        "narHash": "sha256-fEc3AT40nBGFxO2x9QFtLhVLkika4ETBcESMIr5gsCo=",
+        "lastModified": 1788523300,
+        "narHash": "sha256-HRlfCPLSKAHOnbn+QxuEvWvug0yqU8oHZHLbO5snJQE=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "1cbdaeda5d3b5a9c2b97fec74cc0f15ce4d3fba8",
+        "rev": "074b06a122e9f3e245e17fdc1199c3481c8b70b5",
         "type": "github"
       },
       "original": {
@@ -503,11 +503,11 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1788404924,
-        "narHash": "sha256-lhEhY8X5EgkQ/eg6IFz4cc8jRuSYSvnxx1al7d1dvZ0=",
+        "lastModified": 1788531059,
+        "narHash": "sha256-hLD4l3QOGBQhkVp3mQ2lJ/YbEi99qUgKapb40KovZ88=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "0968519e14f7aa7d3e9b389682bd74d2b51c8ce8",
+        "rev": "801bef6abd86b91e51083066b83fb354a11fc640",
         "type": "github"
       },
       "original": {
@@ -551,11 +551,11 @@
         "nixpkgs": "nixpkgs_5"
       },
       "locked": {
-        "lastModified": 1788493909,
-        "narHash": "sha256-/cKoKjxWl1TPbVQ0WNwFlFWrNnGW3xGQGkwsp9agXE0=",
+        "lastModified": 1788578959,
+        "narHash": "sha256-evdJosqM76WXsnFoEWRB+lvrv194ZAXA9TOCbuBu6DE=",
         "owner": "noctalia-dev",
         "repo": "noctalia",
-        "rev": "55e7b45827aa9664d24216bf4c9d5554cd108cf0",
+        "rev": "24dfc26d2fd668112f5be5344dc9171bd042fd95",
         "type": "github"
       },
       "original": {
@@ -784,11 +784,11 @@
         "systems": "systems_2"
       },
       "locked": {
-        "lastModified": 1788540680,
-        "narHash": "sha256-yi32cUpZcIq8jM3CIjw3MPgifwh/bO1BPpnbohKMpjQ=",
+        "lastModified": 1788578623,
+        "narHash": "sha256-zTYK35HAElGgY4tkwmvr5Mcl5rip7Zh/JZaR9KuIiC0=",
         "owner": "vicinaehq",
         "repo": "vicinae",
-        "rev": "97950cb4d36bee8931dc6855150613b5a3131198",
+        "rev": "ab03b9c2297ac2582f187e06c05ca5542ba5e8db",
         "type": "github"
       },
       "original": {
