@@ -125,11 +125,11 @@
             }
 
             preflight() {
-              local target=$1 attempt
+              local target=$1 log=$2 attempt
               for attempt in 1 2 3; do
                 if nix build "$deployment_flake#nixosConfigurations.$target.config.system.build.toplevel" \
                     --fallback --option tarball-ttl 0 --no-link --print-out-paths \
-                    --max-jobs 1 --cores ${toString cfg.cores} >/dev/null; then
+                    --max-jobs 1 --cores ${toString cfg.cores} > "$log" 2>&1; then
                   return 0
                 fi
                 [ "$attempt" -lt 3 ] && sleep $(( attempt * 30 ))
@@ -139,14 +139,25 @@
 
             preflight_failed=0
             ${lib.concatMapStringsSep "\n" (h: ''
-              if ! preflight ${h}; then
+              log=$(mktemp)
+              if ! preflight ${h} "$log"; then
                 rc=1
                 preflight_failed=1
                 mark PREFLIGHT ${h} FAIL
-                printf '%s\n' ${h} >> "$detail"
+                {
+                  printf '%s\n' ${h}
+                  diagnostics=$(grep -iE 'error|warning|fatal|fail|exception|unable|cannot|denied' "$log" | tail -n 8 || true)
+                  if [ -n "$diagnostics" ]; then
+                    printf '%s\n' "$diagnostics"
+                  else
+                    tail -n 8 "$log"
+                  fi
+                } >> "$detail"
               else
                 mark PREFLIGHT ${h} OK
               fi
+              collect "$log"
+              rm -f "$log"
             '') cfg.targets}
             if [ "$preflight_failed" = 1 ]; then exit "$rc"; fi
 
