@@ -66,7 +66,7 @@
         pname = "proton-cachyos-linuwux";
         version = "proton-cachyos-11.0-20260703-slr-LinUwUx-Rework";
         url = "https://github.com/xshaduwulfx/proton-linuwux/releases/download/${version}/${version}.tar.gz";
-        hash = "sha256-I/ON0yqV0el9/x0dGcsQVQK0ZdZ9/U+WITLYVpGhaus=";
+        hash = "sha256-sYCEq8VGBOhNtSwdgRavBFzpRr9F1po+dnj6DSjxapM=";
         upstreamName = version;
         displayName = "Proton CachyOS LinUwUx";
         description = "Proton-CachyOS build patched with LinUwUx.patch";
