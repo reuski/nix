@@ -18,7 +18,10 @@
         final.stdenvNoCC.mkDerivation {
           inherit pname version;
 
-          src = final.fetchurl { inherit url hash; };
+          src = final.fetchurl {
+            inherit url hash;
+            name = "${version}.tar.xz";
+          };
 
           outputs = [
             "out"
