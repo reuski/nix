@@ -65,12 +65,12 @@
       proton-cachyos-linuwux = mkProton rec {
         pname = "proton-cachyos-linuwux";
         version = "proton-cachyos-11.0-20260703-slr-LinUwUx-Rework";
-        url = "https://github.com/xshaduwulfx/proton-linuwux/releases/download/${version}/${version}.tar.gz";
-        hash = "sha256-sYCEq8VGBOhNtSwdgRavBFzpRr9F1po+dnj6DSjxapM=";
+        url = "https://sourceforge.net/projects/proton-linuwux/files/Proton-CachyOS%20LinUwUx/${version}.tar.xz/download";
+        hash = "sha256-pKgF01FTLAWdtuDrrDjimucLGvjLWYttra+e1LGMJC4=";
         upstreamName = version;
         displayName = "Proton CachyOS LinUwUx";
         description = "Proton-CachyOS build patched with LinUwUx.patch";
-        homepage = "https://github.com/xshaduwulfx/proton-linuwux";
+        homepage = "https://codeberg.org/xshaduwulfx/proton-linuwux";
         license = with final.lib.licenses; [
           bsd3
           lgpl21Plus
