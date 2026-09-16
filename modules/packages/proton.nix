@@ -14,9 +14,10 @@
           description,
           homepage,
           license,
+          sourceRoot ? "",
         }:
         final.stdenvNoCC.mkDerivation {
-          inherit pname version;
+          inherit pname version sourceRoot;
 
           src = final.fetchurl {
             inherit url hash;
@@ -69,7 +70,7 @@
         pname = "proton-cachyos-linuwux";
         version = "proton-cachyos-11.0-20260703-slr-LinUwUx-Rework";
         url = "https://sourceforge.net/projects/proton-linuwux/files/Proton-CachyOS%20LinUwUx/${version}.tar.xz/download";
-        hash = "sha256-pKgF01FTLAWdtuDrrDjimucLGvjLWYttra+e1LGMJC4=";
+        hash = "sha256-MJTXBiyykIpg3orJugUFYgf2Lmh/BD7fuB4sAceic/w=";
         upstreamName = version;
         displayName = "Proton CachyOS LinUwUx";
         description = "Proton-CachyOS build patched with LinUwUx.patch";
@@ -79,6 +80,7 @@
           lgpl21Plus
           mit
         ];
+        sourceRoot = ".";
       };
     };
 }
