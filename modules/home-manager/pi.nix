@@ -182,7 +182,7 @@
         home.file.".pi/agent/settings.json".source = json.generate "pi-settings.json" {
           packages = piPackages;
           theme = "gruvbox";
-          terminal.showImages = false;
+          terminal.showImages = true;
           hideThinkingBlock = true;
           quietStartup = true;
           collapseChangelog = true;

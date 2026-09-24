@@ -9,6 +9,8 @@
     {
       home.packages = [ pkgs.zellij ];
 
+      xdg.configFile."zellij/plugins/zjstatus.wasm".source = pkgs.zellijPlugins.zjstatus;
+
       xdg.configFile."zellij/config.kdl".text = ''
         theme "gruvbox-dark"
         default_layout "main"
@@ -36,7 +38,7 @@
         }
 
         plugins {
-            zjstatus location="file:${pkgs.zellijPlugins.zjstatus}" {
+            zjstatus location="file:${config.xdg.configHome}/zellij/plugins/zjstatus.wasm" {
                 color_bg     "${gruvbox.bg0}"
                 color_fg     "${gruvbox.fg1}"
                 color_red    "${gruvbox.red}"

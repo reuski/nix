@@ -26,8 +26,8 @@
           window-padding-y = 6;
           cursor-style = "bar";
           copy-on-select = true;
+          auto-update = "off";
           keybind = [
-            "ctrl+v=paste_from_clipboard"
             "super+t=ignore"
             "super+n=ignore"
             "alt+left=unbind"
