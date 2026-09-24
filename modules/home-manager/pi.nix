@@ -209,7 +209,7 @@
           subagents = {
             defaultExtensions = [ ];
             agentOverrides = {
-              scout = subagentProfile "zai/glm-5.3-flash" "low";
+              scout = subagentProfile "zai/glm-5.3-flash" "medium";
               researcher = subagentProfile "openai-codex/gpt-5.6-luna" "medium" // {
                 extensions = researchExtensions;
               };
@@ -218,7 +218,7 @@
               };
               delegate = subagentProfile "zai/glm-5.3-flash" "high";
               worker = subagentProfile "deepseek/deepseek-flash" "high";
-              reviewer = subagentProfile "openai-codex/gpt-5.6-terra" "high";
+              reviewer = subagentProfile "openai-codex/gpt-5.6-sol" "high";
               oracle = subagentProfile "openai-codex/gpt-5.6-sol" "high";
             };
           };

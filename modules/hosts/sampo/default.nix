@@ -5,23 +5,8 @@ let
 in
 {
   configurations.nixos.sampo.module =
+    { config, ... }:
     {
-      config,
-      lib,
-      pkgs,
-      ...
-    }:
-    let
-      protonVariants = {
-        CachyOS = pkgs.proton-cachyos;
-        GE = pkgs.proton-ge-bin;
-        CachyOS-LinUwUx = pkgs.proton-cachyos-linuwux;
-      };
-    in
-    {
-      programs.steam.extraCompatPackages = builtins.attrValues protonVariants;
-      environment.systemPackages = [ pkgs.umu-launcher ];
-
       imports = [
         inputs.disko.nixosModules.disko
         ./_disko.nix
@@ -29,6 +14,7 @@ in
         ./_network.nix
         nixos.desktop
         nixos.gaming
+        ./_gaming.nix
         ./_audio.nix
         ./_desktop.nix
       ];
@@ -38,13 +24,6 @@ in
           homeManager.dev
           homeManager.llama
         ];
-
-        xdg.dataFile = lib.mapAttrs' (
-          name: package:
-          lib.nameValuePair "Steam/compatibilitytools.d/Nix-Proton-${name}" {
-            source = package.steamcompattool;
-          }
-        ) protonVariants;
 
         llama = {
           build.cudaArchitectures = "86";

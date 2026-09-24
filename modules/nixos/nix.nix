@@ -46,12 +46,6 @@
         auto-optimise-store = true;
       };
 
-      nix.gc = {
-        automatic = true;
-        dates = lib.mkDefault "weekly";
-        options = lib.mkDefault "--delete-older-than 7d";
-      };
-
       system.autoUpgrade = {
         enable = true;
         flake = "github:reuski/nix/main#${config.networking.hostName}";

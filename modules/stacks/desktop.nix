@@ -20,6 +20,7 @@ in
         nixos.fonts
         nixos.plasma
         nixos.nix
+        nixos.gc
         nixos.tailscale
         nixos.workstation
       ];

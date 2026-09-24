@@ -10,6 +10,7 @@ in
         generic.profile
         darwin.nixpkgs
         darwin.nix
+        darwin.gc
         darwin.users
         darwin.system
         darwin.fonts
@@ -22,6 +23,7 @@ in
       home-manager.users.${config.profile.username} = {
         imports = [
           homeManager.base
+          homeManager.apps
           homeManager.wallpaper
         ];
         profile = config.profile;

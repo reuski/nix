@@ -16,6 +16,7 @@ in
       nixos.secrets
       nixos.vim
       nixos.nix
+      nixos.gc
       nixos.tailscale
     ];
   };
