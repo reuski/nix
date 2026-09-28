@@ -225,7 +225,7 @@
           defaultModel = "gpt-6-sol";
         };
 
-        home.file.".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
+        home.file.".pi/agent/mcp-adapter.json".source = json.generate "pi-mcp-adapter.json" {
           settings.scriptMode = false;
           mcpServers.nixos.command = lib.getExe' pkgs.mcp-nixos "mcp-nixos";
         };
