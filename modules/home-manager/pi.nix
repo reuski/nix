@@ -191,39 +191,38 @@
           defaultThinkingLevel = "high";
           branchSummary.skipPrompt = true;
           enabledModels = [
-            "openai-codex/gpt-5.6-luna"
-            "openai-codex/gpt-5.6-terra"
-            "openai-codex/gpt-5.6-sol"
+            "openai-codex/gpt-6-luna"
+            "openai-codex/gpt-6-sol"
             "openai-codex/gpt-6-astra"
-            "zai/glm-5.3-flash"
             "zai/glm-5.3"
             "deepseek/deepseek-flash"
           ]
           ++ lib.optional localModel.enable "local/local";
           modelThinkingLevels = {
-            "openai-codex/gpt-5.6-sol" = "high";
-            "zai/glm-5.3-flash" = "high";
+            "openai-codex/gpt-6-luna" = "high";
+            "openai-codex/gpt-6-sol" = "high";
+            "openai-codex/gpt-6-astra" = "high";
             "zai/glm-5.3" = "high";
             "deepseek/deepseek-flash" = "high";
           };
           subagents = {
             defaultExtensions = [ ];
             agentOverrides = {
-              scout = subagentProfile "zai/glm-5.3-flash" "medium";
-              researcher = subagentProfile "openai-codex/gpt-5.6-luna" "medium" // {
+              scout = subagentProfile "zai/glm-5.3" "low";
+              researcher = subagentProfile "openai-codex/gpt-6-luna" "medium" // {
                 extensions = researchExtensions;
               };
-              evidence-auditor = subagentProfile "openai-codex/gpt-5.6-luna" "high" // {
+              evidence-auditor = subagentProfile "openai-codex/gpt-6-luna" "high" // {
                 extensions = researchExtensions;
               };
-              delegate = subagentProfile "zai/glm-5.3-flash" "high";
+              delegate = subagentProfile "zai/glm-5.3" "high";
               worker = subagentProfile "deepseek/deepseek-flash" "high";
-              reviewer = subagentProfile "openai-codex/gpt-5.6-sol" "high";
-              oracle = subagentProfile "openai-codex/gpt-5.6-sol" "high";
+              reviewer = subagentProfile "openai-codex/gpt-6-sol" "high";
+              oracle = subagentProfile "openai-codex/gpt-6-astra" "high";
             };
           };
           defaultProvider = "openai-codex";
-          defaultModel = "gpt-5.6-terra";
+          defaultModel = "gpt-6-sol";
         };
 
         home.file.".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
