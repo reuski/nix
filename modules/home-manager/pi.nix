@@ -188,11 +188,11 @@
           collapseChangelog = true;
           enableInstallTelemetry = false;
           treeFilterMode = "user-only";
-          defaultThinkingLevel = "high";
+          defaultThinkingLevel = "medium";
           branchSummary.skipPrompt = true;
           enabledModels = [
             "openai-codex/gpt-6-luna"
-            "openai-codex/gpt-6-sol"
+            "openai-codex/gpt-6.1-sol"
             "openai-codex/gpt-6-astra"
             "zai/glm-5.3"
             "deepseek/deepseek-flash"
@@ -200,7 +200,7 @@
           ++ lib.optional localModel.enable "local/local";
           modelThinkingLevels = {
             "openai-codex/gpt-6-luna" = "high";
-            "openai-codex/gpt-6-sol" = "high";
+            "openai-codex/gpt-6.1-sol" = "high";
             "openai-codex/gpt-6-astra" = "high";
             "zai/glm-5.3" = "high";
             "deepseek/deepseek-flash" = "high";
@@ -217,12 +217,12 @@
               };
               delegate = subagentProfile "zai/glm-5.3" "high";
               worker = subagentProfile "deepseek/deepseek-flash" "high";
-              reviewer = subagentProfile "openai-codex/gpt-6-sol" "high";
+              reviewer = subagentProfile "openai-codex/gpt-6.1-sol" "medium";
               oracle = subagentProfile "openai-codex/gpt-6-astra" "high";
             };
           };
           defaultProvider = "openai-codex";
-          defaultModel = "gpt-6-sol";
+          defaultModel = "gpt-6.1-sol";
         };
 
         home.file.".pi/agent/mcp-adapter.json".source = json.generate "pi-mcp-adapter.json" {
