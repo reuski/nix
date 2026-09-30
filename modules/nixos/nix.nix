@@ -13,9 +13,8 @@
         type = "path";
         path = pkgs.path;
       };
-      nix.nixPath = [ ];
-
       nix.settings = {
+        nix-path = [ ];
         max-jobs = lib.mkDefault "auto";
         cores = lib.mkDefault 0;
         builders-use-substitutes = true;
