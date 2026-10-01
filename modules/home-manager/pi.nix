@@ -18,16 +18,8 @@
         "${config.home.homeDirectory}/.pi/agent/npm/node_modules/pi-web-access/index.ts"
       ];
       piPackages = [
-        {
-          source = "npm:pi-mcp-adapter";
-          skills = [ ];
-        }
         "npm:pi-web-access"
         "npm:pi-subagents"
-        {
-          source = "npm:context-mode";
-          skills = [ ];
-        }
       ];
       gruvboxTheme = {
         "$schema" =
@@ -139,6 +131,7 @@
           - Inspect the target and its ownership before editing; preserve unrelated changes.
           - Prefer existing patterns and upstream capabilities. Make the smallest complete change; avoid speculative abstractions and explain only non-obvious rationale.
           - Batch independent reads and related edits. Keep commands non-interactive and output bounded; summarize large results rather than copying them into context.
+          - When `codemode` is available, use it to batch independent calls and reduce large output before returning; otherwise filter in the shell.
           - Keep simple work local. Delegate bounded tasks only when they save context or add independent judgment; provide scope, constraints, and acceptance checks. Keep one writer per worktree and reviews independent.
           - Use repository tooling or its development environment; never install temporary tools globally.
           - Verify changes with relevant checks. Report changed files, commands, results, and unresolved risks; distinguish evidence from assumptions.
@@ -181,6 +174,7 @@
 
         home.file.".pi/agent/settings.json".source = json.generate "pi-settings.json" {
           packages = piPackages;
+          defaultTools = [ "+codemode" ];
           theme = "gruvbox";
           terminal.showImages = true;
           hideThinkingBlock = true;
@@ -225,9 +219,12 @@
           defaultModel = "gpt-6.1-sol";
         };
 
-        home.file.".pi/agent/mcp-adapter.json".source = json.generate "pi-mcp-adapter.json" {
-          settings.scriptMode = false;
-          mcpServers.nixos.command = lib.getExe' pkgs.mcp-nixos "mcp-nixos";
+        home.file.".pi/agent/mcp.json".source = json.generate "pi-mcp.json" {
+          mcpServers.nixos = {
+            command = lib.getExe' pkgs.mcp-nixos "mcp-nixos";
+            description = "Search NixOS, Home Manager, and nix-darwin packages and configuration options";
+            exposure = "codemode";
+          };
         };
 
         home.file.".pi/agent/models.json".source = json.generate "pi-models.json" {
