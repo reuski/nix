@@ -14,10 +14,9 @@
           description,
           homepage,
           license,
-          sourceRoot ? "",
         }:
         final.stdenvNoCC.mkDerivation {
-          inherit pname version sourceRoot;
+          inherit pname version;
 
           src = final.fetchurl {
             inherit url hash;
@@ -64,23 +63,6 @@
         description = "CachyOS Proton build for the Steam Linux Runtime (x86-64-v3)";
         homepage = "https://github.com/CachyOS/proton-cachyos";
         license = final.lib.licenses.bsd3;
-      };
-
-      proton-cachyos-linuwux = mkProton rec {
-        pname = "proton-cachyos-linuwux";
-        version = "proton-cachyos-11.0-20260703-slr-LinUwUx-Rework";
-        url = "https://sourceforge.net/projects/proton-linuwux/files/Proton-CachyOS%20LinUwUx/${version}.tar.xz/download";
-        hash = "sha256-MJTXBiyykIpg3orJugUFYgf2Lmh/BD7fuB4sAceic/w=";
-        upstreamName = version;
-        displayName = "Proton CachyOS LinUwUx";
-        description = "Proton-CachyOS build patched with LinUwUx.patch";
-        homepage = "https://codeberg.org/xshaduwulfx/proton-linuwux";
-        license = with final.lib.licenses; [
-          bsd3
-          lgpl21Plus
-          mit
-        ];
-        sourceRoot = ".";
       };
     };
 }

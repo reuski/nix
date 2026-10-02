@@ -19,7 +19,6 @@
         inherit (pkgs)
           helium-browser
           proton-cachyos
-          proton-cachyos-linuwux
           python-validity
           ;
         inherit (pkgs)

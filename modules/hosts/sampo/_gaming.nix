@@ -8,7 +8,6 @@ let
   protonVariants = {
     CachyOS = pkgs.proton-cachyos;
     GE = pkgs.proton-ge-bin;
-    CachyOS-LinUwUx = pkgs.proton-cachyos-linuwux;
   };
 in
 {
