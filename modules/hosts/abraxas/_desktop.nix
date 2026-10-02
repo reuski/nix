@@ -1,5 +1,7 @@
 { config, lib, ... }:
 {
+  homebrew.casks = [ "signal" ];
+
   system.defaults.dock.persistent-apps = lib.mkAfter [
     "/Users/${config.profile.username}/Applications/Slack.app"
   ];
