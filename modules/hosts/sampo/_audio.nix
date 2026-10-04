@@ -74,8 +74,13 @@
   home-manager.users.${config.profile.username}.home.packages = with pkgs; [
     mumble
     reaper
-    reaper-sws-extension
-    reaper-reapack-extension
+    # Use the sources' supported language standard, not the compiler's changing default.
+    (reaper-sws-extension.overrideAttrs (old: {
+      cmakeFlags = (old.cmakeFlags or [ ]) ++ [ "-DCMAKE_CXX_STANDARD=17" ];
+    }))
+    (reaper-reapack-extension.overrideAttrs (old: {
+      cmakeFlags = old.cmakeFlags ++ [ "-DCMAKE_CXX_STANDARD=17" ];
+    }))
     yabridge
     yabridgectl
     qpwgraph

@@ -4,6 +4,7 @@
     {
       config,
       lib,
+      pkgs,
       ...
     }:
     let
@@ -27,6 +28,8 @@
       config = mkIf cfg.enable {
         services.murmur = {
           enable = true;
+          # This server does not use the optional Ice remote-administration API.
+          package = pkgs.murmur.override { iceSupport = false; };
           openFirewall = true;
           password = "$MUMBLE_PASSWORD";
           environmentFile = cfg.environmentFile;
