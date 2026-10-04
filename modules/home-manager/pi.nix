@@ -269,12 +269,6 @@
                   input = [ "text" ] ++ lib.optional localModel.vision "image";
                   contextWindow = localModel.contextWindow;
                   maxTokens = 16384;
-                  samplingParams = {
-                    temperature = 1.0;
-                    top_k = 20;
-                    top_p = 0.95;
-                    min_p = 0.0;
-                  };
                 }
               ];
             };

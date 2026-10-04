@@ -272,6 +272,11 @@
           ${lib.optionalString (cfg.model.chatTemplate != null) ''
             args+=(--chat-template-file "$chat_template")
           ''}
+          ${lib.optionalString (cfg.extraArgs != [ ]) ''
+            args+=(
+            ${shellArrayItems cfg.extraArgs}
+            )
+          ''}
 
           exec "$server" "''${args[@]}" "$@"
         '';
@@ -308,6 +313,11 @@
         port = mkOption {
           type = types.port;
           default = 8080;
+        };
+        extraArgs = mkOption {
+          type = types.listOf types.str;
+          default = [ ];
+          description = "Extra llama-server arguments, added after the generated arguments and before user CLI overrides";
         };
         params = {
           context = mkOption {
