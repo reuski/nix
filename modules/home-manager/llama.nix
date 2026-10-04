@@ -9,7 +9,7 @@
     }:
     let
       cfg = config.llama;
-      inherit (lib) mkOption types;
+      inherit (lib) mkEnableOption mkOption types;
       inherit (pkgs.stdenv.hostPlatform) isDarwin;
 
       cp = pkgs.cudaPackages;
@@ -108,8 +108,8 @@
         "--reasoning-format"
         "deepseek"
         "--metrics"
-        "--no-ui"
       ]
+      ++ optionalArg (!cfg.ui) [ "--no-ui" ]
       ++ optionalChangedArg cfg.host llamaCppDefaults.host "--host"
       ++ optionalChangedArg cfg.port llamaCppDefaults.port "--port"
       ++ optionalChangedArg cfg.params.context llamaCppDefaults.context "--ctx-size"
@@ -314,6 +314,7 @@
           type = types.port;
           default = 8080;
         };
+        ui = mkEnableOption "the built-in llama-server Web UI";
         extraArgs = mkOption {
           type = types.listOf types.str;
           default = [ ];

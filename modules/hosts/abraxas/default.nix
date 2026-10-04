@@ -31,7 +31,7 @@ in
         llama = {
           model = {
             repo = "unsloth/gemma-4-31B-it-GGUF";
-            file = "gemma-4-31B-it-UD-Q8_K_XL.gguf";
+            file = "gemma-4-31B-it-UD-Q6_K_XL.gguf";
             mmproj = "mmproj-F16.gguf";
           };
           params.context = localContext;

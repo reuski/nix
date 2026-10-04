@@ -27,6 +27,7 @@ in
 
         llama = {
           build.cudaArchitectures = "86";
+          ui = true;
           model = {
             repo = "huihui-ai/Huihui-Qwen3.8-27B-abliterated-GGUF";
             file = "Huihui-Qwen3.8-27B-abliterated-UD-Q4_K_XL.gguf";
