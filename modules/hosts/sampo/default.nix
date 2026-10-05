@@ -28,25 +28,25 @@ in
         llama = {
           build.cudaArchitectures = "86";
           ui = true;
-          model = {
-            repo = "huihui-ai/Huihui-Qwen3.8-27B-abliterated-GGUF";
-            file = "Huihui-Qwen3.8-27B-abliterated-UD-Q4_K_XL.gguf";
-            mmproj = "mmproj-model-bf16.gguf";
+          models.local = {
+            hf-repo = "unsloth/gemma-4-26B-A4B-it-GGUF";
+            hf-file = "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf";
+            mmproj-url = "https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/main/mmproj-BF16.gguf";
+            ctx-size = localContext;
+            cache-type-k = "q8_0";
+            cache-type-v = "q8_0";
+            jinja = true;
+            reasoning = "off";
+            context-shift = false;
+            cache-ram = 0;
+            cache-idle-slots = false;
+            temp = "1.0";
+            top-p = "0.95";
+            top-k = 64;
+            min-p = "0";
+            spec-type = "draft-mtp";
+            spec-draft-n-max = 2;
           };
-          params = {
-            context = localContext;
-            cacheType = "q8_0";
-          };
-          extraArgs = [
-            "--temp"
-            "1.0"
-            "--top-p"
-            "0.95"
-            "--top-k"
-            "20"
-            "--min-p"
-            "0"
-          ];
         };
 
         pi.localModel = {

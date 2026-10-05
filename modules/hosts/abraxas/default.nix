@@ -28,29 +28,33 @@ in
           homeManager.llama
         ];
 
-        llama = {
-          model = {
-            repo = "unsloth/gemma-4-31B-it-GGUF";
-            file = "gemma-4-31B-it-UD-Q6_K_XL.gguf";
-            mmproj = "mmproj-F16.gguf";
+        llama.models = {
+          local = {
+            hf-repo = "unsloth/gemma-4-31B-it-GGUF";
+            hf-file = "gemma-4-31B-it-UD-Q6_K_XL.gguf";
+            mmproj-url = "https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/resolve/main/mmproj-F16.gguf";
+            ctx-size = localContext;
+            jinja = true;
+            reasoning-format = "deepseek";
+            reasoning-budget = 8192;
+            context-shift = false;
+            cache-ram = 0;
+            cache-idle-slots = false;
+            temp = "1.0";
+            top-p = "0.95";
+            top-k = 64;
+            min-p = "0";
+            spec-type = "draft-mtp";
+            spec-draft-n-max = 2;
+            reasoning = "on";
           };
-          params.context = localContext;
-          extraArgs = [
-            "--temp"
-            "1.0"
-            "--top-p"
-            "0.95"
-            "--top-k"
-            "64"
-            "--min-p"
-            "0"
-            "--spec-type"
-            "draft-mtp"
-            "--spec-draft-n-max"
-            "2"
-            "--reasoning"
-            "on"
-          ];
+          clef = {
+            hf = "ggml-org/Clef-GGUF:Q4_K_M";
+            no-mmproj = true;
+            ctx-size = 4096;
+            batch-size = 4096;
+            ubatch-size = 4096;
+          };
         };
 
         pi.localModel = {

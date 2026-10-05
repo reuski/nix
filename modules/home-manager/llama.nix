@@ -80,49 +80,61 @@
       llamaCppDefaults = {
         host = "127.0.0.1";
         port = 8080;
-        context = 0;
-        parallel = -1;
       };
+      validPresetValue =
+        value:
+        !(builtins.isString value)
+        || (
+          builtins.match "[^\r\n#;]*" value != null
+          && !(lib.hasPrefix " " value)
+          && !(lib.hasPrefix "\t" value)
+          && !(lib.hasSuffix " " value)
+          && !(lib.hasSuffix "\t" value)
+        );
+      validPresetKey = key: builtins.match "[a-zA-Z_][a-zA-Z0-9_.-]*" key != null;
+      presetSectionType =
+        types.addCheck
+          (types.attrsOf (
+            types.oneOf [
+              types.bool
+              types.int
+              types.float
+              types.str
+            ]
+          ))
+          (
+            section:
+            builtins.all (key: validPresetKey key && validPresetValue section.${key}) (
+              builtins.attrNames section
+            )
+          );
+      validModelName = name: name != "default" && builtins.match "[A-Za-z0-9_.-]+" name != null;
+      modelsType = types.addCheck (types.attrsOf presetSectionType) (
+        models: models != { } && builtins.all validModelName (builtins.attrNames models)
+      );
+      defaultPreset = {
+        gpu-layers = "all";
+        flash-attn = "on";
+        fit = "off";
+        parallel = 1;
+        cache-type-k = "f16";
+        cache-type-v = "f16";
+        load-on-startup = false;
+      };
+      presetFile = pkgs.writeText "llama-models.ini" (
+        lib.generators.toINI { } ({ "*" = cfg.defaults; } // cfg.models)
+      );
       serverArgs = [
-        "--hf-repo"
-        cfg.model.repo
-        "--hf-file"
-        cfg.model.file
-        "--alias"
-        "local"
-        "--gpu-layers"
-        "all"
-        "--flash-attn"
-        "on"
-        "--cache-type-k"
-        cfg.params.cacheType
-        "--cache-type-v"
-        cfg.params.cacheType
-        "--fit"
-        "off"
-        "--no-context-shift"
-        "--cache-ram"
-        "0"
-        "--no-cache-idle-slots"
-        "--jinja"
-        "--reasoning-format"
-        "deepseek"
+        "--models-preset"
+        "${presetFile}"
+        "--models-max"
+        "1"
+        "--models-autoload"
         "--metrics"
       ]
       ++ optionalArg (!cfg.ui) [ "--no-ui" ]
       ++ optionalChangedArg cfg.host llamaCppDefaults.host "--host"
-      ++ optionalChangedArg cfg.port llamaCppDefaults.port "--port"
-      ++ optionalChangedArg cfg.params.context llamaCppDefaults.context "--ctx-size"
-      ++ optionalChangedArg cfg.params.parallel llamaCppDefaults.parallel "--parallel"
-      ++ optionalArg (cfg.model.mmproj == null) [ "--no-mmproj" ]
-      ++ optionalArg (cfg.model.mmproj != null) [
-        "--mmproj-url"
-        "https://huggingface.co/${cfg.model.repo}/resolve/main/${cfg.model.mmproj}"
-      ]
-      ++ [
-        "--reasoning-budget"
-        (toString cfg.params.reasoningBudget)
-      ];
+      ++ optionalChangedArg cfg.port llamaCppDefaults.port "--port";
 
       buildEnv = ''
         export CMAKE_PREFIX_PATH="${lib.getDev tls}:${lib.getLib tls}''${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
@@ -242,36 +254,12 @@
             fi
           fi
 
-          ${lib.optionalString (cfg.model.chatTemplate != null) ''
-            chat_template="$cache_root/pi/chat-template-${builtins.hashString "sha256" cfg.model.chatTemplate}.jinja"
-            chat_template_tmp="$chat_template.$$"
-            if curl --fail --location --silent --show-error \
-              ${lib.escapeShellArg cfg.model.chatTemplate} \
-              --output "$chat_template_tmp"; then
-              if [ ! -e "$chat_template" ] || ! cmp --silent "$chat_template" "$chat_template_tmp"; then
-                mv "$chat_template_tmp" "$chat_template"
-              else
-                rm "$chat_template_tmp"
-              fi
-            elif [ -e "$chat_template" ]; then
-              rm -f "$chat_template_tmp"
-              echo "chat template update failed; using cached template" >&2
-            else
-              rm -f "$chat_template_tmp"
-              echo "chat template update failed and no cached template is available" >&2
-              exit 1
-            fi
-          ''}
-
           flock --unlock "$source_lock_fd"
           exec {source_lock_fd}>&-
 
           args=(
           ${shellArrayItems serverArgs}
           )
-          ${lib.optionalString (cfg.model.chatTemplate != null) ''
-            args+=(--chat-template-file "$chat_template")
-          ''}
           ${lib.optionalString (cfg.extraArgs != [ ]) ''
             args+=(
             ${shellArrayItems cfg.extraArgs}
@@ -294,17 +282,16 @@
           default = "native";
           description = "CUDA architectures passed to CMake";
         };
-        model = {
-          repo = mkOption { type = types.str; };
-          file = mkOption { type = types.str; };
-          mmproj = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-          };
-          chatTemplate = mkOption {
-            type = types.nullOr types.str;
-            default = null;
-          };
+        models = mkOption {
+          type = modelsType;
+          default = { };
+          description = "Named llama.cpp model presets with scalar option values";
+        };
+        defaults = mkOption {
+          type = presetSectionType;
+          default = { };
+          apply = overrides: defaultPreset // overrides;
+          description = "Shared llama.cpp preset defaults with per-key overrides";
         };
         host = mkOption {
           type = types.str;
@@ -318,28 +305,7 @@
         extraArgs = mkOption {
           type = types.listOf types.str;
           default = [ ];
-          description = "Extra llama-server arguments, added after the generated arguments and before user CLI overrides";
-        };
-        params = {
-          context = mkOption {
-            type = types.ints.positive;
-            default = 65536;
-          };
-          parallel = mkOption {
-            type = types.ints.positive;
-            default = 1;
-          };
-          cacheType = mkOption {
-            type = types.enum [
-              "f16"
-              "q8_0"
-            ];
-            default = "f16";
-          };
-          reasoningBudget = mkOption {
-            type = types.ints.positive;
-            default = 8192;
-          };
+          description = "Router CLI overrides applied before user arguments";
         };
       };
 
