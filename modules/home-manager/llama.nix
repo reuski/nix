@@ -65,6 +65,10 @@
             "-DGGML_CUDA=ON"
             "-DCMAKE_CUDA_ARCHITECTURES=${cfg.build.cudaArchitectures}"
             "-DCMAKE_CUDA_COMPILER_LAUNCHER=ccache"
+            "-DCMAKE_C_COMPILER_AR=${lib.getExe' toolchain.cc "gcc-ar"}"
+            "-DCMAKE_CXX_COMPILER_AR=${lib.getExe' toolchain.cc "gcc-ar"}"
+            "-DCMAKE_C_COMPILER_RANLIB=${lib.getExe' toolchain.cc "gcc-ranlib"}"
+            "-DCMAKE_CXX_COMPILER_RANLIB=${lib.getExe' toolchain.cc "gcc-ranlib"}"
           ];
       cmakeFlags = baseCmakeFlags ++ backendCmakeFlags;
 
