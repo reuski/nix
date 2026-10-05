@@ -55,9 +55,9 @@
     {
       proton-cachyos = mkProton rec {
         pname = "proton-cachyos";
-        version = "cachyos-11.0-20260703-slr";
+        version = "cachyos-11.0-20261005-slr";
         url = "https://github.com/CachyOS/proton-cachyos/releases/download/${version}/proton-${version}-x86_64_v3.tar.xz";
-        hash = "sha256-A+zUK9fUdOm6RDzoly2WeKH6Osvykg12HzU5eUbs4oQ=";
+        hash = "sha256-ulKk8xoGD/yiuOBfwA5RvDnkwVAZKOtakhiw+ge/yMc=";
         upstreamName = "proton-${version}-x86_64_v3";
         displayName = "Proton CachyOS x86_64-v3";
         description = "CachyOS Proton build for the Steam Linux Runtime (x86-64-v3)";
