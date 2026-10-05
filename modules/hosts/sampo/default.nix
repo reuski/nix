@@ -33,6 +33,8 @@ in
             hf-file = "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf";
             mmproj-url = "https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/main/mmproj-BF16.gguf";
             ctx-size = localContext;
+            gpu-layers = "auto";
+            fit = "on";
             cache-type-k = "q8_0";
             cache-type-v = "q8_0";
             jinja = true;

@@ -51,9 +51,9 @@ in
           clef = {
             hf = "ggml-org/Clef-GGUF:Q4_K_M";
             no-mmproj = true;
-            ctx-size = 4096;
-            batch-size = 4096;
-            ubatch-size = 4096;
+            ctx-size = 8192;
+            batch-size = 8192;
+            ubatch-size = 8192;
           };
         };
 

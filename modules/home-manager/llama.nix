@@ -121,20 +121,44 @@
         cache-type-v = "f16";
         load-on-startup = false;
       };
-      presetFile = pkgs.writeText "llama-models.ini" (
+      modelNames = builtins.attrNames cfg.models;
+      useRouter = builtins.length modelNames > 1;
+      routerPresetFile = pkgs.writeText "llama-models.ini" (
         lib.generators.toINI { } ({ "*" = cfg.defaults; } // cfg.models)
       );
-      serverArgs = [
-        "--models-preset"
-        "${presetFile}"
-        "--models-max"
-        "1"
-        "--models-autoload"
-        "--metrics"
-      ]
-      ++ optionalArg (!cfg.ui) [ "--no-ui" ]
-      ++ optionalChangedArg cfg.host llamaCppDefaults.host "--host"
-      ++ optionalChangedArg cfg.port llamaCppDefaults.port "--port";
+      singleModel = lib.head modelNames;
+      presetOnlyKeys = [
+        "load-on-startup"
+        "stop-timeout"
+        "dedup-cache-models"
+      ];
+      singleConfigDir = pkgs.writeTextDir "llama.cpp/config.ini" (
+        lib.generators.toINI { } {
+          "*" = removeAttrs (cfg.defaults // cfg.models.${singleModel}) presetOnlyKeys;
+        }
+      );
+      serverArgs =
+        (
+          if useRouter then
+            [
+              "--models-preset"
+              "${routerPresetFile}"
+              "--models-max"
+              "1"
+              "--models-autoload"
+            ]
+          else
+            [
+              "--alias"
+              singleModel
+            ]
+        )
+        ++ [
+          "--metrics"
+        ]
+        ++ optionalArg (!cfg.ui) [ "--no-ui" ]
+        ++ optionalChangedArg cfg.host llamaCppDefaults.host "--host"
+        ++ optionalChangedArg cfg.port llamaCppDefaults.port "--port";
 
       buildEnv = ''
         export CMAKE_PREFIX_PATH="${lib.getDev tls}:${lib.getLib tls}''${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
@@ -168,7 +192,6 @@
           ccache
           cmake
           coreutils
-          curl
           flock
           git
           ninja
@@ -266,6 +289,9 @@
             )
           ''}
 
+          ${lib.optionalString (!useRouter) ''
+            export XDG_CONFIG_HOME="${singleConfigDir}"
+          ''}
           exec "$server" "''${args[@]}" "$@"
         '';
         meta = {
@@ -290,7 +316,6 @@
         defaults = mkOption {
           type = presetSectionType;
           default = { };
-          apply = overrides: defaultPreset // overrides;
           description = "Shared llama.cpp preset defaults with per-key overrides";
         };
         host = mkOption {
@@ -305,10 +330,13 @@
         extraArgs = mkOption {
           type = types.listOf types.str;
           default = [ ];
-          description = "Router CLI overrides applied before user arguments";
+          description = "Server CLI overrides applied before user arguments";
         };
       };
 
-      config.home.packages = [ llama ];
+      config = {
+        llama.defaults = lib.mapAttrs (_: lib.mkDefault) defaultPreset;
+        home.packages = [ llama ];
+      };
     };
 }
