@@ -171,6 +171,13 @@ in
     public = true;
     statusPort = 2459;
     environmentFile = config.sops.templates."valheim-env".path;
+    modifiers = {
+      resources = "more";
+      deathpenalty = "casual";
+      portals = "casual";
+      raids = "muchless";
+    };
+    saveInterval = 600;
   };
 
   mumble = {
