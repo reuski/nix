@@ -159,11 +159,11 @@
         "zon2nix": "zon2nix"
       },
       "locked": {
-        "lastModified": 1791441798,
-        "narHash": "sha256-xYe3+miRXJwdZAMPZyoDcaX91H6YAAYTrpck3ABCaGA=",
+        "lastModified": 1791533103,
+        "narHash": "sha256-qPDqVkE2ezyLiDB7Bh6VnOM1aSTSNq3Dy2eCR93NS+s=",
         "owner": "ghostty-org",
         "repo": "ghostty",
-        "rev": "8f0dd3709050b1026f6324368805033197d8b4a5",
+        "rev": "9d479dcb1664e8dc3c66c7302ce596dc56b36d6d",
         "type": "github"
       },
       "original": {
@@ -222,11 +222,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791465139,
-        "narHash": "sha256-hXTjOf2VQDXrNt4aU9rmNhc0qdOhnjy9FcA4tlPEdq8=",
+        "lastModified": 1791484883,
+        "narHash": "sha256-iKxFHJrg7Sltwhq3ssCZYQ4CFEDVvReVVuVuO9dj3sE=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "678e6c11cd5d24226087dc758d17f705c7c4106a",
+        "rev": "dfadbe5162d5e86bc0808badec8f346f81b4b3f0",
         "type": "github"
       },
       "original": {
@@ -282,7 +282,7 @@
         "lastModified": 1791264798,
         "narHash": "sha256-m8DboZsCfBu7+7B81+i3ROJj25Z2kR00LVDY/GoEYJI=",
         "ref": "main",
-        "rev": "040c7988f3f100218ca833dd0a3a7cb1ebbca41b",
+        "rev": "6f1b627ea587919e565785ce9113ce5b5c7d6d56",
         "revCount": 50,
         "type": "git",
         "url": "ssh://git@github.com/reuski/juttu.git"
@@ -503,11 +503,11 @@
     },
     "nixpkgs_4": {
       "locked": {
-        "lastModified": 1791260994,
-        "narHash": "sha256-Miqqk/ammqnTUxaoCyvtwoPeLbI1ksFyLxi/CazZpWY=",
+        "lastModified": 1791456040,
+        "narHash": "sha256-H83yz/do+hjOO0uujHyH8RgtIQP2v7Mw+cLwcZK/xKc=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "151fa4e8ddfdd8dd25d945ad94ed54a13de9f6e4",
+        "rev": "e7439b6b14ad3cc35d05608ebca9bce01a25f5f8",
         "type": "github"
       },
       "original": {
@@ -551,11 +551,11 @@
         "nixpkgs": "nixpkgs_5"
       },
       "locked": {
-        "lastModified": 1791466340,
-        "narHash": "sha256-YJv1UhcytxKLlsgMCeRls+TIM5yCcnnURSkxt1l6BGw=",
+        "lastModified": 1791541573,
+        "narHash": "sha256-mtndoRYrdI7vhnsow92ij70CbDYkkt7Owf9V/YZlqVE=",
         "owner": "noctalia-dev",
         "repo": "noctalia",
-        "rev": "ecd42238ebdb7ed28cfe44799c93a46d823a7444",
+        "rev": "a0ef2d027b2cf3a750e41749a10706969cdde663",
         "type": "github"
       },
       "original": {
