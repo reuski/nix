@@ -49,7 +49,7 @@ in
             reasoning = "on";
           };
           clef = {
-            hf = "ggml-org/Clef-GGUF:Q4_K_M";
+            hf = "ggml-org/Clef-Flash-GGUF:Q8_0";
             no-mmproj = true;
             ctx-size = 8192;
             batch-size = 8192;
