@@ -83,7 +83,7 @@
         ];
       llamaCppDefaults = {
         host = "127.0.0.1";
-        port = 8080;
+        port = 9931;
       };
       validPresetValue =
         value:
@@ -328,7 +328,7 @@
         };
         port = mkOption {
           type = types.port;
-          default = 8080;
+          default = 9931;
         };
         ui = mkEnableOption "the built-in llama-server Web UI";
         extraArgs = mkOption {

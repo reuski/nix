@@ -27,6 +27,7 @@
       programs.zed-editor = {
         enable = true;
         package = if isDarwin then null else pkgs.zed-editor;
+        mutableUserSettings = false;
 
         userTasks = [
           {
@@ -71,6 +72,8 @@
         ];
 
         userSettings = {
+          disable_ai = true;
+
           agent_servers.pi = {
             type = "custom";
             command = lib.getExe pkgs.pi-acp;
@@ -168,7 +171,6 @@
 
           languages = {
             JavaScript = biomeLanguage;
-            JSX = biomeLanguage;
             TypeScript = biomeLanguage;
             TSX = biomeLanguage;
             Svelte = {

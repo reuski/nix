@@ -188,28 +188,28 @@
             "openai-codex/gpt-6-luna"
             "openai-codex/gpt-6.1-sol"
             "openai-codex/gpt-6-astra"
-            "zai/glm-5.3"
+            "zai/glm-5.3-flash"
             "deepseek/deepseek-flash"
           ]
           ++ lib.optional localModel.enable "local/local";
           modelThinkingLevels = {
             "openai-codex/gpt-6-luna" = "high";
-            "openai-codex/gpt-6.1-sol" = "high";
+            "openai-codex/gpt-6.1-sol" = "medium";
             "openai-codex/gpt-6-astra" = "high";
-            "zai/glm-5.3" = "high";
+            "zai/glm-5.3-flash" = "high";
             "deepseek/deepseek-flash" = "high";
           };
           subagents = {
             defaultExtensions = [ ];
             agentOverrides = {
-              scout = subagentProfile "zai/glm-5.3" "low";
+              scout = subagentProfile "zai/glm-5.3-flash" "medium";
               researcher = subagentProfile "openai-codex/gpt-6-luna" "medium" // {
                 extensions = researchExtensions;
               };
               evidence-auditor = subagentProfile "openai-codex/gpt-6-luna" "high" // {
                 extensions = researchExtensions;
               };
-              delegate = subagentProfile "zai/glm-5.3" "high";
+              delegate = subagentProfile "zai/glm-5.3-flash" "medium";
               worker = subagentProfile "deepseek/deepseek-flash" "high";
               reviewer = subagentProfile "openai-codex/gpt-6.1-sol" "medium";
               oracle = subagentProfile "openai-codex/gpt-6-astra" "high";
@@ -233,7 +233,7 @@
           }
           // lib.optionalAttrs localModel.enable {
             local = {
-              baseUrl = "http://127.0.0.1:8080/v1";
+              baseUrl = "http://127.0.0.1:9931/v1";
               api = "openai-completions";
               apiKey = "llama";
               compat = {
