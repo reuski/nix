@@ -50,7 +50,7 @@ in
           };
           clef = {
             hf = "ggml-org/Clef-Flash-GGUF:Q8_0";
-            no-mmproj = true;
+            mmproj-url = "https://huggingface.co/ggml-org/Clef-Flash-GGUF/resolve/main/mmproj-Clef-Flash-Q8_0.gguf";
             ctx-size = 8192;
             batch-size = 8192;
             ubatch-size = 8192;
