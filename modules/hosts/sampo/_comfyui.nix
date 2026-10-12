@@ -6,6 +6,8 @@
   ...
 }:
 let
+  outputDir = "${config.profile.homeDirectory}/Pictures/ComfyUI";
+
   cuda = pkgs.comfyui.python.pkgs.torch.cudaPackages;
 
   python = pkgs.python3.override {
@@ -91,6 +93,21 @@ in
   services.comfyui = {
     enable = true;
     package = comfyui;
+    extraArgs = [ "--output-directory=${outputDir}" ];
+  };
+
+  systemd.tmpfiles.settings."10-comfyui-output".${outputDir} = {
+    d = {
+      mode = "0770";
+      user = config.profile.username;
+      group = "comfyui";
+    };
+    "a+".argument = "u:${config.profile.username}:rwx,d:u:${config.profile.username}:rwx";
+  };
+
+  systemd.services.comfyui.serviceConfig = {
+    BindPaths = [ outputDir ];
+    UMask = "0007";
   };
 
   systemd.services.comfyui.wantedBy = lib.mkForce [ ];
