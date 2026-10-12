@@ -17,6 +17,22 @@
         "type": "github"
       }
     },
+    "comfyui-gguf": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790331439,
+        "narHash": "sha256-Zbb833PFruwYbmYIeRHH0mLf8jBCn/13J4dRyBK4yIs=",
+        "owner": "leejet",
+        "repo": "ComfyUI-GGUF",
+        "rev": "373048b8403a7820620065210a691263d4da0a61",
+        "type": "github"
+      },
+      "original": {
+        "owner": "leejet",
+        "repo": "ComfyUI-GGUF",
+        "type": "github"
+      }
+    },
     "darwin": {
       "inputs": {
         "nixpkgs": [
@@ -638,8 +654,25 @@
         "type": "github"
       }
     },
+    "rgthree-comfy": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791302223,
+        "narHash": "sha256-MBH4fgZBQKcKJ353AusNIOYadGom4nbyTFVGQEJbyFQ=",
+        "owner": "rgthree",
+        "repo": "rgthree-comfy",
+        "rev": "d7297b42f0fa78bec1c0411478f887423c249502",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rgthree",
+        "repo": "rgthree-comfy",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
+        "comfyui-gguf": "comfyui-gguf",
         "darwin": "darwin",
         "disko": "disko",
         "flake-parts": "flake-parts",
@@ -657,6 +690,7 @@
         "plasma-manager": "plasma-manager",
         "python-validity": "python-validity",
         "quadlet-nix": "quadlet-nix",
+        "rgthree-comfy": "rgthree-comfy",
         "skaldi": "skaldi",
         "sops-nix": "sops-nix",
         "vicinae": "vicinae"

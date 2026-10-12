@@ -74,6 +74,16 @@
       url = "github:uunicorn/python-validity";
       flake = false;
     };
+
+    comfyui-gguf = {
+      url = "github:leejet/ComfyUI-GGUF";
+      flake = false;
+    };
+
+    rgthree-comfy = {
+      url = "github:rgthree/rgthree-comfy";
+      flake = false;
+    };
   };
 
   outputs = inputs: inputs.flake-parts.lib.mkFlake { inherit inputs; } (inputs.import-tree ./modules);

@@ -3,19 +3,18 @@
 Personal NixOS, nix-darwin, and Home Manager flake.
 
 - Evaluation needs SSH access to the private `reuski/juttu` input.
-- Home Manager is embedded in the system configurations, so user profiles activate with `nixos-rebuild switch` / `darwin-rebuild switch`; there is no separate step.
-- User-owned packages and config live in `modules/home-manager/`; system-wide apps, services, networking, users, and GC live in `modules/nixos/` or `modules/darwin/`.
-- Flake-parts (with `inputs.import-tree ./modules`) discovers every `.nix` file except paths containing `/_`; `modules/hosts/<host>/_*.nix` are explicit private wiring imported only by their own host.
+- System switch includes Home Manager.
+- Sources: [AGENTS.md](AGENTS.md) (layout and rules), [flake.nix](flake.nix) (inputs), [modules/hosts](modules/hosts) (host entrypoints), [.sops.yaml](.sops.yaml) (recipients), [.github/workflows](.github/workflows) (CI).
 
 ## Hosts
 
-| Host | System | Role |
-| --- | --- | --- |
-| `hiisi` | NixOS / `x86_64-linux` | Niri laptop |
-| `sampo` | NixOS / `x86_64-linux` | Plasma desktop and gaming |
-| `shodan` | NixOS / `x86_64-linux` | Web VPS |
-| `ukko` | NixOS / `x86_64-linux` | Home server |
-| `abraxas` | nix-darwin / `aarch64-darwin` | MacBook |
+| Host      | System                        | Role                      |
+| --------- | ----------------------------- | ------------------------- |
+| `hiisi`   | NixOS / `x86_64-linux`        | Niri laptop               |
+| `sampo`   | NixOS / `x86_64-linux`        | Plasma desktop and gaming |
+| `shodan`  | NixOS / `x86_64-linux`        | Web VPS                   |
+| `ukko`    | NixOS / `x86_64-linux`        | Home server               |
+| `abraxas` | nix-darwin / `aarch64-darwin` | MacBook                   |
 
 Outputs: `nixosConfigurations.<host>`, `darwinConfigurations.abraxas`, and matching `checks.<system>.<class>-<host>`.
 
@@ -48,8 +47,6 @@ sudo darwin-rebuild switch \
 
 ## New installs
 
-Set the target once, then follow one path:
-
 ```sh
 HOST=hiisi
 FLAKE="github:reuski/nix/main#$HOST"
@@ -60,21 +57,24 @@ ssh-keygen -t ed25519 -N "" -C "$HOST" -f "$KEYDIR/ssh_host_ed25519_key"
 ssh-to-age -i "$KEYDIR/ssh_host_ed25519_key.pub"
 ```
 
-Set that recipient in `.sops.yaml` (replace the host's existing `&<host>` anchor, or add one), rekey every `secrets/*.yaml` with an authorized key, then commit and push **before** installing from GitHub.
+- Set the host age recipient in `.sops.yaml`; rekey secrets with an authorized key.
+- Commit and push recipients and ciphertext before installing from GitHub.
 
 ### NixOS: remote (`nixos-anywhere`)
 
+Confirm host `_disko.nix` target disk.
+
 ```sh
 nix run github:nix-community/nixos-anywhere -- \
-  --flake "$FLAKE" --extra-files "$HOSTDIR" root@<target-ip>
+  --flake "$FLAKE" --extra-files "$HOSTDIR" "root@<target-ip>"
 ```
-
-`nixos-anywhere` applies the host `_disko.nix`; confirm the target disk first.
 
 ### NixOS: ISO / Disko
 
+Destructive: confirm host and target disk; reboot disconnects SSH.
+
 ```sh
-TARGET=root@<iso-ip>
+TARGET="root@<iso-ip>"
 scp -r "$KEYDIR" "$TARGET:/tmp/ssh"
 ssh "$TARGET" "
   export NIX_CONFIG='experimental-features = nix-command flakes'
@@ -87,8 +87,6 @@ ssh "$TARGET" "
   reboot
 "
 ```
-
-`reboot` boots the installed system and drops the SSH session; `--yes-wipe-all-disks` is destructive, so confirm the host and disk before running.
 
 ### nix-darwin: bootstrap
 
@@ -104,12 +102,14 @@ curl -L https://nixos.org/nix/install | sh -s -- --daemon
 . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 ```
 
-Replace `&abraxas` in `.sops.yaml` with that printed public key, rekey the secrets as described above with the admin key available, and commit and push. Then send the generated private key over an approved channel and copy it into place:
+- Replace the `&abraxas` recipient in `.sops.yaml` with that printed public key.
+- Rekey and push the ciphertext with an authorized key.
+- Transfer the age key securely, then copy it into place:
 
 ```sh
 AGE_KEY="$HOME/Library/Application Support/sops/age/keys.txt"
 install -d -m 0700 "$(dirname "$AGE_KEY")"
-install -m 0600 <received-key-file> "$AGE_KEY"
+install -m 0600 "<received-key-file>" "$AGE_KEY"
 sudo nix --extra-experimental-features "nix-command flakes" run \
   github:nix-darwin/nix-darwin/master#darwin-rebuild -- \
   switch --flake "github:reuski/nix/main#abraxas" --refresh --option tarball-ttl 0
@@ -119,7 +119,7 @@ ls "$HOME/.config/sops-nix/secrets/ssh/id_ed25519"
 ## Secrets
 
 ```sh
-sops secrets/<name>.yaml
+sops "secrets/<name>.yaml"
 for file in secrets/*.yaml; do sops updatekeys --yes "$file"; done
 ```
 
@@ -145,9 +145,35 @@ sudo tailscale up
 sudo systemctl restart web-beebud web-wahuu-games caddy
 ```
 
+### ComfyUI
+
+```sh
+# sampo, http://localhost:8188
+sudo systemctl start comfyui
+sudo systemctl stop comfyui
+```
+
+Models: `/var/lib/comfyui/models/<type>/`
+
+```sh
+sudo install -o comfyui -g comfyui -Dm644 ./model.safetensors \
+  /var/lib/comfyui/models/checkpoints/model.safetensors
+```
+
+Custom nodes: `/var/lib/comfyui/custom_nodes`
+
+```sh
+# one-shot CUDA cache (no sudo); redundant once sampo activates the substituter
+nix build --no-link \
+  ".#nixosConfigurations.sampo.config.services.comfyui.package" \
+  --option extra-substituters https://cache.nixos-cuda.org \
+  --option extra-trusted-public-keys \
+  cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M=
+```
+
 ## Backup restore
 
-Install the matching SOPS configuration first; the sync replaces live service state.
+ukko: matching SOPS config required; sync overwrites live service state.
 
 ```sh
 RESTORE="$HOME/.local/state/reuski-nix/ukko/restore"
