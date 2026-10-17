@@ -75,16 +75,6 @@
       shellArrayItems =
         values: lib.concatStringsSep "\n" (map (value: "            ${lib.escapeShellArg value}") values);
       optionalArg = condition: values: lib.optionals condition values;
-      optionalChangedArg =
-        value: default: flag:
-        optionalArg (value != default) [
-          flag
-          (toString value)
-        ];
-      llamaCppDefaults = {
-        host = "127.0.0.1";
-        port = 9931;
-      };
       validPresetValue =
         value:
         !(builtins.isString value)
@@ -125,44 +115,24 @@
         cache-type-v = "f16";
         load-on-startup = false;
       };
-      modelNames = builtins.attrNames cfg.models;
-      useRouter = builtins.length modelNames > 1;
       routerPresetFile = pkgs.writeText "llama-models.ini" (
         lib.generators.toINI { } ({ "*" = cfg.defaults; } // cfg.models)
       );
-      singleModel = lib.head modelNames;
-      presetOnlyKeys = [
-        "load-on-startup"
-        "stop-timeout"
-        "dedup-cache-models"
+      serverArgs = [
+        "--models-preset"
+        "${routerPresetFile}"
+        "--models-max"
+        "1"
+        "--models-autoload"
+        "--metrics"
+      ]
+      ++ optionalArg (!cfg.ui) [ "--no-ui" ]
+      ++ [
+        "--host"
+        cfg.host
+        "--port"
+        (toString cfg.port)
       ];
-      singleConfigDir = pkgs.writeTextDir "llama.cpp/config.ini" (
-        lib.generators.toINI { } {
-          "*" = removeAttrs (cfg.defaults // cfg.models.${singleModel}) presetOnlyKeys;
-        }
-      );
-      serverArgs =
-        (
-          if useRouter then
-            [
-              "--models-preset"
-              "${routerPresetFile}"
-              "--models-max"
-              "1"
-              "--models-autoload"
-            ]
-          else
-            [
-              "--alias"
-              singleModel
-            ]
-        )
-        ++ [
-          "--metrics"
-        ]
-        ++ optionalArg (!cfg.ui) [ "--no-ui" ]
-        ++ optionalChangedArg cfg.host llamaCppDefaults.host "--host"
-        ++ optionalChangedArg cfg.port llamaCppDefaults.port "--port";
 
       buildEnv = ''
         export CMAKE_PREFIX_PATH="${lib.getDev tls}:${lib.getLib tls}''${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
@@ -293,9 +263,6 @@
             )
           ''}
 
-          ${lib.optionalString (!useRouter) ''
-            export XDG_CONFIG_HOME="${singleConfigDir}"
-          ''}
           exec "$server" "''${args[@]}" "$@"
         '';
         meta = {
@@ -341,6 +308,7 @@
       config = {
         llama.defaults = lib.mapAttrs (_: lib.mkDefault) defaultPreset;
         home.packages = [ llama ];
+        home.sessionVariables.LLAMA_BASE_URL = "http://${cfg.host}:${toString cfg.port}";
       };
     };
 }

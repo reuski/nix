@@ -1,9 +1,7 @@
-{ inputs }:
 {
   config,
   lib,
   modulesPath,
-  pkgs,
   ...
 }:
 {
@@ -23,9 +21,6 @@
     "ntsync"
   ];
 
-  nixpkgs.overlays = [ inputs.nix-cachyos-kernel.overlays.pinned ];
-
-  boot.kernelPackages = lib.mkForce pkgs.cachyosKernels.linuxPackages-cachyos-latest;
   boot.kernelParams = [
     "nowatchdog"
     "usbcore.autosuspend=-1"

@@ -1,7 +1,6 @@
 { config, ... }:
 let
   inherit (config.flake.modules) darwin homeManager;
-  localContext = 65536;
 in
 {
   configurations.darwin.abraxas.module =
@@ -33,7 +32,7 @@ in
             hf-repo = "unsloth/gemma-4-31B-it-GGUF";
             hf-file = "gemma-4-31B-it-UD-Q6_K_XL.gguf";
             mmproj-url = "https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/resolve/main/mmproj-F16.gguf";
-            ctx-size = localContext;
+            ctx-size = 65536;
             jinja = true;
             reasoning-format = "deepseek";
             reasoning-budget = 8192;
@@ -55,12 +54,6 @@ in
             batch-size = 8192;
             ubatch-size = 8192;
           };
-        };
-
-        pi.localModel = {
-          enable = true;
-          contextWindow = localContext;
-          vision = true;
         };
       };
 

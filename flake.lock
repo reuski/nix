@@ -90,22 +90,6 @@
         "type": "github"
       }
     },
-    "flake-compat_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1767039857,
-        "narHash": "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=",
-        "owner": "NixOS",
-        "repo": "flake-compat",
-        "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
@@ -139,24 +123,6 @@
         "owner": "hercules-ci",
         "repo": "flake-parts",
         "rev": "024633cd702b10285db5cb19b40ad48d2399ba60",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "flake-parts_3": {
-      "inputs": {
-        "nixpkgs-lib": "nixpkgs-lib"
-      },
-      "locked": {
-        "lastModified": 1788450739,
-        "narHash": "sha256-glZLQlzIn1fXH6PazR2iUmTo7kzzyYSshrWhLS9TqCU=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "31729ca8cbdb4fa927b34e5f4353e6a83f39e993",
         "type": "github"
       },
       "original": {
@@ -365,27 +331,6 @@
         "type": "github"
       }
     },
-    "nix-cachyos-kernel": {
-      "inputs": {
-        "flake-compat": "flake-compat_2",
-        "flake-parts": "flake-parts_3",
-        "nixpkgs": "nixpkgs_3"
-      },
-      "locked": {
-        "lastModified": 1790564970,
-        "narHash": "sha256-ANcKKTLB5oitjAYPp+iWts5clpbowVbDPVvt03P7Hes=",
-        "owner": "xddxdd",
-        "repo": "nix-cachyos-kernel",
-        "rev": "b1332396df6e880d7e3b6b451c6a74132ce8cf66",
-        "type": "github"
-      },
-      "original": {
-        "owner": "xddxdd",
-        "ref": "release",
-        "repo": "nix-cachyos-kernel",
-        "type": "github"
-      }
-    },
     "nix-homebrew": {
       "inputs": {
         "brew-src": "brew-src"
@@ -438,21 +383,6 @@
         "url": "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.zst"
       }
     },
-    "nixpkgs-lib": {
-      "locked": {
-        "lastModified": 1788057806,
-        "narHash": "sha256-DTQSMxzDWmT0zhguthvegnVkn7CFqGCv4IHCzk5ZUpM=",
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "rev": "596e2e3940e09b2abbeb03f75fa1828c57fcd72c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "nixpkgs.lib",
-        "type": "github"
-      }
-    },
     "nixpkgs-libxml2": {
       "locked": {
         "lastModified": 1751274312,
@@ -503,22 +433,6 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1790505892,
-        "narHash": "sha256-/pAz2XfqHS//WRn2xRjoqes7Z92qZ0Q1gufZZ3PtuwA=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "545c226a9af7f59fba5c3873f7c6a65e014c8f5f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable-small",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_4": {
-      "locked": {
         "lastModified": 1791594108,
         "narHash": "sha256-XK4KceonkwD8LuMAt/vNrz982mXJM5jeHAxMwsUXXAQ=",
         "owner": "NixOS",
@@ -533,7 +447,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_5": {
+    "nixpkgs_4": {
       "locked": {
         "lastModified": 1791594108,
         "narHash": "sha256-V0WmebqwEeAVZMqxfv7Dq7hpKkPPM19W50xQf3D1Kf4=",
@@ -546,7 +460,7 @@
         "url": "https://channels.nixos.org/nixos-unstable/nixexprs.tar.zst"
       }
     },
-    "nixpkgs_6": {
+    "nixpkgs_5": {
       "locked": {
         "lastModified": 1790578696,
         "narHash": "sha256-ZoxIApko70jCdbH3l20HWXOBaT2HZd87orzd2yJ9dVE=",
@@ -564,7 +478,7 @@
     },
     "noctalia": {
       "inputs": {
-        "nixpkgs": "nixpkgs_5"
+        "nixpkgs": "nixpkgs_4"
       },
       "locked": {
         "lastModified": 1791817518,
@@ -682,10 +596,9 @@
         "import-tree": "import-tree",
         "juttu": "juttu",
         "niri": "niri",
-        "nix-cachyos-kernel": "nix-cachyos-kernel",
         "nix-homebrew": "nix-homebrew",
         "nixos-hardware": "nixos-hardware",
-        "nixpkgs": "nixpkgs_4",
+        "nixpkgs": "nixpkgs_3",
         "noctalia": "noctalia",
         "plasma-manager": "plasma-manager",
         "python-validity": "python-validity",
@@ -812,7 +725,7 @@
     },
     "vicinae": {
       "inputs": {
-        "nixpkgs": "nixpkgs_6",
+        "nixpkgs": "nixpkgs_5",
         "numen": "numen",
         "soulver-cpp": "soulver-cpp",
         "systems": "systems_2"

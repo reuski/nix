@@ -1,7 +1,6 @@
 { config, inputs, ... }:
 let
   inherit (config.flake.modules) homeManager nixos;
-  localContext = 131072;
 in
 {
   configurations.nixos.sampo.module =
@@ -10,7 +9,7 @@ in
       imports = [
         inputs.disko.nixosModules.disko
         ./_disko.nix
-        (import ./_hardware.nix { inherit inputs; })
+        ./_hardware.nix
         ./_network.nix
         nixos.desktop
         nixos.gaming
@@ -33,7 +32,7 @@ in
             hf-repo = "unsloth/gemma-4-26B-A4B-it-GGUF";
             hf-file = "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf";
             mmproj-url = "https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/main/mmproj-BF16.gguf";
-            ctx-size = localContext;
+            ctx-size = 131072;
             gpu-layers = "auto";
             fit = "on";
             cache-type-k = "q8_0";
@@ -50,12 +49,6 @@ in
             spec-type = "draft-mtp";
             spec-draft-n-max = 2;
           };
-        };
-
-        pi.localModel = {
-          enable = true;
-          contextWindow = localContext;
-          vision = true;
         };
       };
 
