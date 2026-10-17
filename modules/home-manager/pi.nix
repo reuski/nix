@@ -10,7 +10,26 @@
     let
       localModel = config.pi.localModel;
       json = pkgs.formats.json { };
-      piPackages = [ "npm:pi-web-access" ];
+      webPython = pkgs.python3.withPackages (ps: [ ps.trafilatura ]);
+      webSource = lib.fileset.toSource {
+        root = ./pi/web;
+        fileset = lib.fileset.unions [
+          ./pi/web/core.ts
+          ./pi/web/extension.ts
+          ./pi/web/extract.py
+        ];
+      };
+      webBootstrap = pkgs.writeText "pi-web-extension.ts" ''
+        import { registerWebTools } from "${webSource}/extension.ts";
+
+        export default function (pi) {
+          registerWebTools(pi, {
+            searchEndpoint: "https://ukko.tail2fc4c2.ts.net/api/search",
+            python: "${lib.getExe' webPython "python3"}",
+            extractScript: "${webSource}/extract.py",
+          });
+        }
+      '';
     in
     {
       options.pi.localModel = {
@@ -38,28 +57,9 @@
 
         home.file.".pi/agent/skills/delegate/SKILL.md".source = ./pi/delegate/SKILL.md;
 
-        home.file.".pi/agent/web-search.json".source = json.generate "pi-web-search.json" {
-          workflow = "none";
-          maxInlineContentChars = 12000;
-          searxngBaseUrl = "https://ukko.tail2fc4c2.ts.net/api";
-          searchRouting = {
-            providers = [
-              "searxng"
-              "openai"
-              "exa"
-            ];
-            fallbackOn = [
-              "unsupported"
-              "transient"
-              "quota"
-              "network"
-              "invalid-response"
-            ];
-          };
-        };
+        home.file.".pi/agent/extensions/web/index.ts".source = webBootstrap;
 
         home.file.".pi/agent/settings.json".source = json.generate "pi-settings.json" {
-          packages = piPackages;
           defaultTools = [ "+codemode" ];
           theme = "gruvbox";
           terminal.showImages = true;
