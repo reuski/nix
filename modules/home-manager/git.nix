@@ -34,7 +34,6 @@
           ".env"
           ".env.local"
           ".env.*.local"
-          ".pi-subagents/"
         ];
         settings = {
           user.name = config.profile.fullName;
