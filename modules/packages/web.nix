@@ -77,7 +77,9 @@
             NODE_ENV = "production";
             configurePhase = ''
               runHook preConfigure
-              ln -s ${deps}/node_modules node_modules
+              # writable copy: some builds patch node_modules in place
+              cp -R ${deps}/node_modules node_modules
+              chmod -R u+w node_modules
               runHook postConfigure
             '';
             buildPhase = ''
