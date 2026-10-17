@@ -6,20 +6,25 @@ on:
     - cron: "17 6 * * *"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   update:
+    if: github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     timeout-minutes: 100
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.repository.default_branch }}
           persist-credentials: false
       - uses: ./.github/actions/setup
 
@@ -31,70 +36,52 @@ jobs:
         run: nix flake update
         timeout-minutes: 8
 
-      - name: Bump custom packages
+      - name: Update custom packages and web dependency hashes
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           nix-update() {
             nix run "github:NixOS/nixpkgs/$(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)#nix-update" -- "$@"
           }
           bump() {
             nix-update --flake --version="$1" --url "$2" --override-filename "$3" "$4"
-            nix-update --flake --version=skip --override-filename "$3" "$4"
           }
           bump stable https://github.com/imputnet/helium-linux modules/packages/helium.nix helium-browser
-          proton_cachyos_version="$(curl --fail --silent --show-error --location https://api.github.com/repos/CachyOS/proton-cachyos/releases/latest | jq -r .tag_name)"
+          proton_cachyos_version="$(gh api repos/CachyOS/proton-cachyos/releases/latest | jq -er '.tag_name | select(type == "string" and length > 0)')"
           bump "$proton_cachyos_version" https://github.com/CachyOS/proton-cachyos modules/packages/proton.nix proton-cachyos
           bump branch https://github.com/reuski/reuski.dev modules/packages/web.nix web-reuski-dev
           bump branch https://github.com/reuski/beebud modules/packages/web.nix web-beebud
           bump branch https://github.com/reuski/wahuu.games modules/packages/web.nix web-wahuu-games
-        timeout-minutes: 20
-
-      - name: Refresh web deps hashes
-        run: |
-          refresh() {
-            local attr=$1 out got
-            local name=${attr#web-}
-            if out=$(nix build --impure --no-link "path:$PWD#$attr.npmDeps" 2>&1); then
-              echo "$name: deps hash up to date"
-              return 0
-            fi
-            got=$(printf '%s\n' "$out" | grep -oE 'got: +sha256-[A-Za-z0-9+/=]+' | head -n1 | awk '{ print $2 }')
-            if [ -z "$got" ]; then
-              echo "$name: deps probe failed"
-              printf '%s\n' "$out" | tail -n 5
-              return 1
-            fi
-            python3 - "$name" "$got" <<'PY'
-          import pathlib, re, sys
-
-          name, got = sys.argv[1], sys.argv[2]
-          path = pathlib.Path("modules/packages/web.nix")
-          source = path.read_text()
-          pattern = re.compile(
-              r"(\bweb-" + re.escape(name) + r" = bunApp \{.*?depsHash = )\"sha256-[A-Za-z0-9+/=]+\"",
-              re.S,
-          )
-          source, count = pattern.subn(lambda m: m.group(1) + f'"{got}"', source, count=1)
-          assert count == 1, f"depsHash for {name} not found"
-          path.write_text(source)
-          PY
-            echo "$name: deps hash -> $got"
-          }
-          refresh web-juttu
-          refresh web-beebud
-          refresh web-reuski-dev
-          refresh web-wahuu-games
-        timeout-minutes: 20
+          # nix-update also refreshes npmDeps; juttu's source is updated via flake.lock.
+          nix-update --flake --version=skip --override-filename modules/packages/web.nix web-juttu
+        timeout-minutes: 40
 
       - name: Format
         run: nix fmt .
         timeout-minutes: 5
 
+      - name: Detect changes
+        id: changes
+        run: |
+          if git diff --quiet -- flake.lock modules/packages/; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo 'No updates found.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'changed=true' >> "$GITHUB_OUTPUT"
+            git diff --stat -- flake.lock modules/packages/ >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Evaluate checks
-        run: nix flake check --no-build --all-systems
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git diff --check
+          python3 .github/scripts/check-sops-recipients.py
+          python3 .github/scripts/check-private-imports.py
+          nix flake check --no-build --all-systems
         timeout-minutes: 10
 
       - name: Configure cachix
-        if: ${{ env.CACHIX_AUTH_TOKEN != '' }}
+        if: steps.changes.outputs.changed == 'true' && env.CACHIX_AUTH_TOKEN != ''
         uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866 # v17
         env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -104,6 +91,7 @@ jobs:
           skipAddingSubstituter: true
 
       - name: Build custom packages
+        if: steps.changes.outputs.changed == 'true'
         run: |
           nix build --no-link --keep-going --print-build-logs \
             .#helium-browser \
@@ -114,21 +102,19 @@ jobs:
             .#web-wahuu-games
         timeout-minutes: 20
 
-      - name: Build all NixOS hosts
-        run: |
-          nix build --no-link --keep-going --print-build-logs \
-            .#checks.x86_64-linux.nixos-hiisi \
-            .#checks.x86_64-linux.nixos-sampo \
-            .#checks.x86_64-linux.nixos-shodan \
-            .#checks.x86_64-linux.nixos-ukko
-        timeout-minutes: 45
-
       - id: pr
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           commit-message: "chore: update flake inputs"
           title: "chore: update flake inputs"
-          body: "Automated flake input refresh and package bump."
+          body: |
+            Automated flake input refresh, package bumps, and web dependency hashes.
+
+            Update run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Changed updates pass repository checks, all-system evaluation, and custom
+            package builds here. NixOS and Darwin builds run as required PR checks.
+          base: ${{ github.event.repository.default_branch }}
           branch: chore/update-flake
           delete-branch: true
           add-paths: |

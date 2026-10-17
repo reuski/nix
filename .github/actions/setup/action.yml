@@ -4,7 +4,7 @@ description: Install Nix and configure substituters. Run after actions/checkout.
 runs:
   using: composite
   steps:
-    - uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
+    - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31.11.2
       with:
         github_access_token: ${{ github.token }}
         extra_nix_config: |
