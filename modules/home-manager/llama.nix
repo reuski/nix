@@ -17,6 +17,7 @@
       tls = pkgs.openssl;
 
       cudaInc = lib.concatStringsSep ":" [
+        "${lib.getDev cp.cuda_crt}/include"
         "${lib.getDev cp.cuda_cudart}/include"
         "${lib.getDev cp.cccl}/include"
         "${cp.libcublas.include}/include"
@@ -25,11 +26,9 @@
         (lib.getLib cp.cuda_cudart)
         (lib.getLib cp.libcublas)
       ];
-      cudaRoots = lib.concatStringsSep ":" [
+      cudaPrefixes = lib.concatStringsSep ":" [
         "${lib.getDev cp.cuda_cudart}"
         "${lib.getLib cp.libcublas}"
-        "${lib.getDev cp.cccl}"
-        "${cp.cuda_nvcc}"
       ];
       runLibPath = lib.concatStringsSep ":" (
         [ "${lib.getLib tls}/lib" ]
@@ -157,7 +156,8 @@
         export CUDAHOSTCXX="${lib.getExe' cp.backendStdenv.cc "g++"}"
         export CPATH="${cudaInc}''${CPATH:+:$CPATH}"
         export LIBRARY_PATH="${cudaLib}''${LIBRARY_PATH:+:$LIBRARY_PATH}"
-        export CUDAToolkit_ROOT="${cudaRoots}"
+        export CMAKE_PREFIX_PATH="${cudaPrefixes}''${CMAKE_PREFIX_PATH:+:$CMAKE_PREFIX_PATH}"
+        export CUDAToolkit_ROOT="${cp.cuda_nvcc}"
       '';
 
       runtimeInputs =
