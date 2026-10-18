@@ -65,29 +65,27 @@
           "0x96f"
           "bearded-icon-theme"
           "biome"
+          "git-firefly"
+          "gleam"
           "html"
           "nix"
           "svelte"
+          "tombi"
+          "toml"
           "zig"
         ];
 
         userSettings = {
           disable_ai = true;
-
-          agent_servers.pi = {
-            type = "custom";
-            command = lib.getExe pkgs.pi-acp;
-          };
+          suggest_extensions = false;
 
           theme = "0x96f Theme";
           icon_theme = "Bearded Icon Theme";
           ui_font_family = "Inter";
-          ui_font_size = 16;
           buffer_font_family = "Hack Nerd Font";
           buffer_font_size = 16;
           tab_size = 2;
           autosave = "on_focus_change";
-          cli_default_open_behavior = "existing_window";
           remove_trailing_whitespace_on_save = true;
           ensure_final_newline_on_save = true;
           format_on_save = "on";
@@ -112,13 +110,6 @@
           soft_wrap = "editor_width";
           inlay_hints.enabled = false;
           diagnostics.include_warnings = false;
-
-          agent = {
-            dock = "left";
-            tool_permissions.default = "allow";
-            notify_when_agent_waiting = "never";
-            enable_feedback = false;
-          };
 
           telemetry = {
             diagnostics = false;
@@ -213,7 +204,7 @@
                 "nixd"
                 "!nil"
               ];
-              formatter.external.command = "nixfmt";
+              formatter.external.command = lib.getExe pkgs.nixfmt;
             };
           };
         };
