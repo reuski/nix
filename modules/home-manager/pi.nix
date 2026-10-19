@@ -37,6 +37,8 @@
 
         home.file.".pi/agent/skills/delegate/SKILL.md".source = ./pi/delegate/SKILL.md;
 
+        home.file.".pi/agent/skills/review/SKILL.md".source = ./pi/review/SKILL.md;
+
         home.file.".pi/agent/extensions/web/index.ts".source = webBootstrap;
 
         home.file.".pi/agent/settings.json".source = ./pi/settings.json;
