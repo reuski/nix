@@ -24,10 +24,16 @@
       };
     in
     {
+      xdg.configFile = {
+        "zed/settings.json".force = true;
+        "zed/tasks.json".force = true;
+      };
+
       programs.zed-editor = {
         enable = true;
         package = if isDarwin then null else pkgs.zed-editor;
         mutableUserSettings = false;
+        mutableUserTasks = false;
 
         userTasks = [
           {
