@@ -18,6 +18,8 @@
         ;
 
       webPort = 8084;
+
+      calibre = pkgs.calibre.override { speechSupport = false; };
     in
     {
       options.calibre = {
@@ -44,7 +46,7 @@
           };
           script = ''
             test -f ${cfg.library}/metadata.db \
-              || ${pkgs.calibre}/bin/calibredb --with-library=${cfg.library} list >/dev/null
+              || ${calibre}/bin/calibredb --with-library=${cfg.library} list >/dev/null
           '';
         };
 
@@ -54,6 +56,7 @@
           listen.port = webPort;
           user = media.user;
           group = media.group;
+          calibrePackage = calibre;
           options = {
             calibreLibrary = cfg.library;
             enableBookConversion = true;

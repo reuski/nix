@@ -48,7 +48,10 @@
         '';
 
         dontWrapGApps = true;
-        makeWrapperArgs = [ "\${gappsWrapperArgs[@]}" ];
+
+        preFixup = ''
+          makeWrapperArgs+=("''${gappsWrapperArgs[@]}")
+        '';
 
         postFixup = ''
           wrapProgram $out/bin/validity-sensors-firmware \

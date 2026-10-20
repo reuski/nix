@@ -98,6 +98,7 @@ jobs:
           nix build --no-link --keep-going --print-build-logs \
             .#helium-browser \
             '.#proton-cachyos^steamcompattool' \
+            .#python-validity \
             .#web-reuski-dev \
             .#web-beebud \
             .#web-juttu \

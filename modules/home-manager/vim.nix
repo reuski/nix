@@ -10,6 +10,7 @@ in
 
       programs.vim = {
         enable = true;
+        packageConfigurable = pkgs.vim-full.override { guiSupport = "no"; };
         plugins = [ pkgs.vimPlugins.gruvbox ];
         extraConfig = config.editor.vimConfig;
       };
