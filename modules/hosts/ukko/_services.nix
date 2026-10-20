@@ -9,6 +9,8 @@ let
   linkdingDataDir = config.services.linkding.dataDir;
   linkdingBackup = "${linkdingDataDir}/backup.sqlite3";
   linkdingBackupTemp = "${linkdingBackup}.tmp";
+  bandcampDir = "${config.media.libraryDir}/bandcamp";
+  bandcampStateDir = "/var/lib/bandcampsync";
 in
 {
   nixpkgs.overlays = [
@@ -110,6 +112,7 @@ in
       "${linkdingDataDir}/assets"
       "/var/lib/jellyfin"
       "/var/lib/audiobookshelf"
+      "/var/lib/bandcampsync"
       "/var/lib/navidrome"
       "/var/lib/home-assistant"
       "/var/lib/sonarr"
@@ -151,6 +154,42 @@ in
   systemd.services.restic-backups-ukko = {
     after = [ "linkding-setup.service" ];
     wants = [ "linkding.service" ];
+  };
+
+  systemd.services.bandcampsync = {
+    description = "Sync Bandcamp purchases into the Lidarr import staging dir";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      User = config.media.user;
+      Group = config.media.group;
+      UMask = "0002";
+      TimeoutStartSec = "6h";
+      ExecStartPre = "${lib.getExe' pkgs.coreutils "touch"} ${bandcampStateDir}/ignores.txt";
+      ExecStart = "${lib.getExe pkgs.bandcampsync} --cookies ${
+        config.sops.secrets."bandcamp/cookies".path
+      } --directory ${bandcampDir} --ignore-file ${bandcampStateDir}/ignores.txt --skip-item-index --temp-dir ${bandcampDir}/.tmp";
+    };
+  };
+
+  systemd.timers.bandcampsync = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "*-*-* 03:00:00";
+      RandomizedDelaySec = "1h";
+      Persistent = true;
+    };
+  };
+
+  media.directories = {
+    ${bandcampDir} = { };
+    "${bandcampDir}/.tmp" = {
+      mode = "0700";
+    };
+    ${bandcampStateDir} = {
+      mode = "0750";
+    };
   };
 
   hass.enable = true;

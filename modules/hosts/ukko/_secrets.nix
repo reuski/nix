@@ -7,6 +7,7 @@
   sops.secrets = {
     "backup/restic-password".restartUnits = [ "restic-backups-ukko.service" ];
     "backup/rclone-conf".restartUnits = [ "restic-backups-ukko.service" ];
+    "bandcamp/cookies".owner = config.media.user;
     "cloudflare/dns-token".restartUnits = [ "cloudflare-dyndns.service" ];
     "deploy-ssh-key" = { };
     "degoog/settings-password".restartUnits = [ "degoog.service" ];
