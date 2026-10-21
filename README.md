@@ -133,13 +133,6 @@ ssh root@ukko systemctl status atticd.service attic-cache.service deploy.service
 ssh root@ukko systemctl start deploy.service
 ssh root@ukko journalctl -u deploy.service -n 80 --no-pager
 
-# ukko restic backup
-ssh root@ukko systemctl status restic-backups-ukko.timer restic-backups-ukko.service
-ssh root@ukko systemctl start restic-backups-ukko.service
-sudo restic-ukko snapshots
-sudo restic-ukko stats latest
-sudo restic-ukko check --read-data-subset=1/7
-
 # shodan tailnet re-enroll and web restart
 sudo tailscale up
 sudo systemctl restart web-beebud web-wahuu-games caddy
@@ -173,27 +166,37 @@ nix build --no-link \
   cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M=
 ```
 
-## Backup restore
+## Backup and restore
 
-ukko: matching SOPS config required; sync overwrites live service state.
+### Operate
 
 ```sh
-RESTORE="$HOME/.local/state/reuski-nix/ukko/restore"
-rm -rf "$RESTORE" && mkdir -p "$RESTORE"
-sudo restic-ukko restore latest --target "$RESTORE"
-ls "$RESTORE/var/lib"
+sudo systemctl status restic-backups-ukko.timer restic-backups-ukko-check.timer
+sudo systemctl start restic-backups-ukko.service        # manual backup
+sudo systemctl start restic-backups-ukko-check.service  # full data read
+sudo restic-ukko snapshots --group-by host
+sudo restic-ukko stats --mode raw-data
+sudo restic-ukko forget --group-by host \
+  --keep-within 1d --keep-daily 7 --keep-weekly 4 --keep-monthly 3 --dry-run
 ```
 
 ```sh
-sudo systemctl stop actual linkding vaultwarden jellyfin audiobookshelf \
-  navidrome hass sonarr radarr lidarr prowlarr sabnzbd qbittorrent \
-  maintainerr calibre-web tome degoog trek valheim restic-backups-ukko
-sudo rsync -a "$RESTORE/var/" /var/
-sudo systemctl daemon-reload
-sudo systemctl start actual linkding vaultwarden jellyfin audiobookshelf \
-  navidrome hass sonarr radarr lidarr prowlarr sabnzbd qbittorrent \
-  maintainerr calibre-web tome degoog trek valheim
-sudo systemctl --failed
-sudo journalctl -b -p warning..alert --no-pager
-sudo rm -rf "$RESTORE"
+sudo nix shell nixpkgs#rclone -c rclone --config /run/secrets/backup/rclone-conf \
+  cleanup filen:
+```
+
+### Restore
+
+```sh
+SNAP='replace-with-snapshot-id'
+sudo systemctl stop restic-backups-ukko.timer restic-backups-ukko-check.timer
+sudo systemctl show restic-backups-ukko.service restic-backups-ukko-check.service \
+  -p Id -p ActiveState -p SubState   # both inactive: timers do not stop jobs
+RESTORE=$(mktemp -d /var/tmp/ukko-restore.XXXXXX)
+sudo restic-ukko restore "$SNAP" --target "$RESTORE" --verify
+```
+
+```sh
+# after the smoke test
+sudo systemctl start restic-backups-ukko.timer restic-backups-ukko-check.timer
 ```

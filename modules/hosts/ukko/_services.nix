@@ -109,6 +109,7 @@ in
       "/var/backup/vaultwarden"
       "/var/lib/private/actual"
       linkdingBackup
+      "${linkdingDataDir}/secretkey.txt"
       "${linkdingDataDir}/assets"
       "/var/lib/jellyfin"
       "/var/lib/audiobookshelf"
@@ -128,17 +129,53 @@ in
       "/var/lib/trek/data"
       "/var/lib/trek/uploads"
       "/var/lib/valheim/backups"
+      config.calibre.library
+      "/var/lib/murmur"
     ];
   };
 
   services.restic.backups.ukko = {
     exclude = [
+      "/var/lib/jellyfin/core.[0-9]*"
+      "/var/lib/jellyfin/log"
+
+      "/var/lib/navidrome/artwork"
+      "/var/lib/navidrome/cache"
+
+      "/var/lib/sonarr/logs"
+      "/var/lib/sonarr/logs.db"
+      "/var/lib/sonarr/logs.db-*"
+      "/var/lib/sonarr/MediaCover"
+      "/var/lib/radarr/logs"
+      "/var/lib/radarr/logs.db"
+      "/var/lib/radarr/logs.db-*"
+      "/var/lib/radarr/MediaCover"
+      "/var/lib/lidarr/logs"
+      "/var/lib/lidarr/logs.db"
+      "/var/lib/lidarr/logs.db-*"
+      "/var/lib/lidarr/MediaCover"
+      "/var/lib/prowlarr/logs"
+      "/var/lib/prowlarr/logs.db"
+      "/var/lib/prowlarr/logs.db-*"
+      "/var/lib/prowlarr/MediaCover"
+
+      "/var/lib/sabnzbd/logs"
+      "/var/lib/qbittorrent/qBittorrent/logs"
+      "/var/lib/qbittorrent/qBittorrent/GeoDB"
+
+      "/var/lib/home-assistant/.cache"
+      "/var/lib/home-assistant/home-assistant.log*"
+
       "/var/lib/degoog/indexer"
-      "${config.media.libraryDir}/torrents"
-      "${config.media.libraryDir}/usenet/incomplete"
-      "${config.media.libraryDir}/usenet/complete"
     ];
     backupPrepareCommand = ''
+      set -eu
+      for backupRoot in ${lib.escapeShellArgs config.backup.paths}; do
+        if [ -L "$backupRoot" ]; then
+          echo "Backup root is a symlink (restic will not follow it): $backupRoot" >&2
+          exit 1
+        fi
+      done
       ${lib.getExe' pkgs.coreutils "rm"} -f ${linkdingBackupTemp}
       ${lib.getExe pkgs.sqlite} ${linkdingDataDir}/db.sqlite3 ".backup '${linkdingBackupTemp}'"
       ${lib.getExe' pkgs.coreutils "mv"} -f ${linkdingBackupTemp} ${linkdingBackup}
@@ -152,9 +189,17 @@ in
   ];
 
   systemd.services.restic-backups-ukko = {
-    after = [ "linkding-setup.service" ];
+    after = [
+      "linkding-setup.service"
+      "backup-vaultwarden.service"
+    ];
+    requires = [ "backup-vaultwarden.service" ];
     wants = [ "linkding.service" ];
   };
+
+  systemd.services.backup-vaultwarden.onFailure = lib.mkIf (config.backup.notify != null) [
+    "backup-notify.service"
+  ];
 
   systemd.services.bandcampsync = {
     description = "Sync Bandcamp purchases into the Lidarr import staging dir";

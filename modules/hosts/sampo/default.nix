@@ -29,6 +29,7 @@ in
           build.cudaArchitectures = "86";
           ui = true;
           models.local = {
+            dedup-cache-models = true;
             hf-repo = "unsloth/gemma-4-26B-A4B-it-GGUF";
             hf-file = "gemma-4-26B-A4B-it-UD-Q4_K_XL.gguf";
             mmproj-url = "https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/main/mmproj-BF16.gguf";

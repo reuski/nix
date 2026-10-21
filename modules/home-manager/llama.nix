@@ -106,9 +106,9 @@
         models: models != { } && builtins.all validModelName (builtins.attrNames models)
       );
       defaultPreset = {
-        gpu-layers = "all";
+        gpu-layers = "auto";
         flash-attn = "on";
-        fit = "off";
+        fit = "on";
         parallel = 1;
         cache-type-k = "f16";
         cache-type-v = "f16";
