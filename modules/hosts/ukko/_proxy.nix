@@ -34,7 +34,6 @@ in
         port = config.services.actual.settings.port;
         public = true;
       };
-      adguard.port = 3000;
       attic.port = 8090;
       skaldi = {
         port = 8083;
@@ -52,7 +51,10 @@ in
     };
   };
 
-  security.acme.certs.${config.proxy.domain}.extraDomainNames = [ actual.domain ];
+  security.acme.certs.${config.proxy.domain} = {
+    dnsResolver = "1.1.1.1:53";
+    extraDomainNames = [ actual.domain ];
+  };
 
   services.caddy = {
     globalConfig = "grace_period 1m";

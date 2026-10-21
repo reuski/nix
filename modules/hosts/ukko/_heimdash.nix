@@ -65,11 +65,6 @@ in
         name = "Degoog";
         checkPath = "/readyz";
       })
-      (card "adguard" {
-        name = "AdGuard";
-        kind = "adguard";
-        checkPath = "/login.html";
-      })
       (card "hass" {
         name = "Home Assistant";
         kind = "home_assistant";

@@ -136,6 +136,9 @@ ssh root@ukko journalctl -u deploy.service -n 80 --no-pager
 # shodan tailnet re-enroll and web restart
 sudo tailscale up
 sudo systemctl restart web-beebud web-wahuu-games caddy
+
+# adguard UI: http://127.0.0.1:13000
+ssh -N -L 13000:127.0.0.1:3000 reuski@home.reuski.dev
 ```
 
 ### ComfyUI

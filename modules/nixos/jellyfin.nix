@@ -87,6 +87,7 @@
         admin=${lib.escapeShellArg cfg.admin.name}
         auth_header='MediaBrowser Client="nix", Device="nixos", DeviceId="nixos-jellyfin-setup", Version="1"'
         password=$(tr -d '\r\n' < "$CREDENTIALS_DIRECTORY/admin-password")
+        umask 077
         tmp=$(mktemp -d)
         trap 'rm -rf "$tmp"' EXIT
 
@@ -95,55 +96,73 @@
           exit 1
         fi
 
-        api() {
-          curl --fail --silent --show-error -H 'Content-Type: application/json' "$@"
+        request() {
+          local stage status
+          stage=$1
+          shift
+          if code=$(curl --fail --silent --connect-timeout 5 --max-time 30 \
+            --output "$tmp/response" --write-out '%{http_code}' \
+            -H 'Content-Type: application/json' -H "Authorization: $auth_header" "$@"); then
+            cat "$tmp/response"
+            return
+          else
+            status=$?
+          fi
+          printf 'Jellyfin setup %s failed: HTTP %s, curl exit %s\n' "$stage" "''${code:-000}" "$status" >&2
+          return "$status"
         }
 
-        api_auth() {
-          api -H "X-Emby-Token: $token" "$@"
-        }
-
-        for _ in $(seq 1 120); do
-          if curl --fail --silent --show-error "$base/System/Info/Public" >/dev/null; then
+        deadline=$((SECONDS + 120))
+        while :; do
+          remaining=$((deadline - SECONDS))
+          if [ "$remaining" -le 0 ]; then
+            printf 'Jellyfin setup readiness failed: no response within 120s\n' >&2
+            exit 1
+          fi
+          if curl --fail --silent --connect-timeout 5 \
+            --max-time "$((remaining < 10 ? remaining : 10))" \
+            --output "$tmp/public.json" "$base/System/Info/Public" 2>/dev/null; then
             break
           fi
           sleep 1
         done
 
-        curl --fail --silent --show-error "$base/System/Info/Public" > "$tmp/public.json"
-
-        if ! jq --exit-status '.StartupWizardCompleted == true' "$tmp/public.json" >/dev/null; then
-          api -X POST "$base/Startup/Configuration" --data '{"UICulture":"en-US","MetadataCountryCode":"FI","PreferredMetadataLanguage":"en"}' >/dev/null
+        if ! wizard_completed=$(jq -er '.StartupWizardCompleted | select(type == "boolean") | tostring' "$tmp/public.json" 2>/dev/null); then
+          printf 'Jellyfin setup readiness failed: invalid public system info\n' >&2
+          exit 1
+        fi
+        if [ "$wizard_completed" = false ]; then
+          request startup-config -X POST "$base/Startup/Configuration" --data '{"UICulture":"en-US","MetadataCountryCode":"FI","PreferredMetadataLanguage":"en"}' >/dev/null
           jq -nc --arg name "$admin" --arg password "$password" '{Name:$name, Password:$password}' \
-            | api -X POST "$base/Startup/User" --data-binary @- >/dev/null
-          api -X POST "$base/Startup/RemoteAccess" --data '{"EnableRemoteAccess":true,"EnableAutomaticPortMapping":false}' >/dev/null
-          api -X POST "$base/Startup/Complete" --data '{}' >/dev/null
+            | request startup-user -X POST "$base/Startup/User" --data-binary @- >/dev/null
+          request startup-remote-access -X POST "$base/Startup/RemoteAccess" --data '{"EnableRemoteAccess":true,"EnableAutomaticPortMapping":false}' >/dev/null
+          request startup-complete -X POST "$base/Startup/Complete" --data '{}' >/dev/null
         fi
 
         jq -nc --arg username "$admin" --arg password "$password" '{Username:$username, Pw:$password}' \
-          | api -X POST "$base/Users/AuthenticateByName" -H "X-Emby-Authorization: $auth_header" --data-binary @- > "$tmp/auth.json"
-        token=$(jq -r '.AccessToken // empty' "$tmp/auth.json")
-        if [ -z "$token" ]; then
+          | request login -X POST "$base/Users/AuthenticateByName" --data-binary @- > "$tmp/auth.json"
+        if ! token=$(jq -er '.AccessToken | strings | select(length > 0)' "$tmp/auth.json" 2>/dev/null); then
           printf 'Jellyfin authentication did not return a token\n' >&2
           exit 1
         fi
+        auth_header="$auth_header, Token=\"$token\""
 
-        api_auth "$base/System/Configuration" \
+        request system-config "$base/System/Configuration" \
           | jq -f ${systemFilter} \
           > "$tmp/system.json"
-        api_auth -X POST "$base/System/Configuration" --data-binary "@$tmp/system.json" >/dev/null
+        request system-config-save -X POST "$base/System/Configuration" --data-binary "@$tmp/system.json" >/dev/null
 
-        api_auth "$base/System/Configuration/encoding" \
+        request encoding-config "$base/System/Configuration/encoding" \
           | jq -f ${encodingFilter} \
           > "$tmp/encoding.json"
-        api_auth -X POST "$base/System/Configuration/encoding" --data-binary "@$tmp/encoding.json" >/dev/null
+        request encoding-config-save -X POST "$base/System/Configuration/encoding" --data-binary "@$tmp/encoding.json" >/dev/null
 
-        api_auth "$base/System/Configuration/network" \
+        request network-config "$base/System/Configuration/network" \
           | jq -f ${networkFilter} \
           > "$tmp/network.json"
-        api_auth -X POST "$base/System/Configuration/network" --data-binary "@$tmp/network.json" >/dev/null
+        request network-config-save -X POST "$base/System/Configuration/network" --data-binary "@$tmp/network.json" >/dev/null
 
-        api_auth "$base/Library/VirtualFolders" > "$tmp/folders.json"
+        request library-list "$base/Library/VirtualFolders" > "$tmp/folders.json"
         jq -c '.[]' ${librariesFile} | while IFS= read -r library; do
           name=$(jq -r '.name' <<< "$library")
           type=$(jq -r '.type' <<< "$library")
@@ -156,10 +175,10 @@
           name_uri=$(jq -rn --arg value "$name" '$value | @uri')
           type_uri=$(jq -rn --arg value "$type" '$value | @uri')
           payload=$(jq -nc --argjson paths "$paths" '{LibraryOptions:{EnableRealtimeMonitor:true, EnableChapterImageExtraction:false, PathInfos: ($paths | map({Path:.}))}}')
-          api_auth -X POST "$base/Library/VirtualFolders?name=$name_uri&collectionType=$type_uri&refreshLibrary=true" --data "$payload" >/dev/null
+          request library-create -X POST "$base/Library/VirtualFolders?name=$name_uri&collectionType=$type_uri&refreshLibrary=true" --data "$payload" >/dev/null
         done
 
-        api_auth -X POST "$base/Library/Refresh" --data '{}' >/dev/null || true
+        request library-refresh -X POST "$base/Library/Refresh" --data '{}' >/dev/null || true
       '';
     in
     {

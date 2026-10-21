@@ -93,10 +93,12 @@ in
       filters = [
         {
           enabled = true;
+          id = 1792287243;
           url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.txt";
         }
         {
           enabled = true;
+          id = 1792287244;
           url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/tif.txt";
         }
       ];
@@ -120,6 +122,12 @@ in
     enable = true;
     apiTokenFile = config.sops.secrets."cloudflare/dns-token".path;
     domains = publicDomains;
+  };
+
+  systemd.services.adguardhome = {
+    wants = [ "network-online.target" ];
+    after = [ "network-online.target" ];
+    serviceConfig.StateDirectoryMode = "0700";
   };
 
   systemd.services.deploy = {

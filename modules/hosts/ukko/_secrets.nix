@@ -52,7 +52,7 @@
   sops.templates = {
     "acme-cloudflare-env" = {
       content = "CF_DNS_API_TOKEN=${config.sops.placeholder."cloudflare/dns-token"}";
-      restartUnits = [ "acme-home.reuski.dev.service" ];
+      restartUnits = [ "acme-order-renew-${config.proxy.domain}.service" ];
     };
     "degoog-env" = {
       content = "DEGOOG_SETTINGS_PASSWORDS=${config.sops.placeholder."degoog/settings-password"}";
