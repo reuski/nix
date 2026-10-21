@@ -84,6 +84,7 @@
         userSettings = {
           disable_ai = true;
           suggest_extensions = false;
+          cli_default_open_behavior = "new_window";
 
           theme = "0x96f Theme";
           icon_theme = "Bearded Icon Theme";
