@@ -33,7 +33,7 @@
 
         home.file.".pi/agent/themes/gruvbox.json".source = ./pi/gruvbox.json;
 
-        home.file.".pi/agent/AGENTS.md".source = ./pi/instructions.md;
+        home.file.".pi/agent/AGENTS.md".source = ./pi/rules.md;
 
         home.file.".pi/agent/skills/delegate/SKILL.md".source = ./pi/delegate/SKILL.md;
 
