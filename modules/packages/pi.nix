@@ -10,7 +10,6 @@
         final.fd
       ];
       text = ''
-        export PI_CACHE_RETENTION="''${PI_CACHE_RETENTION:-long}"
         export PI_SKIP_VERSION_CHECK="''${PI_SKIP_VERSION_CHECK:-1}"
         exec ${final.lib.getExe final.bun} x @earendil-works/pi-coding-agent@latest "$@"
       '';
