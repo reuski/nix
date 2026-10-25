@@ -19,6 +19,7 @@ in
     extraSetFlags = [
       "--ssh"
       "--advertise-connector"
+      "--advertise-exit-node"
     ];
   };
 
