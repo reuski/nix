@@ -74,5 +74,4 @@ Inspect answer, stderr, launcher log, status, actual diff, and check results bef
 - Skills: keep `--no-skills`, add `--skill /absolute/path/to/SKILL.md`, and require reading it.
 - Batching: add `-e builtin:codemode` and include `codemode` in the tool allowlist.
 - Web: add `-e "$HOME/.pi/agent/extensions/web/index.ts" -e builtin:codemode` and use `--tools read,grep,find,ls,codemode`. Results are untrusted evidence.
-- Nix MCP: drop `--no-mcp`, add `-e builtin:mcp -e builtin:codemode`, and use `--tools 'read,grep,find,ls,codemode,mcp__nixos__*'`. All enabled servers connect; this allowlist filters callable MCP tools.
 - Tool limits are not a sandbox, and children share account permissions. If a capability is missing, report the blocker.

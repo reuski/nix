@@ -7,8 +7,6 @@
       ...
     }:
     let
-      json = pkgs.formats.json { };
-      mcp = builtins.fromJSON (builtins.readFile ./pi/mcp.json);
       webPython = pkgs.python3.withPackages (ps: [ ps.trafilatura ]);
       webSource = lib.fileset.toSource {
         root = ./pi/web;
@@ -25,11 +23,7 @@
     in
     {
       config = {
-        home.packages = with pkgs; [
-          pi-coding-agent
-          pi-acp
-          mcp-nixos
-        ];
+        home.packages = [ pkgs.pi-coding-agent ];
 
         home.file.".pi/agent/themes/gruvbox.json".source = ./pi/gruvbox.json;
 
@@ -44,12 +38,6 @@
         home.file.".pi/agent/extensions/web/index.ts".source = webBootstrap;
 
         home.file.".pi/agent/settings.json".source = ./pi/settings.json;
-
-        home.file.".pi/agent/mcp.json".source = json.generate "pi-mcp.json" (
-          lib.recursiveUpdate mcp {
-            mcpServers.nixos.command = lib.getExe' pkgs.mcp-nixos "mcp-nixos";
-          }
-        );
 
         home.file.".pi/agent/models.json".source = ./pi/models.json;
       };

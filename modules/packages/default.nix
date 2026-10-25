@@ -13,7 +13,7 @@
     { pkgs, system, ... }:
     {
       packages = {
-        inherit (pkgs) pi-coding-agent pi-acp;
+        inherit (pkgs) pi-coding-agent;
       }
       // lib.optionalAttrs (lib.hasSuffix "-linux" system) {
         inherit (pkgs)

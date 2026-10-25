@@ -77,7 +77,6 @@
           "nix"
           "svelte"
           "tombi"
-          "toml"
           "zig"
         ];
 
@@ -125,6 +124,7 @@
 
           lsp = {
             biome.settings.require_config_file = true;
+            nixd.binary.path = lib.getExe pkgs.nixd;
             gopls.settings = {
               gofumpt = true;
               staticcheck = true;
@@ -179,20 +179,17 @@
               formatter.language_server.name = "svelte-language-server";
             };
             HTML.language_servers = [
-              "html"
+              "vscode-html-language-server"
               "tailwindcss-language-server"
             ];
             CSS.language_servers = [
-              "css-variables-lsp"
-              "css"
+              "vscode-css-language-server"
               "tailwindcss-language-server"
             ];
             Python = {
               language_servers = [
                 "ty"
                 "ruff"
-                "!pyright"
-                "!pylsp"
               ];
               formatter.language_server.name = "ruff";
             };
@@ -207,10 +204,7 @@
               formatter.language_server.name = "zls";
             };
             Nix = {
-              language_servers = [
-                "nixd"
-                "!nil"
-              ];
+              language_servers = [ "nixd" ];
               formatter.external.command = lib.getExe pkgs.nixfmt;
             };
           };

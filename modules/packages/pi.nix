@@ -21,24 +21,5 @@
         platforms = final.lib.platforms.unix;
       };
     };
-
-    pi-acp = final.writeShellApplication {
-      name = "pi-acp";
-      runtimeInputs = [
-        final.bun
-        final.nodejs
-        final.pi-coding-agent
-      ];
-      text = ''
-        exec ${final.lib.getExe final.bun} x pi-acp@latest "$@"
-      '';
-      meta = {
-        description = "ACP adapter wrapper for Pi Coding Agent";
-        homepage = "https://github.com/svkozak/pi-acp";
-        license = final.lib.licenses.mit;
-        mainProgram = "pi-acp";
-        platforms = final.lib.platforms.unix;
-      };
-    };
   };
 }

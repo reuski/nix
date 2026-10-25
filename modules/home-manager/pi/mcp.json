@@ -1,8 +1,0 @@
-{
-  "mcpServers": {
-    "nixos": {
-      "description": "Search NixOS, Home Manager, and nix-darwin packages and configuration options",
-      "exposure": "codemode"
-    }
-  }
-}
