@@ -19,12 +19,10 @@ in
     "sd_mod"
     "rtsx_pci_sdmmc"
   ];
-  boot.initrd.kernelModules = [ ];
   boot.kernelModules = [
     "kvm-intel"
     "thinkpad_acpi"
   ];
-  boot.extraModulePackages = [ ];
   boot.kernelParams = [
     "acpi_backlight=native"
     "mem_sleep_default=deep"
@@ -32,20 +30,11 @@ in
     "btusb.enable_autosuspend=0"
   ];
 
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
-  hardware.enableRedistributableFirmware = lib.mkDefault true;
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = false;
     settings.General.Experimental = true;
   };
-  hardware.graphics.extraPackages = with pkgs; [
-    intel-media-driver
-    vpl-gpu-rt
-  ];
-
-  environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
-
   systemd.packages = [ pkgs.open-fprintd ];
   services.dbus.packages = [
     pkgs.open-fprintd

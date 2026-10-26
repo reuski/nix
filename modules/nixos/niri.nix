@@ -3,19 +3,7 @@
   flake.modules.nixos.niri =
     { lib, pkgs, ... }:
     let
-      niriPackage =
-        inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable.overrideAttrs
-          (old: {
-            postPatch = (old.postPatch or "") + ''
-              substituteInPlace resources/niri-session \
-                --replace-fail \
-                  'systemctl --user import-environment' \
-                  'systemctl --user import-environment $(printenv | cut -d= -f1)' \
-                --replace-fail \
-                  'dbus-update-activation-environment --all' \
-                  'dbus-update-activation-environment $(printenv | cut -d= -f1)'
-            '';
-          });
+      niriPackage = pkgs.niri;
       niriSession = lib.getExe' niriPackage "niri-session";
       tuigreet = lib.getExe pkgs.tuigreet;
       greetdSession = pkgs.writeShellScript "greetd-niri-session" ''
@@ -27,13 +15,6 @@
       imports = [ inputs.niri.nixosModules.niri ];
 
       niri-flake.cache.enable = false;
-
-      nix.settings = {
-        substituters = lib.mkAfter [ "https://niri.cachix.org" ];
-        trusted-public-keys = lib.mkAfter [
-          "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
-        ];
-      };
 
       programs.niri = {
         enable = true;
