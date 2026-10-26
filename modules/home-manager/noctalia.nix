@@ -43,11 +43,12 @@
           behavior."screen-off" = {
             enabled = true;
             timeout = 180;
+            action = "screen_off";
           };
           behavior.suspend = {
             enabled = true;
             timeout = 900;
-            command = "noctalia:session suspend";
+            action = "lock_and_suspend";
           };
         };
 
