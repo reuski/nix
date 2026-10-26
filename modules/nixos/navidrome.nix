@@ -40,6 +40,7 @@
             Address = "127.0.0.1";
             Port = port;
             MusicFolder = cfg.musicFolder;
+            Plugins.Enabled = false;
           };
         };
 

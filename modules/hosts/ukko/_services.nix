@@ -31,6 +31,8 @@ in
     })
   ];
 
+  media.gid = 996;
+
   jellyfin = {
     enable = true;
     openFirewall = false;
