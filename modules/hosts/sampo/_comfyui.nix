@@ -6,7 +6,7 @@
   ...
 }:
 let
-  outputDir = "${config.profile.homeDirectory}/Pictures/ComfyUI";
+  outputDir = "${config.profile.homeDirectory}/pictures/ComfyUI";
 
   cuda = pkgs.comfyui.python.pkgs.torch.cudaPackages;
 

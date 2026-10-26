@@ -158,7 +158,7 @@ sudo install -o comfyui -g comfyui -Dm644 ./model.safetensors \
 
 Custom nodes: `/var/lib/comfyui/custom_nodes`
 
-Outputs: `~/Pictures/ComfyUI/` (`qwen/` for the Qwen workflow)
+Outputs: `~/pictures/ComfyUI/` (`qwen/` for the Qwen workflow)
 
 ```sh
 # one-shot CUDA cache (no sudo); redundant once sampo activates the substituter

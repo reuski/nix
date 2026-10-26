@@ -2,6 +2,7 @@
 {
   flake.modules.homeManager.zed =
     {
+      config,
       lib,
       pkgs,
       ...
@@ -24,6 +25,9 @@
       };
     in
     {
+      home.sessionVariables.SOPS_EDITOR =
+        if isDarwin then "zed --wait" else "${lib.getExe config.programs.zed-editor.package} --wait";
+
       xdg.configFile = {
         "zed/settings.json".force = true;
         "zed/tasks.json".force = true;

@@ -81,12 +81,6 @@
         if exists("&wildoptions")
           set wildoptions=pum
         endif
-        if exists("&winborder")
-          set winborder=rounded
-        endif
-        if exists("&inccommand")
-          set inccommand=nosplit
-        endif
         if has("popupwin")
           set completeopt+=popup
         endif

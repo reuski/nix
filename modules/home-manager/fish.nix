@@ -66,7 +66,7 @@
         shellAbbrs = {
           g = "git";
           vi = "vim";
-          dl = "cd ~/Downloads";
+          dl = "cd ~/downloads";
           p = "cd ~/projects";
         };
         shellAliases = {

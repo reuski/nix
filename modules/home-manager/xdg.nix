@@ -8,9 +8,10 @@
         enable = true;
         createDirectories = true;
         setSessionVariables = true;
-        pictures = "${config.profile.homeDirectory}/Pictures";
+        pictures = "${config.profile.homeDirectory}/pictures";
+        projects = "${config.profile.homeDirectory}/projects";
         documents = null;
-        download = "${config.profile.homeDirectory}/Downloads";
+        download = "${config.profile.homeDirectory}/downloads";
         desktop = null;
         templates = null;
         music = null;

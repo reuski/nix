@@ -3,7 +3,7 @@
   flake.modules.homeManager.packages =
     { pkgs, ... }:
     {
-      home.file."Pictures/Screenshots/.keep".text = "";
+      home.file."pictures/Screenshots/.keep".text = "";
 
       home.packages = with pkgs; [
         helium-browser
