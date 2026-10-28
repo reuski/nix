@@ -25,8 +25,15 @@
       };
     in
     {
-      home.sessionVariables.SOPS_EDITOR =
-        if isDarwin then "zed --wait" else "${lib.getExe config.programs.zed-editor.package} --wait";
+      home.sessionVariables.SOPS_EDITOR = toString (
+        pkgs.writeShellScript "sops-editor" ''
+          zed=${if isDarwin then "zed" else lib.getExe config.programs.zed-editor.package}
+          if command -v "$zed" >/dev/null 2>&1; then
+            exec "$zed" --wait "$@"
+          fi
+          exec ${lib.getExe' config.programs.vim.package "vim"} "$@"
+        ''
+      );
 
       xdg.configFile = {
         "zed/settings.json".force = true;

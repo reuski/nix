@@ -13,7 +13,7 @@ in
         ./_network.nix
         nixos.desktop
         nixos.gaming
-        ./_gaming.nix
+        (import ./_gaming.nix { inherit inputs; })
         ./_audio.nix
         ./_desktop.nix
         (import ./_comfyui.nix { inherit inputs; })

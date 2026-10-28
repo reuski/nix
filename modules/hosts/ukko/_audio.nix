@@ -21,7 +21,15 @@
     pulse.enable = true;
     raopOpenFirewall = true;
     extraConfig.pipewire."10-raop-discover"."context.modules" = [
-      { name = "libpipewire-module-raop-discover"; }
+      {
+        name = "libpipewire-module-raop-discover";
+        args."stream.rules" = [
+          {
+            matches = [ { "raop.hostname" = "st5-959f56.local"; } ];
+            actions.create-stream = { };
+          }
+        ];
+      }
     ];
   };
 

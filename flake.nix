@@ -73,6 +73,11 @@
       flake = false;
     };
 
+    instawow = {
+      url = "github:layday/instawow";
+      flake = false;
+    };
+
     comfyui-gguf = {
       url = "github:leejet/ComfyUI-GGUF";
       flake = false;
