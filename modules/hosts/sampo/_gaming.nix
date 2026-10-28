@@ -36,8 +36,8 @@ in
   home-manager.users.${config.profile.username} = {
     home.packages = [ instawow ];
 
-    xdg.configFile."instawow/profiles/forever/config.json".text = builtins.toJSON {
-      profile = "forever";
+    xdg.configFile."instawow/profiles/__default__/config.json".text = builtins.toJSON {
+      profile = "__default__";
       addon_dir = "${config.profile.homeDirectory}/games/windows/wine-prefixes/battlenet/drive_c/Program Files (x86)/World of Warcraft/_forever_/Interface/AddOns";
     };
 
