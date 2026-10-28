@@ -30,7 +30,7 @@
 
         workspace = {
           colorScheme = "OxygenDark";
-          theme = "oxygen";
+          theme = "default";
           widgetStyle = "Union";
           windowDecorations = {
             library = "org.kde.kwin.aurorae";
@@ -110,7 +110,12 @@
 
       gtk = {
         enable = true;
+        colorScheme = "dark";
         gtk2.enable = false;
+        font = {
+          name = "Inter";
+          size = 10;
+        };
         theme = {
           package = pkgs.kdePackages.breeze-gtk;
           name = "Breeze-Dark";

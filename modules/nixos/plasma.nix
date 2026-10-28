@@ -28,7 +28,6 @@
       services.orca.enable = false;
 
       environment.plasma6.excludePackages = with pkgs.kdePackages; [
-        aurorae
         baloo-widgets
         discover
         dolphin-plugins
