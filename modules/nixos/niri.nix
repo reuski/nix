@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 {
   flake.modules.nixos.niri =
     { lib, pkgs, ... }:
@@ -12,13 +12,10 @@
       '';
     in
     {
-      imports = [ inputs.niri.nixosModules.niri ];
-
-      niri-flake.cache.enable = false;
-
       programs.niri = {
         enable = true;
         package = niriPackage;
+        useNautilus = false;
       };
 
       services.greetd = {

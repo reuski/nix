@@ -13,24 +13,6 @@ let
   bandcampStateDir = "/var/lib/bandcampsync";
 in
 {
-  nixpkgs.overlays = [
-    (_final: prev: {
-      calibre-web = prev.calibre-web.overridePythonAttrs (old: {
-        pythonRelaxDeps = (old.pythonRelaxDeps or [ ]) ++ [
-          "certifi"
-          "chardet"
-        ];
-      });
-      pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-        (_pythonFinal: pythonPrev: {
-          free-proxy = pythonPrev.free-proxy.overridePythonAttrs (old: {
-            dependencies = builtins.filter (dependency: dependency.pname != "pip-chill") old.dependencies;
-          });
-        })
-      ];
-    })
-  ];
-
   media.gid = 996;
 
   jellyfin = {

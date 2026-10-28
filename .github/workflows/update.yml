@@ -43,7 +43,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           nix-update() {
-            nix run "github:NixOS/nixpkgs/$(jq -r '.nodes.nixpkgs.locked.rev' flake.lock)#nix-update" -- "$@"
+            nix run "github:NixOS/nixpkgs/$(jq -r '.nodes.root.inputs.nixpkgs as $n | .nodes[$n].locked.rev' flake.lock)#nix-update" -- "$@"
           }
           bump() {
             nix-update --flake --version="$1" --url "$2" --override-filename "$3" "$4"

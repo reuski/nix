@@ -29,31 +29,7 @@ let
     };
   };
 
-  comfyui = (pkgs.comfyui.override { python3 = python; }).overrideAttrs (
-    _finalAttrs: prevAttrs:
-    let
-      oldEnv = prevAttrs.passthru.pythonEnv;
-      newEnv = oldEnv.override (old: {
-        extraLibs =
-          old.extraLibs
-          ++ (with prevAttrs.passthru.python.pkgs; [
-            gguf
-            protobuf
-          ]);
-      });
-    in
-    {
-      installPhase =
-        lib.replaceStrings [ (toString oldEnv) ] [ (toString newEnv) ]
-          prevAttrs.installPhase;
-      installCheckPhase =
-        lib.replaceStrings [ (toString oldEnv) ] [ (toString newEnv) ]
-          prevAttrs.installCheckPhase;
-      passthru = prevAttrs.passthru // {
-        pythonEnv = newEnv;
-      };
-    }
-  );
+  comfyui = pkgs.comfyui.override { python3 = python; };
 
   customNodes = {
     "ComfyUI-GGUF" = {
@@ -93,6 +69,10 @@ in
   services.comfyui = {
     enable = true;
     package = comfyui;
+    extraPackages = ps: [
+      ps.gguf
+      ps.protobuf
+    ];
     extraArgs = [ "--output-directory=${outputDir}" ];
   };
 

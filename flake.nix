@@ -12,7 +12,7 @@
     import-tree.url = "github:vic/import-tree";
 
     darwin = {
-      url = "github:nix-darwin/nix-darwin/master";
+      url = "github:nix-darwin/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -32,12 +32,12 @@
     };
 
     juttu = {
-      url = "git+ssh://git@github.com/reuski/juttu.git?ref=main";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "git+ssh://git@github.com/reuski/juttu";
+      flake = false;
     };
 
     home-manager = {
-      url = "github:nix-community/home-manager/master";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -47,7 +47,7 @@
     };
 
     nixos-hardware = {
-      url = "github:NixOS/nixos-hardware/master";
+      url = "github:NixOS/nixos-hardware";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -58,15 +58,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    niri.url = "github:sodiboo/niri-flake";
-
-    noctalia.url = "github:noctalia-dev/noctalia";
-
-    vicinae.url = "github:vicinaehq/vicinae";
-
     quadlet-nix.url = "github:SEIAROTg/quadlet-nix";
-
-    ghostty.url = "github:ghostty-org/ghostty";
 
     python-validity = {
       url = "github:uunicorn/python-validity";
