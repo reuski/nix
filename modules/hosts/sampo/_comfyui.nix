@@ -96,13 +96,20 @@ in
     extraArgs = [ "--output-directory=${outputDir}" ];
   };
 
-  systemd.tmpfiles.settings."10-comfyui-output".${outputDir} = {
-    d = {
-      mode = "0770";
+  systemd.tmpfiles.settings."10-comfyui-output" = {
+    "${config.profile.homeDirectory}/pictures".d = {
+      mode = "0755";
       user = config.profile.username;
-      group = "comfyui";
+      group = config.users.users.${config.profile.username}.group;
     };
-    "a+".argument = "u:${config.profile.username}:rwx,d:u:${config.profile.username}:rwx";
+    ${outputDir} = {
+      d = {
+        mode = "0770";
+        user = config.profile.username;
+        group = "comfyui";
+      };
+      "a+".argument = "u:${config.profile.username}:rwx,d:u:${config.profile.username}:rwx";
+    };
   };
 
   systemd.services.comfyui.serviceConfig = {
