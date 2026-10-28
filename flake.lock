@@ -254,22 +254,6 @@
         "type": "github"
       }
     },
-    "instawow": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1792964500,
-        "narHash": "sha256-kWqdWcIw29JdjLGo4ut9Edwf4hJSQkzjaVd5bSjhMr8=",
-        "owner": "layday",
-        "repo": "instawow",
-        "rev": "d9efd034bee6c157a4fc23f45f8243473b4aa7a0",
-        "type": "github"
-      },
-      "original": {
-        "owner": "layday",
-        "repo": "instawow",
-        "type": "github"
-      }
-    },
     "juttu": {
       "inputs": {
         "nixpkgs": [
@@ -610,7 +594,6 @@
         "heimdash": "heimdash",
         "home-manager": "home-manager_2",
         "import-tree": "import-tree",
-        "instawow": "instawow",
         "juttu": "juttu",
         "niri": "niri",
         "nix-homebrew": "nix-homebrew",
