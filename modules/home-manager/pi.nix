@@ -37,6 +37,8 @@
 
         home.file.".pi/agent/extensions/web/index.ts".source = webBootstrap;
 
+        home.file.".pi/agent/extensions/compact/index.ts".source = ./pi/compact/index.ts;
+
         home.file.".pi/agent/settings.json".source = ./pi/settings.json;
 
         home.file.".pi/agent/models.json".source = ./pi/models.json;
