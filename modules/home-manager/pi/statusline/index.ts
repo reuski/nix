@@ -1,3 +1,5 @@
+import { homedir } from "node:os";
+import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import type { ExtensionAPI, SessionEntry } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 
@@ -27,6 +29,25 @@ function plain(text: string): string {
   return clean(text).trim();
 }
 
+function relativeInside(base: string, target: string): string | null {
+  const value = relative(base, target);
+  return value === "" || (value !== ".." && !value.startsWith(`..${sep}`) && !isAbsolute(value)) ? value : null;
+}
+
+function formatCwd(cwd: unknown, home: string): string {
+  const safe = typeof cwd === "string" ? plain(cwd) : "";
+  const base = resolve(home);
+  if (!safe) return "—";
+  const target = resolve(safe);
+  const homePath = relativeInside(base, target);
+  if (homePath === null) return target;
+  if (homePath === "") return "~";
+  const projects = join(base, "projects");
+  const projectPath = relativeInside(projects, target);
+  if (projectPath === null) return `~${sep}${homePath}`;
+  return projectPath === "" ? `~${sep}projects` : projectPath;
+}
+
 function statusText(statuses: ReadonlyMap<string, string>, separator: string): string {
   const parts: string[] = [];
   for (const [, raw] of [...statuses].sort(([a], [b]) => a.localeCompare(b))) {
@@ -38,7 +59,7 @@ function statusText(statuses: ReadonlyMap<string, string>, separator: string): s
       last = match.index + match[0].length;
     }
     safe = (safe + clean(text.slice(last))).replace(/ {2,}/g, " ").trim();
-    if (visibleWidth(safe) > 0) parts.push(`${safe}${RESET}`);
+    if (visibleWidth(plain(safe)) > 0) parts.push(`${safe}${RESET}`);
   }
   return parts.join(separator);
 }
@@ -108,7 +129,7 @@ export default function statusline(pi: ExtensionAPI): void {
         },
         render(width: number): string[] {
           const w = Math.max(0, Math.floor(width));
-          if (w === 0) return [""];
+          if (w === 0) return ["", ""];
 
           const usage = ctx.getContextUsage();
           const contextWindow = amount(usage?.contextWindow) || amount(ctx.model?.contextWindow);
@@ -144,12 +165,13 @@ export default function statusline(pi: ExtensionAPI): void {
           const fullModel = modelPart(modelText, Number.POSITIVE_INFINITY) + (thinking ? theme.fg("dim", thinking) : "");
           const compactModel = modelPart(compactText, Number.POSITIVE_INFINITY) + (thinking ? theme.fg("dim", thinking) : "");
 
+          const directoryPart = theme.fg("muted", formatCwd(ctx.cwd, homedir()));
           const branch = plain(footerData.getGitBranch() ?? "");
-          const branchPart = branch ? theme.fg("mdLink", `⎇ ${branch}`) : "";
+          const branchPart = theme.fg("mdLink", `⎇ ${branch || "—"}`);
           const sep = theme.fg("dim", SEPARATOR);
-          const status = statusText(footerData.getExtensionStatuses(), sep);
+          const status = statusText(footerData.getExtensionStatuses(), sep) || theme.fg("dim", "—");
           const cost = sessionCost(ctx.sessionManager.getEntries());
-          const costPart = cost > 0 ? theme.fg("success", `$${cost.toFixed(3)}`) : "";
+          const costPart = theme.fg("success", `$${cost.toFixed(3)}`);
 
           const group = (parts: string[]): string => parts.filter(Boolean).join(sep);
           const contextPart = (withGauge: boolean, withCounts: boolean, cells: number): string => {
@@ -158,34 +180,34 @@ export default function statusline(pi: ExtensionAPI): void {
           };
           const right = (withCost: boolean, withGauge: boolean, withCounts: boolean, cells: number): string =>
             group([withCost ? costPart : "", contextPart(withGauge, withCounts, cells)]);
-          const left = (withBranch: boolean, modelValue: string, statusValue: string): string =>
-            group([withBranch ? branchPart : "", modelValue, statusValue]);
+          const left = (withIdentity: boolean, modelValue: string, statusValue: string): string =>
+            group([withIdentity ? directoryPart : "", withIdentity ? branchPart : "", modelValue, statusValue]);
 
           const stages = [
-            { branch: true, compact: false, cost: true, gauge: true, counts: true },
-            { branch: true, compact: true, cost: true, gauge: true, counts: true },
-            { branch: false, compact: true, cost: true, gauge: true, counts: true },
-            { branch: false, compact: true, cost: false, gauge: true, counts: true },
-            { branch: false, compact: true, cost: false, gauge: false, counts: true },
-            { branch: false, compact: true, cost: false, gauge: false, counts: false },
+            { identity: true, compact: false, cost: true, gauge: true, counts: true },
+            { identity: true, compact: true, cost: true, gauge: true, counts: true },
+            { identity: false, compact: true, cost: true, gauge: true, counts: true },
+            { identity: false, compact: true, cost: false, gauge: true, counts: true },
+            { identity: false, compact: true, cost: false, gauge: false, counts: true },
+            { identity: false, compact: true, cost: false, gauge: false, counts: false },
           ];
 
           let selected = "";
           for (const stage of stages) {
-            const coreLeft = left(stage.branch, stage.compact ? compactModel : fullModel, "");
+            const coreLeft = left(stage.identity, stage.compact ? compactModel : fullModel, "");
             const coreRight = right(stage.cost, stage.gauge, stage.counts, GAUGE_BASE);
             const coreWidth = visibleWidth(coreLeft) + visibleWidth(coreRight) + (coreLeft && coreRight ? MIN_GAP : 0);
             if (coreWidth > w) continue;
 
             let statusPart = "";
-            if (status && coreLeft && coreRight) {
+            if (coreLeft && coreRight) {
               const room = w - coreWidth - visibleWidth(sep);
               const full = visibleWidth(status);
               const budget = Math.min(full, STATUS_BUDGET, room);
               if (budget === full) statusPart = status;
               else if (budget >= MIN_STATUS) statusPart = truncateToWidth(status, budget, "…");
             }
-            const contentLeft = left(stage.branch, stage.compact ? compactModel : fullModel, statusPart);
+            const contentLeft = left(stage.identity, stage.compact ? compactModel : fullModel, statusPart);
             const spare = w - visibleWidth(contentLeft) - visibleWidth(coreRight) - MIN_GAP;
             const grown = stage.gauge && displayPercent !== null
               ? Math.min(GAUGE_MAX - GAUGE_BASE, Math.max(0, Math.floor(spare / 2)))
@@ -213,7 +235,7 @@ export default function statusline(pi: ExtensionAPI): void {
             }
           }
 
-          return [visibleWidth(selected) > w ? truncateToWidth(selected, w, "…") : selected];
+          return ["", visibleWidth(selected) > w ? truncateToWidth(selected, w, "…") : selected];
         },
       };
     });

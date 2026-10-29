@@ -1,4 +1,7 @@
-import type { ExtensionAPI, Theme, ThemeColor, ToolRenderers } from "@earendil-works/pi-coding-agent";
+import {
+  CustomEditor, keyHint, renderDiff, truncateToVisualLines,
+  type ExtensionUIContext, type ExtensionAPI, type Theme, type ThemeColor, type ToolRenderers,
+} from "@earendil-works/pi-coding-agent";
 import { truncateToWidth, visibleWidth, wrapTextWithAnsi, type Component } from "@earendil-works/pi-tui";
 
 const TOOLS = new Set(["read", "bash", "edit", "write", "grep", "find", "ls", "codemode", "tool_search"]);
@@ -38,14 +41,13 @@ function summary(name: string, args: Record<string, unknown>, cwd: string): stri
 }
 
 // Stateless layout: theme and width are evaluated on every render. Pi owns redraws.
-function component(context: Context, lines: (width: number) => string[]): Component {
+function component(lines: (width: number) => string[]): Component {
   return {
     invalidate() {},
     render(width) {
       if (width <= 0) return lines(1).map(() => "");
-      const pad = " ".repeat(Math.max(0, Math.min(Math.floor(context.outputPad), Math.floor((width - 1) / 2))));
-      const inner = width - 2 * visibleWidth(pad);
-      return lines(inner).map((line) => pad + truncateToWidth(line, inner) + pad);
+      // Share native outputPad with assistant text and expanded thinking.
+      return lines(width).map((line) => truncateToWidth(line, width));
     },
   };
 }
@@ -57,6 +59,20 @@ function textLines(text: string, color: ThemeColor, theme: Theme, width: number)
   );
 }
 
+function styledLines(text: string, width: number): string[] {
+  return text.split("\n").flatMap((line) => wrapTextWithAnsi(line, width));
+}
+
+function previewLines(source: string, width: number): string[] {
+  // Bound work BEFORE word diffing, including huge single logical lines.
+  const prefix = source.slice(0, 8192).split("\n", 16).join("\n");
+  const preview = truncateToVisualLines(renderDiff(clean(prefix)), 16, width, 0, "start");
+  if (prefix.length < source.length || preview.skippedCount > 0) {
+    preview.visualLines.push(...wrapTextWithAnsi(`… more (${keyHint("app.tools.expand", "expand")})`, width));
+  }
+  return preview.visualLines;
+}
+
 function argumentLines(args: Record<string, unknown>, theme: Theme, width: number): string[] {
   return Object.entries(args).flatMap(([key, value]) => {
     const text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
@@ -66,38 +82,43 @@ function argumentLines(args: Record<string, unknown>, theme: Theme, width: numbe
 
 function renderers(name: string): ToolRenderers {
   return {
-    renderShell: "self",
     renderCall(args, theme, context: Context) {
       const callArgs = isRecord(args) ? args : {};
-      return component(context, (width) => {
-        const status = context.isError ? "error" : !context.isPartial ? "done" : context.executionStarted ? "running" : "preparing";
-        const color = context.isError ? "error" : !context.isPartial ? "success" : "warning";
+      return component((width) => {
+        const color = context.isError ? "error" : context.isPartial ? "warning" : "success";
         const metadata = context.state[ROW]; // renderResult has run before this closure is rendered.
-        const prefix = `${theme.fg(color, `[${status}]`)} ${theme.fg("toolTitle", name)} `;
+        const prefix = `${theme.fg(color, "■")} ${theme.fg("toolTitle", name)} `;
+        const stats = metadata?.stats ?? "";
+        const suffix = stats && width > visibleWidth(prefix) + visibleWidth(stats) + 2 ? theme.fg("dim", stats) : "";
+        const available = width - visibleWidth(prefix) - (suffix ? visibleWidth(stats) + 2 : 0);
         const detail = inline(summary(name, callArgs, context.cwd));
-        const subject = context.isError && metadata?.error ? `${metadata.error} · ${detail}` : detail;
-        const suffix = !context.isError && metadata?.stats ? theme.fg("dim", ` · ${metadata.stats}`) : "";
-        const available = width - visibleWidth(prefix) - visibleWidth(suffix);
-        const row = available > 0
-          ? prefix + theme.fg(context.isError ? "error" : "toolOutput", truncateToWidth(subject, available)) + suffix
-          : truncateToWidth(prefix + theme.fg("toolOutput", subject) + suffix, width);
-        return [row, ...(context.expanded ? argumentLines(callArgs, theme, width) : [])];
+        const preview = clean(truncateToWidth(detail, Math.min(Math.max(0, available), name === "bash" || name === "codemode" ? 96 : width)));
+        const subject = context.isError && metadata?.error ? `${metadata.error}  ${preview}` : preview;
+        // Truncation inserts resets; strip those before styling so the background stays continuous.
+        const left = available > 0
+          ? prefix + theme.fg(context.isError ? "error" : "toolOutput", clean(truncateToWidth(subject, available)))
+          : theme.fg(color, clean(truncateToWidth(`■ ${name}`, width)));
+        const row = left + " ".repeat(Math.max(0, width - visibleWidth(left) - visibleWidth(suffix))) + suffix;
+        return [row, ...(context.expanded ? ["", ...argumentLines(callArgs, theme, width)] : [])];
       });
     },
     renderResult(result, options, theme, context: Context) {
       const output = result.content.filter((block) => block.type === "text").map((block) => block.text).join("\n");
-      const diff = name === "edit" ? string(result.details?.diff) : "";
-      const diffLines = diff.split("\n");
+      const diff = string(result.details?.diff);
+      const confirmed = !context.isError && !options.isPartial;
+      const nativeEditDiff = name === "edit" && confirmed && /^[+-]\s*\d+ /m.test(diff);
       const count = output.trim() ? output.trimEnd().split("\n").length : 0;
-      const stats = diff
-        ? `+${diffLines.filter((line) => line.startsWith("+")).length}/-${diffLines.filter((line) => line.startsWith("-")).length}`
+      const stats = nativeEditDiff
+        ? `+${(diff.match(/^\+\s*\d+ /gm) ?? []).length}/-${(diff.match(/^-\s*\d+ /gm) ?? []).length}`
         : count ? `${count} ${count === 1 ? "line" : "lines"}` : "";
       const errorText = clean(output).split("Script error:").at(-1) ?? "";
       const error = errorText.split("\n").find((line) => /error|failed|denied|not found|exit.*code|timed out/i.test(line)) ?? firstLine(errorText);
       context.state[ROW] = { stats, error: inline(error) };
-      return component(context, (width) => {
-        if (!options.expanded) return [];
-        const lines: string[] = [];
+      return component((width) => {
+        if (!options.expanded) {
+          return confirmed && diff.trim() ? previewLines(diff, width) : [];
+        }
+        const lines: string[] = [""];
         // Codemode's recorded calls contain bounded args/errors, not nested tool output.
         // Render them directly: upstream call renderers start clocks or read edit previews.
         if (name === "codemode" && Array.isArray(result.details?.calls)) {
@@ -110,9 +131,10 @@ function renderers(name: string): ToolRenderers {
           }
         }
         lines.push(...textLines(output, context.isError ? "error" : "toolOutput", theme, width));
-        for (const line of diff ? diffLines : []) {
-          const color = line.startsWith("+") ? "toolDiffAdded" : line.startsWith("-") ? "toolDiffRemoved" : "toolDiffContext";
-          lines.push(...textLines(line || " ", color, theme, width));
+        if (diff.trim()) {
+          if (!confirmed) lines.push(...textLines("Unconfirmed/reported diff", "warning", theme, width));
+          // Sanitize only raw input: native ANSI includes inverse word-change highlights.
+          lines.push(...styledLines(renderDiff(clean(diff)), width));
         }
         const fullPath = string(result.details?.fullOutputPath);
         if (result.details?.truncation?.truncated) lines.push(...textLines("Output truncated by tool.", "warning", theme, width));
@@ -123,6 +145,39 @@ function renderers(name: string): ToolRenderers {
   };
 }
 
+class PromptEditor extends CustomEditor {
+  override setPaddingX(padding: number): void {
+    super.setPaddingX(Math.max(2, padding));
+  }
+
+  override render(width: number): string[] {
+    const lines = super.render(width);
+    // Replace only native padding: text, cursor markers and mouse geometry stay intact.
+    if (width >= 5 && this.getPaddingX() >= 2 && lines[1]?.startsWith("  ")) {
+      lines[1] = this.borderColor("❯") + " " + lines[1].slice(2);
+    }
+    return lines;
+  }
+}
+
 export default function compact(pi: ExtensionAPI): void {
   pi.registerToolRenderer((name, next) => TOOLS.has(name) ? renderers(name) : next());
+  pi.registerMarkdownTransformer((markdown, context) =>
+    context.messageType === "user" && markdown.trim() ? `## ❯ You\n\n${markdown}` : markdown,
+  );
+  const editorFactory: NonNullable<ReturnType<ExtensionUIContext["getEditorComponent"]>> = (tui, theme, keybindings) =>
+    new PromptEditor(tui, theme, keybindings, { paddingX: 2, embedWorkingStatus: false });
+  pi.on("session_start", (_event, ctx) => {
+    if (ctx.mode !== "tui") return;
+    // Native resetExtensionUI clears this on reload/replacement; don't clobber other overrides at shutdown.
+    ctx.ui.setHiddenThinkingLabel("Thinking...");
+    if (ctx.ui.getEditorComponent() === undefined) {
+      ctx.ui.setEditorComponent(editorFactory);
+    }
+  });
+  pi.on("session_shutdown", (_event, ctx) => {
+    if (ctx.mode === "tui" && ctx.ui.getEditorComponent() === editorFactory) {
+      ctx.ui.setEditorComponent(undefined);
+    }
+  });
 }

@@ -16,7 +16,7 @@
     "surface2": "#3c3836",
     "surface3": "#504945",
     "toolErrorBg": "#3a2722",
-    "toolPendingBg": "#2d2a28",
+    "toolPendingBg": "#383222",
     "toolSuccessBg": "#303522",
     "yellow": "#fabd2f",
     "blue": "#83a598"
@@ -60,7 +60,7 @@
     "thinkingMedium": "blue",
     "thinkingMinimal": "dimGray",
     "thinkingOff": "surface3",
-    "thinkingText": "gray",
+    "thinkingText": "dimGray",
     "thinkingXhigh": "red",
     "toolDiffAdded": "green",
     "toolDiffContext": "gray",
@@ -70,7 +70,7 @@
     "toolPendingBg": "toolPendingBg",
     "toolSuccessBg": "toolSuccessBg",
     "toolTitle": "blue",
-    "userMessageBg": "surface",
+    "userMessageBg": "surface2",
     "userMessageText": "fg",
     "warning": "yellow"
   },

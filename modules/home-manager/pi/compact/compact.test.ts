@@ -1,149 +1,222 @@
-import { afterEach, expect, spyOn, test } from "bun:test";
+import { expect, test } from "bun:test";
 import { stripVTControlCharacters } from "node:util";
 import {
-  initTheme, Theme, ToolExecutionComponent,
-  type ExtensionAPI, type ToolRendererResolver,
+  AssistantMessageComponent, CustomEditor, getMarkdownTheme, getSelectListTheme, initTheme, renderDiff, ToolExecutionComponent,
+  type ExtensionAPI, type ExtensionContext, type MarkdownTransformer, type ToolRendererResolver,
 } from "@earendil-works/pi-coding-agent";
-import { visibleWidth, type TUI } from "@earendil-works/pi-tui";
+import { CURSOR_MARKER, getKeybindings, KeybindingsManager, Markdown, setKeybindings, TUI_KEYBINDINGS, visibleWidth, type TUI } from "@earendil-works/pi-tui";
 import compact from "./index.ts";
+import gruvbox from "../gruvbox.json";
 
 let resolve: ToolRendererResolver;
-// Supplying ONLY this API proves registration never touches execution/events.
-compact({ registerToolRenderer: (resolver) => { resolve = resolver; } } as ExtensionAPI);
+let transform: MarkdownTransformer;
+const sessions: Record<string, (event: unknown, ctx: ExtensionContext) => void> = {};
+compact({
+  registerToolRenderer: (resolver) => { resolve = resolver; },
+  registerMarkdownTransformer: (transformer) => { transform = transformer; },
+  on: (event, handler) => { sessions[event] = handler; },
+} as ExtensionAPI);
 initTheme("dark", false);
-afterEach(() => initTheme("dark", false));
+setKeybindings(new KeybindingsManager({ ...TUI_KEYBINDINGS, "app.tools.expand": { defaultKeys: "ctrl+o" } }));
 const plain = (lines: string[]) => lines.map(stripVTControlCharacters);
-const result = (text = "", details?: unknown, isError = false) => ({
-  content: [{ type: "text", text }], details, isError,
-});
-function row(name: string, args: unknown = {}, outputPad = 0) {
-  const forbidden = () => { throw new Error("original renderer invoked"); };
-  return new ToolExecutionComponent(name, "test-id", args, { outputPad, showImages: false },
-    resolve(name, () => ({ renderCall: forbidden, renderResult: forbidden })), { requestRender() {} } as TUI, "/work");
-}
-function header(component: ToolExecutionComponent, width = 80) {
-  const lines = plain(component.render(width));
-  expect(lines).toHaveLength(2); // Pi's separator + exactly one content row.
-  expect(lines[0]).toBe("");
-  return lines[1];
+const text = (view: { render(width: number): string[] }, width = 80) => plain(view.render(width)).map((line) => line.trim()).join("\n");
+const result = (text: string, details?: unknown, isError = false) => ({ content: [{ type: "text", text }], details, isError });
+function row(name: string, args: unknown) {
+  return new ToolExecutionComponent(name, "test-id", args, { outputPad: 0, showImages: false },
+    resolve(name, () => undefined), { requestRender() {} } as TUI, "/work");
 }
 
-test("lifecycle and replay stay single-row, including first-final metadata without duration", () => {
-  const view = row("read", { path: "/work/README.md", offset: 4, limit: 6 });
-  expect(header(view)).toBe("[preparing] read README.md:4–9");
-  view.setArgsComplete();
-  expect(header(view)).toContain("[preparing]");
-  view.markExecutionStarted();
-  expect(header(view)).toContain("[running]");
-  view.updateResult(result("one\ntwo"), true);
-  expect(header(view)).toBe("[running] read README.md:4–9 · 2 lines");
-  view.updateResult(result("one\ntwo\nthree"));
-  expect(header(view)).toBe("[done] read README.md:4–9 · 3 lines");
-  const replay = row("bash", { command: "true" });
-  replay.updateResult(result("ok"));
-  expect(header(replay)).toBe("[done] bash true · 1 line");
-});
-
-test("missing and invalid arguments are safe; unknown and MCP renderers pass through", () => {
-  for (const args of [undefined, null, ["path"], { path: false }]) {
-    const view = row("read", args);
-    expect(header(view)).toBe("[preparing] read ");
-    view.setExpanded(true);
-    expect(() => view.render(80)).not.toThrow();
-  }
+test("summaries sanitize input, bound widths and keep counts aligned through completion and errors", () => {
   const custom = { renderShell: "self" as const };
-  for (const name of ["custom", "mcp__docs_search"]) {
-    expect(resolve(name, () => custom)).toBe(custom);
-    expect(resolve(name, () => undefined)).toBeUndefined();
+  expect(resolve("custom", () => custom)).toBe(custom);
+  const view = row("bash", { command: "echo 漢字👩‍💻e\u0301\x1b[31mred\x1b[0m\x1b]0;title\x07\x00\u202e " + "long-command ".repeat(30) });
+  const preparing = view.render(48)[2];
+  view.markExecutionStarted();
+  expect(view.render(48)[2]).toBe(preparing);
+  const restored = row("bash", { command: "true" });
+  restored.updateResult(result("ok")); // First final result without execution start or duration.
+  expect(text(restored)).toContain("■ bash true");
+  view.updateResult(result("one\ntwo"));
+  for (const width of [48, 300]) {
+    const rendered = view.render(width);
+    expect(rendered).toHaveLength(4);
+    expect(visibleWidth(rendered[2])).toBe(width);
+    expect(plain(rendered)[2]).toMatch(/^■ bash echo 漢字👩‍💻éred .* {2}2 lines$/);
+    if (width === 300) expect(plain(rendered)[2]).toMatch(/ {180,}2 lines/); // Command preview stays capped.
+    expect(rendered.join("\n")).not.toMatch(/title|\x1b\[31m|[\x00\u202e]/);
   }
-});
-
-test("expansion preserves multiline arguments, output and nested codemode errors without timers", () => {
-  const timer = spyOn(globalThis, "setInterval");
-  try {
-    for (const [name, args, summary] of [
-      ["bash", { command: "echo first\necho second", timeout: 17 }, "echo first"],
-      ["write", { path: "file", content: "first line\nlast line" }, "file"],
-      ["codemode", { code: "\n  \nconst first = 1;\nreturn first;" }, "const first = 1;"],
-    ] as const) {
-      const view = row(name, args);
-      view.setArgsComplete();
-      view.markExecutionStarted();
-      view.updateResult(result("output first\noutput last", name === "codemode" ? {
-        calls: [{ name: "read", args: '{"path":"x"}', status: "error", error: "missing file" }],
-        truncation: { truncated: true }, fullOutputPath: "/tmp/full-output.txt",
-      } : undefined), true);
-      expect(header(view)).toBe(`[running] ${name} ${summary} · 2 lines`);
-      view.setExpanded(true);
-      const expanded = plain(view.render(120)).join("\n");
-      for (const [key, value] of Object.entries(args)) expect(expanded).toContain(`${key}: ${value}`);
-      expect(expanded).toContain("output first\noutput last");
-      if (name === "codemode") {
-        for (const text of ['[error] read {"path":"x"}', "missing file", "Output truncated by tool.", "Full output: /tmp/full-output.txt"]) {
-          expect(expanded).toContain(text);
-        }
-      }
-    }
-    expect(timer).not.toHaveBeenCalled();
-  } finally { timer.mockRestore(); }
-});
-
-test("compact errors remain visible before long arguments; expansion retains the full error", () => {
-  const view = row("bash", { command: "very-long-command".repeat(20) });
   const error = "Permission denied\nsecond detail\nCommand exited with code 1";
   view.updateResult(result(error, undefined, true));
-  expect(header(view)).toContain("[error] bash Permission denied");
+  expect(text(view)).toMatch(/■ bash Permission denied.*3 lines/);
   view.setExpanded(true);
-  expect(plain(view.render(80)).join("\n")).toContain(error);
-  const script = row("codemode", { code: "throw Error('bad')" });
-  script.updateResult(result("Script failed\nOutput:\nScript error:\nbad value", undefined, true));
-  expect(header(script)).toContain("[error] codemode bad value");
+  expect(text(view)).toContain(error);
 });
 
-test("edit summaries expand to semantic diffs and redraw with the current theme", () => {
-  const color = spyOn(Theme.prototype, "fg");
-  try {
-    const view = row("edit", { path: "/does/not/exist", edits: [{ oldText: "old", newText: "new" }] });
-    view.setArgsComplete();
-    view.updateResult(result("Successfully replaced 1 block.", { diff: " 1 context\n-2 old\n+2 new" }));
-    expect(header(view)).toContain("+1/-1");
-    view.setExpanded(true);
-    const before = view.render(80);
-    expect(plain(before).join("\n")).toContain("Successfully replaced 1 block.\n 1 context\n-2 old\n+2 new");
-    for (const [token, text] of [["toolDiffContext", " 1 context"], ["toolDiffRemoved", "-2 old"], ["toolDiffAdded", "+2 new"]]) {
-      expect(color).toHaveBeenCalledWith(token, text);
+test("native boxes retain expanded details and preview only confirmed structured diffs", () => {
+  const code = "const first = 1;\nreturn first;";
+  const script = row("codemode", { code });
+  script.updateResult(result("output first\noutput last", {
+    calls: [{ name: "read", args: '{"path":"x"}', status: "error", error: "missing file" }],
+    truncation: { truncated: true }, fullOutputPath: "/tmp/full-output.txt",
+  }));
+  script.setExpanded(true);
+  script.setOutputPad(1);
+  for (const detail of [`code: ${code}`, "output first\noutput last", '[error] read {"path":"x"}',
+    "missing file", "Output truncated by tool.", "Full output: /tmp/full-output.txt"]) expect(text(script)).toContain(detail);
+
+  const edit = row("edit", { path: "file", edits: [{ oldText: "old", newText: "new" }] });
+  const diff = "-2 const old = 1;\n+2 const next = 1;\n 3 context\n+4 " + "漢字👩‍💻é\x1b[31m\x00\u202e".repeat(600) + " END-DIFF";
+  edit.updateResult(result("Successfully replaced 1 block.", { diff }));
+  const collapsed = edit.render(48);
+  expect(plain(collapsed)[2]).toMatch(/^■ edit file +\+2\/-1$/);
+  expect(collapsed[3]).toContain(renderDiff(diff.split("\n").slice(0, 2).join("\n")).split("\n")[0]);
+  expect(collapsed).toHaveLength(3 + 16 + 1 + 1); // Frame, bounded preview, hint, bottom.
+  expect(plain(collapsed).at(-2)).toContain("more (ctrl+o expand)");
+  expect(collapsed.join("\n")).not.toMatch(/END-DIFF|\x1b\[31m|[\x00\u202e]/);
+  for (const [rendered, width] of [[script.render(48), 48], [collapsed, 48], [edit.render(16), 16]] as const) {
+    const background = rendered[1].match(/^\x1b\[48;[\d;]+m/)![0];
+    for (const line of rendered.slice(1)) {
+      expect(visibleWidth(line)).toBe(width);
+      expect(line).toStartWith(background);
+      expect(line).toEndWith("\x1b[49m");
+      expect(line.slice(0, -5)).not.toMatch(/\x1b\[(?:0|49)?m/);
     }
-    initTheme("light", false);
-    view.invalidate();
-    expect(view.render(80)).not.toEqual(before);
-    expect(plain(view.render(80))).toEqual(plain(before));
-  } finally { color.mockRestore(); }
+  }
+  expect(text(edit, 16)).toContain("ctrl+o");
+  expect(edit.handleMouse({ type: "click", button: "left", x: 3, y: 3, screenX: 3, screenY: 3,
+    width: 48, height: collapsed.length, shift: false, alt: false, ctrl: false })?.handled).toBe(true);
+  const full = text(edit);
+  expect(full).toContain("Successfully replaced 1 block.");
+  for (const detail of ["-2 const old = 1;", "END-DIFF"]) expect(full.split(detail)).toHaveLength(2);
+  for (const [isError, isPartial] of [[true, false], [false, true]]) {
+    edit.setExpanded(false);
+    edit.updateResult(result("Unconfirmed", { diff: "+1 reported" }, isError), isPartial);
+    expect(text(edit)).not.toMatch(/reported|\+1\/-0/);
+    edit.setExpanded(true);
+    expect(text(edit)).toContain("Unconfirmed/reported diff");
+  }
+  const other = row("codemode", { code: "return result;" });
+  other.updateResult(result("done", { diff: "+1 structured" }));
+  expect(text(other)).toContain("+1 structured");
+  expect(plain(other.render(80))[2]).toContain("1 line"); // No invented edit counts.
+  const write = row("write", { path: "file.ts", content: "const first = 1;" });
+  write.updateResult(result("written"));
+  expect(text(write)).not.toContain("const first = 1;");
+  write.setExpanded(true);
+  expect(text(write)).toContain("content: const first = 1;");
+  expect(text(write)).toContain("written");
 });
 
-test("terminal controls cannot inject header lines or expanded styling", () => {
-  const payload = "safe\x1b[31mred\x1b[0m\x1b]0;title\x07\x1bPpayload\x1b\\\n\r\t\x00\x08next\u2028line\u202e";
-  const view = row("read", { path: payload });
-  expect(header(view)).toBe("[preparing] read safered next line");
-  expect(header(row("read", { path: "safe\x1b]unterminated" }))).toBe("[preparing] read safe");
-  view.updateResult(result(payload, undefined, true));
-  expect(header(view)).toContain("[error] read safered");
-  view.setExpanded(true);
-  const rendered = view.render(80).join("\n");
-  expect(rendered).not.toMatch(/\x1b(?:\[31m|\]0;|Ppayload)/);
-  expect(stripVTControlCharacters(rendered)).not.toMatch(/title|payload|\x00|\x08|\x1b/);
+test("prompt markers preserve Markdown, editor input, ownership and TUI-only lifecycle", () => {
+  const markdown = "```ts\nconst x = 1;\n```";
+  const context = { messageType: "user" as const, isStreaming: false, availableWidth: 80 };
+  const mdTheme = getMarkdownTheme();
+  const source = transform(markdown, context);
+  expect(source).toBe(`## ❯ You\n\n${markdown}`);
+  expect(transform(markdown, { ...context, isStreaming: true })).toBe(source);
+  for (const empty of ["", " \n"]) expect(transform(empty, context)).toBe(empty);
+  const rendered = new Markdown(source, 1, 1, mdTheme).render(80);
+  expect(rendered.join("\n")).toContain(mdTheme.heading(mdTheme.bold("❯ You")));
+  expect(plain(rendered).filter((line) => line.trim()).slice(1)).toEqual(
+    plain(new Markdown(markdown, 1, 0, mdTheme).render(80)).filter((line) => line.trim()),
+  );
+  for (const messageType of ["assistant", "assistant-thinking"] as const) {
+    for (const isStreaming of [false, true]) expect(transform(markdown, { ...context, messageType, isStreaming })).toBe(markdown);
+  }
+  type EditorFactory = NonNullable<ReturnType<ExtensionContext["ui"]["getEditorComponent"]>>;
+  let factory: EditorFactory | undefined;
+  const labels: (string | undefined)[] = [];
+  const ctx = { mode: "tui", ui: {
+    setHiddenThinkingLabel: (label?: string) => { labels.push(label); },
+    getEditorComponent: () => factory,
+    setEditorComponent: (value: EditorFactory | undefined) => { factory = value; },
+  } } as ExtensionContext;
+  sessions.session_start({}, ctx);
+  const theme = { borderColor: (text: string) => `\x1b[33m${text}\x1b[39m`, selectList: getSelectListTheme() };
+  const editor = factory!({ terminal: { rows: 30 }, requestRender() {} } as TUI, theme, getKeybindings());
+  if (!(editor instanceof CustomEditor)) throw new Error("expected native editor");
+  expect(editor.embedWorkingStatus).toBe(false);
+  editor.focused = true;
+  editor.handleInput("hello");
+  const line = editor.render(40)[1];
+  expect(line).toStartWith(theme.borderColor("❯") + " hello");
+  expect(line).toContain(CURSOR_MARKER);
+  expect(visibleWidth(line.split(CURSOR_MARKER)[0])).toBe(7);
+  let submitted = "";
+  editor.onSubmit = (value) => { submitted = value; };
+  editor.handleInput("\r");
+  expect(submitted).toBe("hello");
+  sessions.session_shutdown({}, ctx);
+  expect(factory).toBeUndefined();
+  const other: EditorFactory = () => editor;
+  factory = other;
+  sessions.session_start({}, ctx);
+  sessions.session_shutdown({}, ctx);
+  expect(factory).toBe(other);
+  factory = undefined;
+  sessions.session_start({}, ctx);
+  factory = other; // A replacement installed after ours must survive shutdown too.
+  sessions.session_shutdown({}, ctx);
+  expect(factory).toBe(other);
+  expect(labels).toEqual(Array(3).fill("Thinking...")); // Reapplied at each start; no shutdown resets.
+  for (const mode of ["rpc", "json", "print"]) {
+    sessions.session_start({}, { mode } as ExtensionContext);
+    sessions.session_shutdown({}, { mode } as ExtensionContext);
+  }
 });
 
-test("Unicode, tiny widths, resizing and padding stay within bounds", () => {
-  const view = row("bash", { command: "echo 漢字 👩‍💻 café e\u0301\nsecond" }, 4);
-  view.updateResult(result("漢字 👩‍💻 café e\u0301\n" + "x".repeat(150)));
-  expect(header(view)).toMatch(/^ {4}\[done\].* {4}$/);
-  for (const [width, pad, expanded] of [[0, 4, false], [1, 100, true], [10, 1, true], [80, 0, false]] as const) {
-    view.setOutputPad(pad);
-    view.setExpanded(expanded);
-    for (const line of view.render(width)) {
-      expect(visibleWidth(line)).toBeLessThanOrEqual(width);
-      expect(stripVTControlCharacters(line)).not.toMatch(/[\r\n\x1b]/);
+test("collapsed thinking keeps an aligned label, native expansion and diagnostics", () => {
+  let label: string | undefined;
+  sessions.session_start({}, { mode: "tui", ui: {
+    getEditorComponent: () => () => {},
+    setHiddenThinkingLabel: (value: string) => { label = value; },
+  } } as ExtensionContext);
+  expect(label).toBe("Thinking...");
+  expect(gruvbox.colors.thinkingText).toBe(gruvbox.colors.dim);
+  type Message = NonNullable<ConstructorParameters<typeof AssistantMessageComponent>[0]>;
+  const base: Message = {
+    role: "assistant", content: [{ type: "thinking", thinking: "Original reasoning\n\n" + "Wrapped reasoning ".repeat(12), thinkingSignature: "signature" }],
+    api: "anthropic-messages", provider: "anthropic", model: "test", stopReason: "stop", timestamp: 0,
+    usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0,
+      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } },
+  };
+  const answer: Message["content"] = [{ type: "text", text: "Visible answer" }];
+  for (const streaming of [false, true]) {
+    for (const content of [base.content, [...base.content, ...answer]]) {
+      const message = { ...base, content };
+      const saved = structuredClone(message);
+      const view = new AssistantMessageComponent(undefined, true, getMarkdownTheme(), label, 1, [transform]);
+      view.updateContent(message, streaming);
+      const collapsed = plain(view.render(80));
+      expect(collapsed[1]).toStartWith(" Thinking...");
+      const tool = row("read", { path: "file" });
+      tool.setOutputPad(1);
+      const statusColumn = plain(tool.render(80))[2].indexOf("■");
+      expect(collapsed[1].indexOf("Thinking...")).toBe(statusColumn);
+      expect(collapsed.map((line) => line.trim())).toEqual(
+        content.length === 1 ? ["", "Thinking..."] : ["", "Thinking...", "", "Visible answer"],
+      );
+      expect(view.handleMouse({ type: "click", button: "left", x: 4, y: 1, screenX: 4, screenY: 1,
+        width: 80, height: collapsed.length, shift: false, alt: false, ctrl: false })?.handled).toBe(true);
+      expect(plain(view.render(80))[1].indexOf("Original reasoning")).toBe(statusColumn);
+      for (const line of plain(view.render(80)).filter((line) => line.includes("reasoning"))) {
+        expect(line.search(/\S/)).toBe(statusColumn);
+      }
+      view.setHideThinkingBlock(false);
+      expect(plain(view.render(80))[1].indexOf("Original reasoning")).toBe(statusColumn);
+      view.setHideThinkingBlock(true);
+      expect(text(view)).toContain("Thinking...");
+      expect(text(view)).not.toContain("Original reasoning");
+      expect(message).toEqual(saved);
     }
-    if (!expanded) header(view, width);
+  }
+  for (const [stopReason, diagnostic] of [["error", "Error: provider failed"], ["aborted", "provider failed"],
+    ["length", "Response was truncated before completion."]] as const) {
+    const view = new AssistantMessageComponent({ ...base, content: [...base.content, ...answer], stopReason,
+      errorMessage: "provider failed" }, true, getMarkdownTheme(), label);
+    expect(text(view)).toContain("Visible answer");
+    expect(text(view)).toContain(diagnostic);
+    expect(text(view)).toContain("Thinking...");
+    expect(text(view)).not.toContain("Original reasoning");
   }
 });
