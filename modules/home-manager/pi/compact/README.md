@@ -1,9 +1,9 @@
 # Compact Pi
 
 Compact, themed tool summaries with right-aligned counts and native expansion.
-Confirmed structured diffs preview up to 16 rows with Pi's word-change highlighting;
-expansion reveals full retained arguments, output and diagnostics. Covers `read`,
-`bash`, `edit`, `write`, `grep`, `find`, `ls`, `codemode`, and `tool_search`;
+Confirmed diffs preview up to 16 rows with Pi's word-change highlighting and a
+muted expand hint. Expansion reveals retained arguments, output and diagnostics.
+Covers `read`, `bash`, `edit`, `write`, `grep`, `find`, `ls`, `codemode`, and `tool_search`;
 other renderers pass through unchanged.
 
 - Uses Pi's semantic theme tokens and the existing gruvbox palette.
@@ -14,6 +14,11 @@ other renderers pass through unchanged.
   and expanded reasoning. Gruvbox's `dimGray` mutes both label and reasoning.
   Collapsed by default; click or use Ctrl+T to expand.
   The native row is unboxed: full-width shading needs upstream renderer support.
+- Codemode lists the latest four named calls with status and no disclosure arrows.
+  Argument previews cap at 96 columns and leave a two-column gap before right-aligned
+  timing/cost; narrow rows keep duration before cost. In fullscreen, click a child
+  header for recorded args/errors; Ctrl+O expands
+  every call, the script and stdout. Malformed entries are ignored.
 
 Display-only public APIs: no dependencies, extension timers, internal UI patches,
 filesystem reads, or changes to tool execution, saved prompts, or model context.
@@ -26,6 +31,7 @@ the extension reapplies it at TUI session start without resetting other override
 on shutdown. Competing label overrides are last-writer-wins.
 
 **Limits:** Images remain native; tool-truncated output cannot be recovered. Stdout
-patches require expansion; nested codemode results and write before-images are not
-inferred. Native minimum widths apply. Interactive rendering is the target;
-HTML-export status colors may remain pending.
+patches require expansion; codemode child args/errors are bounded recorded previews,
+not recoverable full args or nested outputs, and write before-images are not
+inferred. Native minimum widths apply.
+Interactive rendering is the target; HTML-export status colors may remain pending.

@@ -178,11 +178,26 @@ function mediaType(contentType: string | null): string {
 }
 
 function decodeBody(body: Uint8Array, contentType: string | null): string {
-  const charset = /charset\s*=\s*"?([^";\s]+)/i.exec(contentType ?? "")?.[1];
+  const charset = httpCharset(contentType);
   try {
     return new TextDecoder(charset ?? "utf-8").decode(body);
   } catch {
     return new TextDecoder("utf-8").decode(body);
+  }
+}
+
+function httpCharset(contentType: string | null): string | null {
+  return /charset\s*=\s*"?([^";\s]+)/i.exec(contentType ?? "")?.[1] ?? null;
+}
+
+/** Decode only with an authoritative HTTP charset; otherwise keep the original bytes. */
+function decodeHtml(body: Uint8Array, contentType: string | null): string | Uint8Array {
+  const charset = httpCharset(contentType);
+  if (!charset) return body;
+  try {
+    return new TextDecoder(charset).decode(body);
+  } catch {
+    return body;
   }
 }
 
@@ -267,9 +282,9 @@ function normalizeEngineTimings(value: unknown): EngineTiming[] {
     const timing: EngineTiming = {
       name: clamp(typeof entry.name === "string" ? entry.name : "unknown", 80),
       status: typeof entry.status === "string" ? clamp(entry.status, 40) : "ok",
-      resultCount: typeof entry.resultCount === "number" ? entry.resultCount : 0,
-      timeMs: typeof entry.time === "number" ? entry.time : 0,
-      httpStatus: typeof entry.httpStatus === "number" ? entry.httpStatus : null,
+      resultCount: typeof entry.resultCount === "number" && Number.isInteger(entry.resultCount) && entry.resultCount >= 0 ? entry.resultCount : 0,
+      timeMs: typeof entry.time === "number" && Number.isFinite(entry.time) && entry.time >= 0 ? entry.time : 0,
+      httpStatus: typeof entry.httpStatus === "number" && Number.isInteger(entry.httpStatus) && entry.httpStatus >= 100 && entry.httpStatus <= 599 ? entry.httpStatus : null,
       error: typeof entry.errorReason === "string" ? clamp(entry.errorReason, 200) : null,
     };
     return [timing];
@@ -381,7 +396,7 @@ export async function webSearch(config: WebConfig, input: SearchInput, signal?: 
 /** Run extract.py over HTML, bounded by a five-second ceiling and the caller's signal. */
 export async function runExtractor(
   config: WebConfig,
-  html: string,
+  html: string | Uint8Array,
   finalUrl: string,
   signal: AbortSignal,
 ): Promise<string> {
@@ -445,7 +460,7 @@ export async function runExtractor(
       resolve(text);
     });
     child.stdin.on("error", () => {});
-    child.stdin.end(html, "utf8");
+    child.stdin.end(html);
   });
 }
 
@@ -474,12 +489,14 @@ export async function webFetch(config: WebConfig, input: FetchInput, signal?: Ab
     }
 
     const body = await readBoundedBody(response, FETCH_MAX_RESPONSE_BYTES);
-    const decoded = decodeBody(body, contentType);
-    let method: FetchOutput["extraction"] = isMarkdown ? "markdown" : "text";
-    let text = decoded.trim();
+    let method: FetchOutput["extraction"];
+    let text: string;
     if (isHtml) {
       method = "trafilatura";
-      text = await runExtractor(config, decoded, finalUrl.href, deadline);
+      text = await runExtractor(config, decodeHtml(body, contentType), finalUrl.href, deadline);
+    } else {
+      method = isMarkdown ? "markdown" : "text";
+      text = decodeBody(body, contentType).trim();
     }
 
     const clamped = truncateText(text, FETCH_CHARS);

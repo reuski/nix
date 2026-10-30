@@ -2,8 +2,7 @@
 
 A single-row footer with directory, Git branch, model/thinking level, and
 extension statuses on the left, and session cost plus live context usage on
-the right. A blank row above it separates the editor and completion menus from
-the statusline.
+the right.
 
 ```text
 nix │ ⎇ main │ model │ —          $0.000 │ [█████░░░░░░░░░░░░░░░] 50k/200k 25%

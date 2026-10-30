@@ -129,7 +129,7 @@ export default function statusline(pi: ExtensionAPI): void {
         },
         render(width: number): string[] {
           const w = Math.max(0, Math.floor(width));
-          if (w === 0) return ["", ""];
+          if (w === 0) return [""];
 
           const usage = ctx.getContextUsage();
           const contextWindow = amount(usage?.contextWindow) || amount(ctx.model?.contextWindow);
@@ -235,7 +235,7 @@ export default function statusline(pi: ExtensionAPI): void {
             }
           }
 
-          return ["", visibleWidth(selected) > w ? truncateToWidth(selected, w, "…") : selected];
+          return [visibleWidth(selected) > w ? truncateToWidth(selected, w, "…") : selected];
         },
       };
     });

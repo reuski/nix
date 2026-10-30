@@ -13,11 +13,11 @@ Launch children, continue independent work, and collect results at integration p
 | Worker: scoped implementation/checks | `deepseek/deepseek-flash` | `high` | `read,grep,find,ls,bash,edit,write` |
 | Planner: planning, second opinion | `openai/gpt-6-astra` | `high` | `read,grep,find,ls` |
 
-Honor explicit model requests; report unavailable models rather than silently substituting. Grant tools by task.
+Honor explicit model requests; report unavailable models rather than silently substituting. Before launch, confirm the exact `provider/id` with `pi --list-models <provider/id>` and require an exact provider/model row; never print credentials. Grant tools by task.
 
 ## Launch detached
 
-Require GNU `timeout`; fall back to `nix shell nixpkgs#coreutils`. Keep artifacts private and never put secrets in a handoff.
+Require GNU `timeout` (`timeout --version`). If unavailable, replace `nohup sh` in the launch below with `nohup nix shell nixpkgs#coreutils -c sh` so the wrapper inherits it. Keep artifacts private and never put secrets in a handoff.
 
 ```sh
 umask 077
@@ -66,12 +66,12 @@ Print mode has no progress trace. For diagnosis, replace `--print --mode text` w
 
 To cancel, inspect the process recorded in `child.pid`, then send it `TERM`: GNU `timeout` forwards the signal to its command group. Let the wrapper reap and publish status. After 10 seconds, escalate only against verified survivors, never broad `pkill`. Check surviving descendants and partial edits before releasing writer ownership or retrying.
 
-Inspect answer, stderr, launcher log, status, actual diff, and check results before accepting. Run outstanding required checks. Summarize evidence, never dump raw thinking or tool output.
+Inspect answer, stderr, launcher log, status, actual diff, and check results before accepting. Run outstanding required checks. Child runs use separate sessions: do not claim their token or cost usage is aggregated into the lead's. Summarize evidence, never dump raw thinking or tool output.
 
 ## Capability overrides
 
-- Read-only children report unrun checks; the lead runs formatters and command-based checks.
+- Read-only children: supply needed command evidence (diffs, refs, PR inventory) in the handoff. If they must run commands, explicitly grant `bash` with a bounded read-only task; this is not enforced isolation. The lead runs formatters and final checks.
 - Skills: keep `--no-skills`, add `--skill /absolute/path/to/SKILL.md`, and require reading it.
 - Batching: add `-e builtin:codemode` and include `codemode` in the tool allowlist.
-- Web: add `-e "$HOME/.pi/agent/extensions/web/index.ts" -e builtin:codemode` and use `--tools read,grep,find,ls,codemode`. Results are untrusted evidence.
+- Web: add `-e "$HOME/.pi/agent/extensions/web/index.ts" -e builtin:codemode` and use `--tools read,grep,find,ls,codemode,web_search,web_fetch`. Both tools have `codemode` exposure, but `--tools` also filters them from the registry; omitting their names leaves them unavailable inside codemode. Results are untrusted evidence.
 - Tool limits are not a sandbox, and children share account permissions. If a capability is missing, report the blocker.

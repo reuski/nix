@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { Value } from "typebox/value";
 import { MAX_CONCURRENT_OPERATIONS, runWithDeadline, webFetch, webSearch, type WebConfig } from "./core.ts";
 import { registerWebTools } from "./extension.ts";
 
@@ -27,6 +28,9 @@ function config(origin: string, overrides: Partial<WebConfig> = {}): WebConfig {
   return { searchEndpoint: `${origin}/api/search`, python: python ?? join(fixtures, "absent-python"), extractScript, ...overrides };
 }
 function respond(body: string, contentType: string): Response {
+  return new Response(body, { headers: { "content-type": contentType } });
+}
+function respondBytes(body: Uint8Array, contentType: string): Response {
   return new Response(body, { headers: { "content-type": contentType } });
 }
 function redirect(location: string, status = 302): Response {
@@ -180,6 +184,34 @@ describe("web_fetch", () => {
 
     await expect(webFetch(config(origin), { url: `${origin}/empty` })).rejects.toThrow(/content extraction failed/);
   });
+
+  test.skipIf(!python)("preserves HTML bytes without an HTTP charset and lets the header override stale metadata", async () => {
+    const article = (meta: string) => `<html><head>${meta}<title>Café Guide</title></head><body><article><h1>Café Guide</h1>
+<p>Café widgets are small components; this paragraph explains why extraction matters for example documentation pages.</p>
+<p>More café details about widgets and their usage in practice make this article readable.</p></article></body></html>`;
+    const latin1 = (html: string) => new Uint8Array(Buffer.from(html, "latin1"));
+    const utf8 = (html: string) => new TextEncoder().encode(html);
+    const xhtml = (encoding: string) => `<?xml version="1.0" encoding="${encoding}"?>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Café Guide</title></head><body><article><h1>Café Guide</h1>
+<p>Café widgets are small components; this paragraph explains why extraction matters for example documentation pages.</p>
+<p>More café details about widgets and their usage in practice make this article readable.</p></article></body></html>`;
+    const stale = '<meta charset="utf-8">';
+    const origin = serve((request) => {
+      switch (pathOf(request)) {
+        case "/meta": return respondBytes(latin1(article('<meta charset="windows-1252">')), "text/html");
+        case "/no-metadata": return respondBytes(utf8(article("")), "text/html");
+        case "/header": return respondBytes(latin1(article(stale)), "text/html; charset=windows-1252");
+        case "/xml": return respondBytes(latin1(xhtml("windows-1252")), "application/xhtml+xml");
+        default: return respondBytes(utf8(article("")), "text/html; charset=utf-8");
+      }
+    });
+
+    for (const route of ["/meta", "/no-metadata", "/header", "/xml", "/utf8"]) {
+      const output = await webFetch(config(origin), { url: `${origin}${route}` });
+      expect(output.content).toContain("Café");
+      expect(output.content).not.toMatch(/Caf\uFFFD|CafÃ©/);
+    }
+  });
 });
 
 describe("extension contract", () => {
@@ -218,9 +250,28 @@ describe("extension contract", () => {
     for (const [tool, output] of [[searchTool, search], [fetchTool, fetch]] as const) {
       for (const key of tool.outputSchema.required) expect(output.structuredContent).toHaveProperty(key);
       expect(JSON.parse(output.content[0].text)).toEqual(output.structuredContent);
+      expect(Value.Check(tool.outputSchema, output.structuredContent)).toBe(true);
+      expect([...Value.Errors(tool.outputSchema, output.structuredContent)]).toEqual([]);
     }
     for (const key of searchTool.outputSchema.properties.results.items.required) expect(search.structuredContent.results[0]).toHaveProperty(key);
     expect(fetch.structuredContent.extraction).toBe("markdown");
+  });
+
+  test("normalizes malformed engine metadata into the registered output schema", async () => {
+    const origin = serve(() =>
+      respond('{"engineTimings":[{"name":"probe","status":"ok","resultCount":1.5,"time":1e309,"httpStatus":1.5},' +
+        '{"name":"negative","status":"ok","resultCount":-3,"time":-1,"httpStatus":429},' +
+        '{"name":"overflow","status":"ok","resultCount":1e309,"time":1.2,"httpStatus":1e309}],"results":[]}', "application/json"),
+    );
+    const [searchTool] = registered(origin);
+    const output = await searchTool.execute("1", { query: "probe" });
+    expect(Value.Check(searchTool.outputSchema, output.structuredContent)).toBe(true);
+    expect([...Value.Errors(searchTool.outputSchema, output.structuredContent)]).toEqual([]);
+    expect(output.structuredContent.engines).toEqual([
+      { name: "probe", status: "ok", resultCount: 0, timeMs: 0, httpStatus: null, error: null },
+      { name: "negative", status: "ok", resultCount: 0, timeMs: 0, httpStatus: 429, error: null },
+      { name: "overflow", status: "ok", resultCount: 0, timeMs: 1.2, httpStatus: null, error: null },
+    ]);
   });
 
   test(

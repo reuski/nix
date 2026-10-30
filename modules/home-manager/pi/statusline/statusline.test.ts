@@ -161,11 +161,10 @@ test("adaptive layout preserves core content, isolates styling and bounds Unicod
   h.state.model!.id = "漢字 👩‍💻 e\u0301";
   for (const width of [0, 1, 20, 80, 200]) {
     const lines = view.footer.render(width);
-    expect(lines).toHaveLength(2);
-    expect(lines[0]).toBe("");
-    expect(visibleWidth(lines[1])).toBe(width);
-    expect(plain(lines[1])).not.toMatch(/[\r\n\x1b]/);
-    if (width >= 3) expect(plain(lines[1])).toEndWith("25%");
+    expect(lines).toHaveLength(1);
+    expect(visibleWidth(lines[0])).toBe(width);
+    expect(plain(lines[0])).not.toMatch(/[\r\n\x1b]/);
+    if (width >= 3) expect(plain(lines[0])).toEndWith("25%");
   }
 });
 

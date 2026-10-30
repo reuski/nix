@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Extract readable Markdown from fetched HTML.
 
-Called by core.ts as: python3 extract.py <final-url> < html. core.ts delivers
-UTF-8, so the parser is pinned to UTF-8 rather than sniffing <meta charset>: text
-already decoded stays intact, and XHTML with an XML encoding declaration parses.
+Called by core.ts as: python3 extract.py <final-url> < html. With an HTTP
+charset, core.ts delivers UTF-8; otherwise trafilatura detects the original
+encoding. Its decoder preserves valid UTF-8 before considering other encodings.
+The parser is pinned to UTF-8 so stale HTML/XML metadata cannot re-decode text.
 Relative links are resolved against the final URL (and <base href>) because
-trafilatura resolves them against the origin. Reads stdin, writes stdout; no
-network or filesystem access. Exit 0 with text, 2 when no text was found, 1 on
-error.
+trafilatura resolves them against the origin. Reads stdin, writes stdout; no network or filesystem access. Exit 0
+with text, 2 when no text was found, 1 on error.
 """
 
 import sys
@@ -16,6 +16,7 @@ from urllib.parse import urljoin
 import trafilatura
 from lxml import etree
 from lxml import html as lxml_html
+from trafilatura.utils import decode_file
 
 MAX_INPUT_BYTES = 4 * 1024 * 1024
 
@@ -47,7 +48,8 @@ def main() -> int:
 
     parser = lxml_html.HTMLParser(encoding="utf-8")
     try:
-        document = lxml_html.fromstring(raw, parser=parser)
+        html = decode_file(raw, max_size=MAX_INPUT_BYTES)
+        document = lxml_html.fromstring(html.encode("utf-8"), parser=parser)
     except (etree.ParserError, ValueError) as error:
         fail(f"could not parse html: {error}", 1)
 

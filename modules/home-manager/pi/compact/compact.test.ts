@@ -4,7 +4,7 @@ import {
   AssistantMessageComponent, CustomEditor, getMarkdownTheme, getSelectListTheme, initTheme, renderDiff, ToolExecutionComponent,
   type ExtensionAPI, type ExtensionContext, type MarkdownTransformer, type ToolRendererResolver,
 } from "@earendil-works/pi-coding-agent";
-import { CURSOR_MARKER, getKeybindings, KeybindingsManager, Markdown, setKeybindings, TUI_KEYBINDINGS, visibleWidth, type TUI } from "@earendil-works/pi-tui";
+import { CURSOR_MARKER, getKeybindings, KeybindingsManager, Markdown, setCapabilityOverrides, setKeybindings, TUI_KEYBINDINGS, visibleWidth, type TUI } from "@earendil-works/pi-tui";
 import compact from "./index.ts";
 import gruvbox from "../gruvbox.json";
 
@@ -21,10 +21,17 @@ setKeybindings(new KeybindingsManager({ ...TUI_KEYBINDINGS, "app.tools.expand": 
 const plain = (lines: string[]) => lines.map(stripVTControlCharacters);
 const text = (view: { render(width: number): string[] }, width = 80) => plain(view.render(width)).map((line) => line.trim()).join("\n");
 const result = (text: string, details?: unknown, isError = false) => ({ content: [{ type: "text", text }], details, isError });
-function row(name: string, args: unknown) {
-  return new ToolExecutionComponent(name, "test-id", args, { outputPad: 0, showImages: false },
-    resolve(name, () => undefined), { requestRender() {} } as TUI, "/work");
+function row(name: string, args: unknown, redraws?: { count: number }, showImages = false) {
+  return new ToolExecutionComponent(name, "test-id", args, { outputPad: 0, showImages },
+    resolve(name, () => undefined), { requestRender() { if (redraws) redraws.count++; } } as TUI, "/work");
 }
+const click = (view: ToolExecutionComponent, y: number, width = 80) => view.handleMouse({
+  type: "click", button: "left", x: 3, y, screenX: 3, screenY: y, width, height: view.render(width).length,
+  shift: false, alt: false, ctrl: false,
+});
+const lineWith = (view: ToolExecutionComponent, needle: string, width = 80) =>
+  plain(view.render(width)).findIndex((line) => line.includes(needle));
+const childRows = (lines: string[]) => lines.filter((line) => /^ {2}[✓✗…⊘?] /.test(line));
 
 test("summaries sanitize input, bound widths and keep counts aligned through completion and errors", () => {
   const custom = { renderShell: "self" as const };
@@ -61,8 +68,9 @@ test("native boxes retain expanded details and preview only confirmed structured
   }));
   script.setExpanded(true);
   script.setOutputPad(1);
-  for (const detail of [`code: ${code}`, "output first\noutput last", '[error] read {"path":"x"}',
-    "missing file", "Output truncated by tool.", "Full output: /tmp/full-output.txt"]) expect(text(script)).toContain(detail);
+  for (const detail of [`code: ${code}`, "output first\noutput last", "✗ read x",
+    'args: {"path":"x"}', "error: missing file", "Output truncated by tool.",
+    "Full output: /tmp/full-output.txt"]) expect(text(script)).toContain(detail);
 
   const edit = row("edit", { path: "file", edits: [{ oldText: "old", newText: "new" }] });
   const diff = "-2 const old = 1;\n+2 const next = 1;\n 3 context\n+4 " + "漢字👩‍💻é\x1b[31m\x00\u202e".repeat(600) + " END-DIFF";
@@ -71,9 +79,9 @@ test("native boxes retain expanded details and preview only confirmed structured
   expect(plain(collapsed)[2]).toMatch(/^■ edit file +\+2\/-1$/);
   expect(collapsed[3]).toContain(renderDiff(diff.split("\n").slice(0, 2).join("\n")).split("\n")[0]);
   expect(collapsed).toHaveLength(3 + 16 + 1 + 1); // Frame, bounded preview, hint, bottom.
-  expect(plain(collapsed).at(-2)).toContain("more (ctrl+o expand)");
+  expect(plain(collapsed).at(-2)).toContain("… more (ctrl+o)");
   expect(collapsed.join("\n")).not.toMatch(/END-DIFF|\x1b\[31m|[\x00\u202e]/);
-  for (const [rendered, width] of [[script.render(48), 48], [collapsed, 48], [edit.render(16), 16]] as const) {
+  for (const [rendered, width] of [[script.render(48), 48], [collapsed, 48], [edit.render(16), 16], [edit.render(12), 12]] as const) {
     const background = rendered[1].match(/^\x1b\[48;[\d;]+m/)![0];
     for (const line of rendered.slice(1)) {
       expect(visibleWidth(line)).toBe(width);
@@ -82,7 +90,17 @@ test("native boxes retain expanded details and preview only confirmed structured
       expect(line.slice(0, -5)).not.toMatch(/\x1b\[(?:0|49)?m/);
     }
   }
-  expect(text(edit, 16)).toContain("ctrl+o");
+  for (const width of [16, 12]) {
+    expect(edit.render(width)).toHaveLength(collapsed.length);
+    expect(text(edit, width)).toContain("ctrl+o");
+  }
+  const bindings = getKeybindings();
+  setKeybindings(new KeybindingsManager({ ...TUI_KEYBINDINGS, "app.tools.expand": { defaultKeys: "ctrl+e" } }));
+  try {
+    expect(plain(edit.render(16)).at(-2)).toContain("(ctrl+e)");
+  } finally {
+    setKeybindings(bindings);
+  }
   expect(edit.handleMouse({ type: "click", button: "left", x: 3, y: 3, screenX: 3, screenY: 3,
     width: 48, height: collapsed.length, shift: false, alt: false, ctrl: false })?.handled).toBe(true);
   const full = text(edit);
@@ -105,6 +123,223 @@ test("native boxes retain expanded details and preview only confirmed structured
   write.setExpanded(true);
   expect(text(write)).toContain("content: const first = 1;");
   expect(text(write)).toContain("written");
+});
+
+test("codemode children show four recent named calls in order with totals and honest metadata", () => {
+  const view = row("codemode", { code: "return 1" });
+  view.updateResult(result("", { calls: [
+    { name: "read", args: '{"path":"/work/a"}', status: "ok", durationMs: 12.6 },
+    { name: "bash", args: '{"command":"echo"}', status: "error", error: "failed" },
+    null,
+    { name: "grep", args: '{"pattern":"needle","path":"/work/x"}', status: "cancelled", durationMs: 1500 },
+    { name: "  \u001b[31m " },
+    { name: "mystery", args: "provider/model", status: "toString", durationMs: -4, cost: -1 },
+    { name: 7 },
+    { name: "models.classify", args: "a/b", status: "ok", durationMs: 999.6, cost: 0 },
+  ] }));
+  const rendered = plain(view.render(80));
+  expect(rendered[2]).toMatch(/codemode .*5 calls$/);
+  expect(rendered.join("\n")).toContain("… 1 earlier call (ctrl+o)");
+  expect(rendered.join("\n")).not.toContain("? ?");
+  const rows = childRows(rendered);
+  expect(rows).toHaveLength(4);
+  expect(rows[0]).toContain("✗");
+  expect(rows[0]).toContain("bash echo");
+  expect(rows[1]).toContain("⊘");
+  expect(rows[1]).toContain("grep needle in x");
+  expect(rows[1]).toContain("1.5s");
+  expect(rows[2]).toContain("?");
+  expect(rows[2]).toContain("mystery provider/model");
+  expect(rows[2]).not.toMatch(/-4ms|-\$1/);
+  expect(rows[3]).toContain("✓");
+  expect(rows[3]).toContain("1.0s");
+  expect(rows[3]).toContain("$0.00");
+});
+
+test("codemode child headers cap previews and reserve separated duration without arrows", () => {
+  const command = "printf 漢字👩‍💻 ".repeat(40) + "END-COMMAND";
+  for (const args of [JSON.stringify({ command }), '{"command":"' + command]) {
+    const view = row("codemode", { code: "await tools.bash(...)" });
+    view.updateResult(result("", { calls: [
+      { name: "bash", args, status: "ok", durationMs: 50, cost: 0.01 },
+    ] }));
+    for (const width of [14, 16, 40, 200]) {
+      const rows = childRows(plain(view.render(width)));
+      expect(rows).toHaveLength(1);
+      const line = rows[0];
+      expect(visibleWidth(line)).toBe(width);
+      expect(line).not.toMatch(/[▸▾]/);
+      const match = /^ {2}✓ bash(?: (.*?))? {2,}50ms(?: \$0\.01)?$/.exec(line);
+      expect(match).not.toBeNull();
+      expect(visibleWidth(match?.[1] ?? "")).toBeLessThanOrEqual(96);
+      expect(line).toEndWith(width >= 40 ? "50ms $0.01" : "50ms");
+      expect(line).not.toContain("END-COMMAND");
+      if (width >= 40) expect(line).toMatch(/\.{3} {2,}50ms \$0\.01$/);
+    }
+    view.setExpanded(true);
+    expect(text(view, 200)).toContain("END-COMMAND");
+  }
+});
+
+test("codemode child clicks toggle only their recorded details and survive result updates", () => {
+  const redraws = { count: 0 };
+  const view = row("codemode", { code: "SCRIPT-BODY" }, redraws);
+  const calls = [
+    { name: "read", args: '{"path":"/work/a"}', status: "running" },
+    { name: "bash", args: '{"command":"false"}', status: "running", durationMs: Number.NaN, cost: Infinity },
+  ];
+  view.updateResult(result("STDOUT-BODY", { calls }), true);
+  expect(childRows(plain(view.render(80))).map((line) => line.trim().slice(0, 1))).toEqual(["…", "…"]);
+  expect(text(view)).not.toMatch(/NaN|Infinity/);
+  const first = lineWith(view, "… read");
+  expect(click(view, first)?.handled).toBe(true);
+  expect(redraws.count).toBeGreaterThan(0);
+  expect(text(view)).toContain('args: {"path":"/work/a"}');
+  expect(text(view)).not.toContain("code: SCRIPT-BODY");
+  expect(text(view)).not.toContain("STDOUT-BODY");
+  expect(childRows(plain(view.render(80))).map((line) => line.trim().slice(0, 1))).toEqual(["…", "…"]);
+
+  view.updateResult(result("STDOUT-BODY", { calls: [...calls,
+    { name: "grep", args: '{"pattern":"x"}', status: "ok", durationMs: 5 }] }), true);
+  expect(text(view)).toContain('args: {"path":"/work/a"}');
+  expect(childRows(plain(view.render(80)))).toHaveLength(3);
+  expect(click(view, lineWith(view, "… bash"))?.handled).toBe(true);
+  expect(text(view)).toContain('args: {"command":"false"}');
+  expect(click(view, lineWith(view, "… read"))?.handled).toBe(true);
+  expect(text(view)).not.toContain('args: {"path":"/work/a"}');
+  expect(text(view)).toContain('args: {"command":"false"}');
+
+  view.updateResult(result("STDOUT-BODY", { calls: [
+    { name: "read", args: '{"path":"/work/a"}', status: "error", durationMs: 1000, error: "boom" },
+    { name: "bash", args: '{"command":"false"}', status: "cancelled", durationMs: 20 },
+    { name: "grep", args: '{"pattern":"x"}', status: "ok", durationMs: 5 },
+  ] }));
+  expect(lineWith(view, "✗ read a")).toBeGreaterThan(0);
+  expect(text(view)).not.toContain("error: boom");
+  expect(click(view, lineWith(view, "✗ read a"))?.handled).toBe(true);
+  expect(text(view)).toContain("error: boom");
+  expect(text(view)).toContain('args: {"command":"false"}');
+});
+
+test("codemode expansion follows original indices as malformed entries change", () => {
+  const view = row("codemode", { code: "return 1" });
+  const read = { name: "read", args: '{"path":"/work/a"}', status: "ok" };
+  const bash = { name: "bash", args: '{"command":"false"}', status: "ok" };
+  view.updateResult(result("", { calls: [null, read, { name: "\u001b[31m " }, bash] }), true);
+  expect(click(view, lineWith(view, "✓ read"))?.handled).toBe(true);
+  expect(text(view)).toContain('args: {"path":"/work/a"}');
+
+  view.updateResult(result("", { calls: [
+    { name: "grep", args: '{"pattern":"needle"}', status: "ok" }, read, null, bash,
+    { name: "find", args: '{"pattern":"later"}', status: "ok" },
+  ] }), true);
+  const rows = childRows(plain(view.render(80)));
+  expect(rows).toHaveLength(4);
+  expect(rows.some((line) => line.includes("✓ read"))).toBe(true);
+  expect(text(view)).toContain('args: {"path":"/work/a"}');
+  expect(text(view)).not.toContain('args: {"command":"false"}');
+  expect(plain(view.render(80))[2]).toMatch(/codemode .*4 calls$/);
+});
+
+test("parent expansion resets child overrides and reveals every call plus script and output", () => {
+  const view = row("codemode", { code: "SCRIPT-BODY" });
+  const calls = ["read", "bash", "grep", "find", "ls"].map((name, index) =>
+    ({ name, args: `{"path":"/work/${name}"}`, status: "ok", durationMs: index }));
+  view.updateResult(result("STDOUT-BODY", { calls }));
+  expect(click(view, lineWith(view, "✓ bash"))?.handled).toBe(true);
+  expect(text(view)).toContain("args: {\"path\":\"/work/bash\"}");
+  expect(text(view)).not.toContain("code: SCRIPT-BODY");
+
+  expect(click(view, 2)?.handled).toBe(true); // Parent header.
+  const expanded = plain(view.render(80));
+  expect(expanded[2]).toMatch(/5 calls/);
+  expect(text(view)).toContain("code: SCRIPT-BODY");
+  expect(text(view)).toContain("STDOUT-BODY");
+  expect(childRows(expanded)).toHaveLength(5);
+  for (const call of calls) expect(text(view)).toContain(`args: ${call.args}`);
+  expect(click(view, lineWith(view, "✓ bash"))?.handled).toBe(true);
+  expect(text(view)).not.toContain('args: {"path":"/work/bash"}');
+
+  expect(click(view, 2)?.handled).toBe(true);
+  expect(childRows(plain(view.render(80)))).toHaveLength(4);
+  expect(text(view)).not.toContain("args: ");
+  expect(click(view, 2)?.handled).toBe(true);
+  for (const call of calls) expect(text(view)).toContain(`args: ${call.args}`);
+});
+
+test("codemode child args fall back to sanitized recorded text at narrow widths", () => {
+  const view = row("codemode", { code: "return 1" });
+  view.updateResult(result("", { calls: [
+    { name: "mystery", args: '{"hidden":"call"}', status: "ok" },
+    { name: "read", args: '{"path":"/work/x.ts"}', status: "ok" },
+    { name: "read", args: '{"path":"/work/tr', status: "error", error: "bad" },
+    { name: "models.classify", args: "provider/model", status: "ok" },
+    { name: "mystery", args: '{"foo":"bar"}\u001b[31m\u0000\u202e漢', status: "weird" },
+  ] }));
+  for (const detail of ["x.ts", '{"path":"/work/tr', "provider/model", '{"foo":"bar"}', "漢"])
+    expect(text(view)).toContain(detail);
+  const rendered = view.render(48);
+  expect(childRows(plain(rendered))).toHaveLength(4);
+  expect(rendered.join("\n")).not.toMatch(/\u001b\[31m|\u0000|\u202e/);
+  const background = rendered[1].match(/^\u001b\[48;[\d;]+m/)![0];
+  const checkBackground = (width: number) => {
+    for (const line of view.render(width).slice(1).filter(Boolean)) {
+      expect(visibleWidth(line)).toBe(width);
+      expect(line).toStartWith(background);
+      expect(line).toEndWith("\u001b[49m");
+      expect(line.slice(0, -5)).not.toMatch(/\u001b\[(?:0|49)?m/);
+    }
+  };
+  for (const width of [1, 16, 48]) {
+    expect(view.render(width)).toHaveLength(9); // Frame, header, omission hint, four child rows.
+    checkBackground(width); // Includes native padding collapsing to empty lines at width 1.
+  }
+  expect(text(view, 16)).toContain("(ctrl+o)");
+  expect(click(view, lineWith(view, "✗ read"), 48)?.handled).toBe(true);
+  expect(text(view, 48)).toContain("error: bad");
+  expect(text(view, 48)).toContain('args: {"path":"/work/tr');
+  for (const width of [1, 16, 48]) checkBackground(width);
+});
+
+test("image-only results keep one bounded fallback unless native images render", () => {
+  const png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX2kAAAAASUVORK5CYII=";
+  const image = { type: "image" as const, data: png, mimeType: "image/png" };
+  const fallback = "[Image: [image/png] 1x1]";
+  const disabled = row("codemode", { code: "image(...)" });
+  disabled.updateResult({ content: [image], details: {}, isError: false });
+  disabled.setExpanded(true);
+  for (const width of [16, 48, 80]) {
+    expect(text(disabled, width)).toContain("[Image:");
+    if (width >= fallback.length) expect(text(disabled, width)).toContain(fallback);
+  }
+
+  disabled.updateResult({ content: [{ type: "text" as const, text: "IMAGE-CAPTION" }, image], details: {}, isError: false });
+  expect(text(disabled)).toContain("IMAGE-CAPTION");
+  expect(text(disabled).split(fallback)).toHaveLength(2);
+  expect(text(disabled, 24)).toContain("IMAGE-CAPTION");
+  expect(text(disabled, 24)).toContain(fallback);
+
+  setCapabilityOverrides({ images: null });
+  try {
+    const unsupported = row("codemode", { code: "image(...)" }, undefined, true);
+    unsupported.updateResult({ content: [image], details: {}, isError: false });
+    unsupported.setExpanded(true);
+    expect(text(unsupported)).toContain(fallback);
+  } finally {
+    setCapabilityOverrides({});
+  }
+
+  setCapabilityOverrides({ images: "kitty" });
+  try {
+    const supported = row("codemode", { code: "image(...)" }, undefined, true);
+    supported.updateResult({ content: [image], details: {}, isError: false });
+    supported.setExpanded(true);
+    const raw = supported.render(80).join("\n");
+    expect(raw).toContain("\x1b_G");
+    expect(raw).not.toContain(fallback);
+  } finally {
+    setCapabilityOverrides({});
+  }
 });
 
 test("prompt markers preserve Markdown, editor input, ownership and TUI-only lifecycle", () => {
@@ -158,7 +393,7 @@ test("prompt markers preserve Markdown, editor input, ownership and TUI-only lif
   factory = other; // A replacement installed after ours must survive shutdown too.
   sessions.session_shutdown({}, ctx);
   expect(factory).toBe(other);
-  expect(labels).toEqual(Array(3).fill("Thinking...")); // Reapplied at each start; no shutdown resets.
+  expect(labels).toEqual(Array(3).fill("Thinking..."));
   for (const mode of ["rpc", "json", "print"]) {
     sessions.session_start({}, { mode } as ExtensionContext);
     sessions.session_shutdown({}, { mode } as ExtensionContext);
