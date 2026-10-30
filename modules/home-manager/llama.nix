@@ -163,7 +163,15 @@
       runtimeInputs =
         with pkgs;
         [
-          ccache
+          (
+            if isDarwin then
+              # ccache uses elfutils only in Linux tests; it is unsupported on Darwin.
+              ccache.overrideAttrs (old: {
+                nativeCheckInputs = lib.filter (input: (input.pname or "") != "elfutils") old.nativeCheckInputs;
+              })
+            else
+              ccache
+          )
           cmake
           coreutils
           flock
