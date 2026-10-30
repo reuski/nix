@@ -168,6 +168,10 @@
               # ccache uses elfutils only in Linux tests; it is unsupported on Darwin.
               ccache.overrideAttrs (old: {
                 nativeCheckInputs = lib.filter (input: (input.pname or "") != "elfutils") old.nativeCheckInputs;
+                preCheck = (old.preCheck or "") + ''
+                  # Tests expect empty stderr; Darwin's compiler wrapper adds unused flags.
+                  export NIX_CFLAGS_COMPILE="''${NIX_CFLAGS_COMPILE:-} -Wno-unused-command-line-argument"
+                '';
               })
             else
               ccache
