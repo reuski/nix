@@ -1,22 +1,23 @@
 { ... }:
 {
   flake.modules.homeManager.xdg =
-    { config, ... }:
+    { config, lib, ... }:
     {
       xdg.enable = true;
       xdg.userDirs = {
         enable = true;
         createDirectories = true;
-        setSessionVariables = true;
-        pictures = "${config.profile.homeDirectory}/pictures";
-        projects = "${config.profile.homeDirectory}/projects";
-        documents = null;
-        download = "${config.profile.homeDirectory}/downloads";
-        desktop = null;
-        templates = null;
-        music = null;
-        videos = null;
-        publicShare = null;
+        setSessionVariables = false;
+        pictures = "${config.home.homeDirectory}/pictures";
+        projects = "${config.home.homeDirectory}/projects";
+        download = "${config.home.homeDirectory}/downloads";
+
+        desktop = lib.mkDefault config.home.homeDirectory;
+        documents = config.home.homeDirectory;
+        templates = config.home.homeDirectory;
+        music = config.home.homeDirectory;
+        videos = config.home.homeDirectory;
+        publicShare = config.home.homeDirectory;
       };
 
       xdg.mimeApps = {

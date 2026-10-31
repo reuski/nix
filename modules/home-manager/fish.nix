@@ -66,7 +66,11 @@
         shellAbbrs = {
           g = "git";
           vi = "vim";
-          dl = "cd ~/downloads";
+          dl =
+            if pkgs.stdenv.hostPlatform.isDarwin then
+              "cd ~/Downloads"
+            else
+              "cd ${lib.escapeShellArg config.xdg.userDirs.download}";
           p = "cd ~/projects";
         };
         shellAliases = {

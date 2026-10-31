@@ -126,6 +126,8 @@
         };
       };
 
+      xdg.userDirs.desktop = "${config.home.homeDirectory}/desktop";
+
       xdg.mimeApps.defaultApplications =
         let
           gwenview = "org.kde.gwenview.desktop";

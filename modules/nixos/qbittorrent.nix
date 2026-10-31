@@ -32,6 +32,7 @@
           coreutils
           curl
           gnugrep
+          gnused
           jq
           wireguard-tools
         ];
@@ -59,7 +60,7 @@
             https://www.privateinternetaccess.com/api/client/v2/token)
           token=$(printf '%s' "$token_response" | jq -er .token)
 
-          regions=$(curl "''${curl_flags[@]}" https://serverlist.piaservers.net/vpninfo/servers/v6 | head -n1)
+          regions=$(curl "''${curl_flags[@]}" https://serverlist.piaservers.net/vpninfo/servers/v6 | sed -n '1p')
           region_data=$(printf '%s' "$regions" | jq -er --arg region "$region" '.regions[] | select(.id == $region) | select(.port_forward == true)')
           server_ip=$(printf '%s' "$region_data" | jq -er '.servers.wg[0].ip')
           server_host=$(printf '%s' "$region_data" | jq -er '.servers.wg[0].cn')
@@ -156,6 +157,7 @@
               ];
             };
             unitConfig = {
+              Upholds = [ "qbittorrent.service" ];
               After = [
                 "adguardhome.service"
                 "network-online.target"
