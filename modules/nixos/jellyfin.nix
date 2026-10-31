@@ -59,15 +59,16 @@
       '';
       encodingFilter = pkgs.writeText "jellyfin-encoding.jq" ''
         .TranscodingTempPath = "/var/cache/jellyfin/transcodes"
-        | .HardwareAccelerationType = "qsv"
+        | .HardwareAccelerationType = "vaapi"
+        | .VaapiDevice = "/dev/dri/renderD128"
         | .EnableHardwareEncoding = true
+        | .HardwareDecodingCodecs = [ "h264", "vc1", "vp9", "vp8", "hevc" ]
         | .EnableDecodingColorDepth10Hevc = true
         | .EnableDecodingColorDepth10Vp9 = true
-        | .EnableDecodingColorDepth10Av1 = true
         | .AllowHevcEncoding = false
         | .AllowAv1Encoding = false
         | .EnableTonemapping = true
-        | .EnableVppTonemapping = true
+        | .EnableVppTonemapping = false
         | .TonemappingAlgorithm = "bt2390"
         | .TonemappingMode = "auto"
         | .TonemappingRange = "auto"
