@@ -6,6 +6,8 @@
 {
   services.pipewire = {
     jack.enable = true;
+    wireplumber.extraConfig."50-bluez-disabled"."wireplumber.profiles".main."hardware.bluetooth" =
+      "disabled";
     wireplumber.extraConfig."50-ur22c-default" = {
       "monitor.alsa.rules" = [
         {

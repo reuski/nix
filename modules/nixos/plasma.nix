@@ -22,7 +22,6 @@
       };
 
       services.power-profiles-daemon.enable = false;
-      services.upower.enable = lib.mkForce false;
 
       programs.kde-pim.enable = false;
       services.orca.enable = false;

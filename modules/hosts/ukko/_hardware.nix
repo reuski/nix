@@ -20,10 +20,7 @@
     "i915"
   ];
   boot.extraModulePackages = [ ];
-  boot.kernelParams = [
-    "i915.enable_guc=3"
-    "i915.fastboot=1"
-  ];
+  boot.kernelParams = [ "i915.enable_guc=3" ];
   boot.tmp = {
     useTmpfs = true;
     tmpfsSize = "50%";

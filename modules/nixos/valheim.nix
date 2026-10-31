@@ -117,8 +117,10 @@
           (cfg.port + 2)
         ];
 
-        systemd.tmpfiles.rules = map (dir: "d ${dir} 0750 root root -") [
-          stateDir
+        systemd.tmpfiles.rules = [
+          "d ${stateDir} 0750 root root -"
+        ]
+        ++ map (dir: "d ${dir} 0770 1000 1000 -") [
           "${stateDir}/saves"
           "${stateDir}/server"
           "${stateDir}/backups"

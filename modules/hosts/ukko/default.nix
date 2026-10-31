@@ -11,6 +11,7 @@ in
         ./_disko.nix
         ./_hardware.nix
         ./_network.nix
+        ./_nfs.nix
         ./_dns.nix
         ./_secrets.nix
         ./_services.nix

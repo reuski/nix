@@ -9,10 +9,7 @@ in
     audiobookshelf.port = 8000;
     jellyfin.port = 8096;
     linkding.port = config.services.linkding.port;
-    degoog = {
-      port = config.proxy.services.degoog.port;
-      https = 443;
-    };
+    degoog.port = config.proxy.services.degoog.port;
     vaultwarden.port = 8222;
     navidrome.port = 4533;
     trek = {

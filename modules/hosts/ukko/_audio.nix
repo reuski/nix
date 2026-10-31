@@ -20,6 +20,8 @@
     systemWide = true;
     pulse.enable = true;
     raopOpenFirewall = true;
+    wireplumber.extraConfig."50-bluez-disabled"."wireplumber.profiles".main."hardware.bluetooth" =
+      "disabled";
     extraConfig.pipewire."10-raop-discover"."context.modules" = [
       {
         name = "libpipewire-module-raop-discover";

@@ -11,6 +11,7 @@ in
         ./_disko.nix
         ./_hardware.nix
         ./_network.nix
+        ./_nfs.nix
         nixos.desktop
         nixos.gaming
         ./_gaming.nix
