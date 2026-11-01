@@ -35,6 +35,8 @@
 
         home.file.".pi/agent/skills/resolve/SKILL.md".source = ./pi/resolve/SKILL.md;
 
+        home.file.".pi/agent/skills/simplify/SKILL.md".source = ./pi/simplify/SKILL.md;
+
         home.file.".pi/agent/extensions/web/index.ts".source = webBootstrap;
 
         home.file.".pi/agent/extensions/compact/index.ts".source = ./pi/compact/index.ts;
