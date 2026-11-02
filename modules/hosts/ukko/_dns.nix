@@ -37,23 +37,22 @@ in
         upstream_dns = [
           "[/${tailnetDomain}/]100.100.100.100"
           "https://dns.quad9.net/dns-query"
-          "https://dnsforge.de/dns-query"
         ];
-        upstream_mode = "parallel";
+        upstream_mode = "load_balance";
         bootstrap_dns = [
           "9.9.9.9"
           "149.112.112.112"
         ];
-        fallback_dns = [
-          "9.9.9.9"
-          "149.112.112.112"
-        ];
+        fallback_dns = [ ];
         enable_dnssec = true;
+        edns_client_subnet.enabled = false;
+        anonymize_client_ip = true;
         allowed_clients = [
           "127.0.0.1"
           "192.168.1.0/24"
         ];
         ratelimit = 0;
+        cache_enabled = true;
         cache_size = 67108864;
         cache_optimistic = true;
       };
@@ -102,8 +101,15 @@ in
           url = "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/tif.txt";
         }
       ];
-      querylog.enabled = true;
-      statistics.enabled = true;
+      querylog = {
+        enabled = true;
+        file_enabled = false;
+        size_memory = 1000;
+      };
+      statistics = {
+        enabled = true;
+        interval = "24h";
+      };
     };
   };
 
