@@ -195,11 +195,11 @@
     "juttu": {
       "flake": false,
       "locked": {
-        "lastModified": 1793634479,
-        "narHash": "sha256-3D032wPAwhqa/Bc2BAaWr86zfcxFYcOgynCVahGsaw8=",
+        "lastModified": 1793639804,
+        "narHash": "sha256-uqsZdW4sbMNR3B1cOSEFjAEp1XlsrHtgL2sGqlRh8qU=",
         "ref": "refs/heads/main",
-        "rev": "2a6c502ba0bcbaaca423cb09ee9d559b2d102afc",
-        "revCount": 57,
+        "rev": "d70a4af3d235fa9b832ef714099113731768105d",
+        "revCount": 58,
         "type": "git",
         "url": "ssh://git@github.com/reuski/juttu"
       },
@@ -378,11 +378,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793052255,
-        "narHash": "sha256-Y/JIHTnMlOabDfyaSBubWGLDIVGihLEUuoMhFvQKaDo=",
+        "lastModified": 1793657466,
+        "narHash": "sha256-GoOvpdsjO5hqZuO6T6ok9u6sJEjO0iPli2zRr9oNUNw=",
         "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "60182817ee048ac94b4c68ea76d5ef2e8aac730d",
+        "rev": "b18e01ce148eb3efff5de2f2d3181ca53b2b2a54",
         "type": "github"
       },
       "original": {
