@@ -1,5 +1,7 @@
-{ ... }:
+{ lib, ... }:
 {
+  systemd.services.NetworkManager-wait-online.enable = lib.mkForce true;
+
   fileSystems."/mnt/ukko" = {
     device = "192.168.1.11:/";
     fsType = "nfs";
@@ -12,8 +14,6 @@
       "nosuid"
       "nodev"
       "nofail"
-      "x-systemd.automount"
-      "x-systemd.idle-timeout=5min"
       "x-systemd.mount-timeout=10s"
     ];
   };

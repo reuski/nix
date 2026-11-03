@@ -14,6 +14,7 @@ in
         ./_nfs.nix
         nixos.desktop
         nixos.gaming
+        nixos.nix-ld
         ./_gaming.nix
         ./_audio.nix
         ./_desktop.nix
