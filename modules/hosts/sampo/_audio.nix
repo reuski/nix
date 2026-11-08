@@ -5,7 +5,6 @@
 }:
 {
   services.pipewire = {
-    jack.enable = true;
     wireplumber.extraConfig."50-bluez-disabled"."wireplumber.profiles".main."hardware.bluetooth" =
       "disabled";
     wireplumber.extraConfig."50-ur22c-default" = {
@@ -75,8 +74,8 @@
 
   home-manager.users.${config.profile.username}.home.packages = with pkgs; [
     mumble
-    reaper
-    # Use the sources' supported language standard, not the compiler's changing default.
+    (reaper.override { jackLibrary = config.services.pipewire.package.jack; })
+    config.services.pipewire.package.jack
     (reaper-sws-extension.overrideAttrs (old: {
       cmakeFlags = (old.cmakeFlags or [ ]) ++ [ "-DCMAKE_CXX_STANDARD=17" ];
     }))

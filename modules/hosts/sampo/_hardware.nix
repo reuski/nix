@@ -28,10 +28,13 @@
     "pcie_aspm.policy=performance"
   ];
 
-  services.scx = {
+  services.scx-loader = {
     enable = true;
-    scheduler = "scx_lavd";
-    extraArgs = [ "--performance" ];
+
+    config = {
+      default_sched = "scx_lavd";
+      scheds.scx_lavd.auto_mode = [ "--performance" ];
+    };
   };
 
   hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
