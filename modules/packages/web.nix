@@ -138,7 +138,7 @@
         pname = "juttu";
         version = "0-unstable-${builtins.substring 0 7 (inputs.juttu.rev or "unknown")}";
         src = inputs.juttu.outPath;
-        depsHash = "sha256-tQda1zsQdGqkWS+spFUTMc3gbc9b4oVt4PkBQnK2iHU=";
+        depsHash = "sha256-yzGwaZIiNJvhrGJ5Z0o2PJfATKkc4ruGbm575QdDfRo=";
         buildCommand = "bun ./node_modules/vite/bin/vite.js build";
         installPhase = ''
           mkdir -p $out
