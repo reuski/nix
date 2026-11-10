@@ -55,7 +55,7 @@ jobs:
   nixos:
     needs: evaluate
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: ${{ matrix.host == 'sampo' && 180 || 35 }}
     strategy:
       fail-fast: false
       matrix:
