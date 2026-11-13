@@ -22,10 +22,7 @@ let
       };
       torchvision-bin = prev.torchvision-bin.override { cudaPackages = cuda; };
       torchaudio-bin = prev.torchaudio-bin.override { cudaPackages = cuda; };
-      triton = prev.triton.override {
-        cudaPackages = cuda;
-        cudaSupport = true;
-      };
+      triton = prev.triton-bin.override { cudaPackages = cuda; };
     };
   };
 
@@ -100,6 +97,7 @@ in
   systemd.services.comfyui.wantedBy = lib.mkForce [ ];
 
   systemd.services.comfyui.path = [ pkgs.rsync ];
+  systemd.services.comfyui.environment.CC = lib.getExe' pkgs.stdenv.cc "cc";
 
   systemd.services.comfyui.preStart = syncCustomNodes;
 }
