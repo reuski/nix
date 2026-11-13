@@ -31,6 +31,11 @@
 
         home.file.".pi/agent/skills/delegate/SKILL.md".source = ./pi/delegate/SKILL.md;
 
+        home.file.".pi/agent/skills/prioritize/SKILL.md".source = ./pi/prioritize/SKILL.md;
+
+        home.file.".pi/agent/skills/prioritize/references/github.md".source =
+          ./pi/prioritize/references/github.md;
+
         home.file.".pi/agent/skills/review/SKILL.md".source = ./pi/review/SKILL.md;
 
         home.file.".pi/agent/skills/resolve/SKILL.md".source = ./pi/resolve/SKILL.md;
