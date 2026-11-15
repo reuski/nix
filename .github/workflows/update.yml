@@ -46,8 +46,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          updater="$(nix build --impure --file .github/scripts/nix-update.nix \
+            --argstr nixpkgs "$UPDATE_NIXPKGS" --no-link --print-out-paths)"
           nix-update() {
-            nix run "$UPDATE_NIXPKGS#nix-update" -- "$@"
+            "$updater/bin/nix-update" "$@"
           }
           bump() {
             nix-update --flake --version="$1" --url "$2" --override-filename "$3" "$4"
