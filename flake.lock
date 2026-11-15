@@ -123,11 +123,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1794570431,
-        "narHash": "sha256-AA0xJMjXZFLpPPoqWl7DGcI5A62A51UwXAOaNVmILXI=",
+        "lastModified": 1794742960,
+        "narHash": "sha256-L5fyF+0I8wL7ryot4usxjbS8u+5gTopv0Ic5vvTQmmk=",
         "owner": "reuski",
         "repo": "heimdash",
-        "rev": "31e19651f96a3e1f5f70b342fa6ca89c37e1255d",
+        "rev": "0c5b040f22a712acaf72c3aaaf12e8af00845ee8",
         "type": "github"
       },
       "original": {
@@ -195,11 +195,11 @@
     "juttu": {
       "flake": false,
       "locked": {
-        "lastModified": 1794141282,
-        "narHash": "sha256-kytx/HeI81DZ5l5DTj1ZBWpdQpCyw2eflKL7mlCt7pc=",
+        "lastModified": 1794746277,
+        "narHash": "sha256-V90Mhi5kEsgR+9rQbY0nkL8cpKmGknF8C9CSQi6f2gE=",
         "ref": "refs/heads/main",
-        "rev": "ec51e47f4e9b695b764fa740e0153c6f2e0547f3",
-        "revCount": 62,
+        "rev": "f5a400cbae86432e64c5465d5c7e57d6455101d2",
+        "revCount": 64,
         "type": "git",
         "url": "ssh://git@github.com/reuski/juttu"
       },
@@ -248,11 +248,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1794386569,
-        "narHash": "sha256-x9sADJvoVG0L6RejZB+/BB4YiGZFBZrfTlhF4uBq1tQ=",
+        "lastModified": 1794537146,
+        "narHash": "sha256-Wpz/7x/YWnDIBu7yj6ixe8j6fIMsidd9Y+o1PqPF3iM=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "d4f25a3e562008648d45bcf2d70bcc7422cad84e",
+        "rev": "d5cc6833999746cffdfe0598f7bc801a57b887a9",
         "type": "github"
       },
       "original": {
