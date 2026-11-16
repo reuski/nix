@@ -62,7 +62,7 @@ function styledLines(text: string, width: number): string[] {
   return text.split("\n").flatMap((line) => wrapTextWithAnsi(line, width));
 }
 
-function omissionLine(label: string, theme: Theme, width: number): string {
+function omissionLine(label: string, theme: Theme, width: number, color: ThemeColor = "muted"): string {
   const key = clean(keyHint("app.tools.expand", "")).trim();
   const suffix = key ? ` (${key})` : "";
   const full = label + suffix;
@@ -73,11 +73,10 @@ function omissionLine(label: string, theme: Theme, width: number): string {
       ? truncateToWidth(label, room, "") + suffix
       : truncateToWidth(suffix.trim(), width, "…");
   // Style after truncation to preserve the native Box background.
-  return theme.fg("muted", clean(text));
+  return theme.fg(color, clean(text));
 }
 
 function previewLines(source: string, theme: Theme, width: number): string[] {
-  // Bound input before native word diffing.
   const prefix = source.slice(0, 8192).split("\n", 16).join("\n");
   const preview = truncateToVisualLines(renderDiff(clean(prefix)), 16, width, 0, "start");
   if (prefix.length < source.length || preview.skippedCount > 0) {
@@ -137,7 +136,6 @@ function headerLine(call: Record<string, unknown>, theme: Theme, width: number, 
   const metadata = visibleWidth(fullMetadata) + 2 <= remaining ? fullMetadata : duration;
   const metaWidth = visibleWidth(metadata);
   const metaFits = metaWidth > 0 && remaining >= metaWidth + 2;
-  // Cap previews like the parent command, reserving a two-column metadata gap.
   const argsWidth = Math.max(0, Math.min(96, remaining - (metaFits ? metaWidth + 3 : 1)));
   const shownArgs = argsWidth > 0 && preview ? clean(truncateToWidth(preview, argsWidth)) : "";
   let line = row;
@@ -215,8 +213,7 @@ function renderers(name: string): ToolRenderers {
     },
     renderResult(result, options, theme, context: Context) {
       const textOutput = result.content.filter((block) => block.type === "text").map((block) => block.text).join("\n");
-      // Mirror native getTextOutput: attach fallback indicators only when Pi
-      // cannot render the images itself; otherwise it adds the image components.
+      // Pi adds native image components; don't duplicate them with fallback text.
       const images = result.content.filter((block) => block.type === "image");
       const fallback = images.length > 0 && (!getCapabilities().images || !context.showImages)
         ? images.map((block) => imageFallback(
@@ -249,8 +246,13 @@ function renderers(name: string): ToolRenderers {
       const container = new Container();
       if (!options.expanded) {
         if (hidden > 0) {
-          const label = `… ${hidden} earlier ${hidden === 1 ? "call" : "calls"}`;
-          container.addChild(component((width) => [omissionLine(label, theme, width)]));
+          const errors = indices.slice(0, hidden).filter((index) => {
+            const call = calls?.[index];
+            return isRecord(call) && call.status === "error";
+          }).length;
+          const earlier = `… ${hidden} earlier ${hidden === 1 ? "call" : "calls"}`;
+          const label = errors ? `✗ ${errors} recorded ${errors === 1 ? "error" : "errors"}; ${earlier}` : earlier;
+          container.addChild(component((width) => [omissionLine(label, theme, width, errors ? "error" : "muted")]));
         }
         if (calls && shown.length) container.addChild(childComponents(calls, shown, context, theme));
         if (confirmed && diff.trim()) container.addChild(component((width) => previewLines(diff, theme, width)));

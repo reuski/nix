@@ -15,8 +15,8 @@ Edit code; this is not a review. The best change is often none: stop when no evi
 - Take the base from the request, else the related PR target, else the verified repository default branch, never the tracking branch. Ask if unclear.
 - Review the whole branch against that merge-base, including relevant committed, staged, unstaged, and untracked work. Preserve unrelated dirty work.
 - Confirm the intent before editing; ask if it is unclear.
-- Read the full diff and trace behavior through callers, configuration, tests, and neighboring code. Look for dead branches, redundant validation, duplicated helpers, and fallbacks the callers make unnecessary. Prefer existing project logic over new code.
-- Start each invocation with a fresh read-only review through the existing delegate skill. Hand over the intent, base/head, and diff evidence with no prior conclusions, and ask only for concrete `path:line` evidence and a simpler proposal. Validate each finding against the code and discard unproven ones.
+- When context savings or independent judgment justify it, use the delegate skill for a bounded read-only review before loading the full exploration yourself. Hand over intent, snapshot/base/head, relevant diff paths and dirty-work ownership, with no prior conclusions. Request concrete `path:line` evidence and a simpler proposal, not a report artifact. Trivial work stays local; delegation is not a prerequisite.
+- Cover the full scoped diff and trace relevant behavior through callers, configuration, tests, and neighboring code, locally or with the child's bounded findings. Look for dead branches, redundant validation, duplicated helpers, and fallbacks the callers make unnecessary. Validate each proposed change against the code and discard unproven findings. Prefer existing project logic over new code.
 
 ## Trim
 

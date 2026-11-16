@@ -1,18 +1,21 @@
 import { afterAll, afterEach, describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Value } from "typebox/value";
 import { MAX_CONCURRENT_OPERATIONS, runWithDeadline, webFetch, webSearch, type WebConfig } from "./core.ts";
 import { registerWebTools } from "./extension.ts";
 
 const extractScript = fileURLToPath(new URL("./extract.py", import.meta.url));
-// Test-only binding: extraction tests skip when PI_WEB_PYTHON is unset.
 const python = process.env.PI_WEB_PYTHON;
 const fixtures = mkdtempSync(join(tmpdir(), "pi-web-test-"));
 
-afterAll(() => rmSync(fixtures, { recursive: true, force: true }));
+const artifacts: string[] = [];
+afterAll(() => {
+  for (const path of artifacts) rmSync(dirname(path), { recursive: true, force: true });
+  rmSync(fixtures, { recursive: true, force: true });
+});
 
 const servers: Array<{ stop(force?: boolean): void }> = [];
 function serve(handler: (request: Request) => Response | Promise<Response>): string {
@@ -116,11 +119,20 @@ describe("web_fetch", () => {
     expect(markdown).toMatchObject({ requestedUrl: `${origin}/doc`, finalUrl: `${origin}/doc`, extraction: "markdown", redirects: 0 });
     expect(markdown).toMatchObject({ content: "# Title\n\nBody.", truncated: false });
     expect(markdown.contentType).toContain("text/markdown");
+    expect(markdown).not.toHaveProperty("fullContentPath");
     expect(await webFetch(config(origin), { url: `${origin}/notes` })).toMatchObject({ extraction: "text", content: "plain body" });
     expect((await webFetch(config(origin), { url: `${origin}/data.json` })).content).toBe('{"a":1}');
     await expect(webFetch(config(origin), { url: `${origin}/huge` })).rejects.toThrow(/exceeds 2097152 bytes/);
-    expect(await webFetch(config(origin), { url: `${origin}/long` })).toMatchObject({ truncated: true, contentChars: long.length });
-    expect((await webFetch(config(origin), { url: `${origin}/long` })).content).toBe("a".repeat(11_999));
+    const output = await webFetch(config(origin), { url: `${origin}/long` });
+    expect(output).toMatchObject({ truncated: true, contentChars: long.length });
+    expect(output.content).toBe("a".repeat(11_999));
+    expect(output.fullContentPath).toBeString();
+    const path = output.fullContentPath!;
+    artifacts.push(path);
+    expect(statSync(dirname(path)).mode & 0o777).toBe(0o700);
+    expect(statSync(path).mode & 0o777).toBe(0o600);
+    expect(await webFetch(config(origin), { url: `${origin}/doc` })).not.toHaveProperty("fullContentPath");
+    expect(readFileSync(path, "utf8")).toBe(long);
   });
 
   test("follows bounded redirects and rejects invalid URLs, statuses, types, and a missing interpreter", async () => {
@@ -171,9 +183,11 @@ describe("web_fetch", () => {
 <p>See <a href="../guide/intro.html">the introduction</a> for more context about widgets and their usage in practice.</p>
 </article></body></html>`;
     const empty = '<html><body><div id="app"></div><script>renderApp()</script></body></html>';
-    const origin = serve((request) =>
-      pathOf(request) === "/empty" ? respond(empty, "text/html") : respond(xhtml, "application/xhtml+xml; charset=utf-8"),
-    );
+    const paragraphs = Array.from({ length: 150 }, (_, index) =>
+      `<p>Section ${index}: widgets are small components; this paragraph explains extraction and usage in documentation pages.</p>`).join("\n");
+    const longHtml = xhtml.replace("</article>", `${paragraphs}<p>OMITTED-ARTICLE-TAIL</p></article>`);
+    const origin = serve((request) => pathOf(request) === "/empty" ? respond(empty, "text/html") :
+      respond(pathOf(request) === "/long" ? longHtml : xhtml, "application/xhtml+xml; charset=utf-8"));
 
     const output = await webFetch(config(origin), { url: `${origin}/guide` });
     expect(output.extraction).toBe("trafilatura");
@@ -181,6 +195,16 @@ describe("web_fetch", () => {
     expect(output.content).toContain("Café — naïve");
     expect(output.content).toContain("(https://cdn.example.com/guide/intro.html)");
     expect(output.content).not.toContain("do not keep this");
+
+    const long = await webFetch(config(origin), { url: `${origin}/long` });
+    expect(long.truncated).toBe(true);
+    expect(long.fullContentPath).toBeString();
+    artifacts.push(long.fullContentPath!);
+    const full = readFileSync(long.fullContentPath!, "utf8");
+    expect(full.length).toBe(long.contentChars);
+    expect(full).toStartWith(long.content);
+    expect(full.slice(long.content.length)).toContain("OMITTED-ARTICLE-TAIL");
+    expect(full).not.toMatch(/<html|<script|do not keep this/);
 
     await expect(webFetch(config(origin), { url: `${origin}/empty` })).rejects.toThrow(/content extraction failed/);
   });
@@ -232,7 +256,8 @@ describe("extension contract", () => {
   }
 
   test("registers codemode tools whose structured output matches the declared schema", async () => {
-    const origin = serve((request) => (request.url.includes("/api/search") ? json(searchResponse) : respond("# Page\n\nContent", "text/markdown")));
+    const origin = serve((request) => (request.url.includes("/api/search") ? json(searchResponse) :
+      respond(pathOf(request) === "/long" ? "evidence\n".repeat(2000) : "# Page\n\nContent", "text/markdown")));
     const [searchTool, fetchTool] = registered(origin);
 
     expect([searchTool.name, fetchTool.name]).toEqual(["web_search", "web_fetch"]);
@@ -247,13 +272,13 @@ describe("extension contract", () => {
 
     const search = await searchTool.execute("1", { query: "nix flakes" });
     const fetch = await fetchTool.execute("2", { url: `${origin}/page` });
-    for (const [tool, output] of [[searchTool, search], [fetchTool, fetch]] as const) {
-      for (const key of tool.outputSchema.required) expect(output.structuredContent).toHaveProperty(key);
+    const longFetch = await fetchTool.execute("3", { url: `${origin}/long` });
+    expect(longFetch.structuredContent.fullContentPath).toBeString();
+    artifacts.push(longFetch.structuredContent.fullContentPath);
+    for (const [tool, output] of [[searchTool, search], [fetchTool, fetch], [fetchTool, longFetch]] as const) {
       expect(JSON.parse(output.content[0].text)).toEqual(output.structuredContent);
       expect(Value.Check(tool.outputSchema, output.structuredContent)).toBe(true);
-      expect([...Value.Errors(tool.outputSchema, output.structuredContent)]).toEqual([]);
     }
-    for (const key of searchTool.outputSchema.properties.results.items.required) expect(search.structuredContent.results[0]).toHaveProperty(key);
     expect(fetch.structuredContent.extraction).toBe("markdown");
   });
 
@@ -266,7 +291,6 @@ describe("extension contract", () => {
     const [searchTool] = registered(origin);
     const output = await searchTool.execute("1", { query: "probe" });
     expect(Value.Check(searchTool.outputSchema, output.structuredContent)).toBe(true);
-    expect([...Value.Errors(searchTool.outputSchema, output.structuredContent)]).toEqual([]);
     expect(output.structuredContent.engines).toEqual([
       { name: "probe", status: "ok", resultCount: 0, timeMs: 0, httpStatus: null, error: null },
       { name: "negative", status: "ok", resultCount: 0, timeMs: 0, httpStatus: 429, error: null },
@@ -277,10 +301,7 @@ describe("extension contract", () => {
   test(
     "releases the operation slot only after a cancelled extractor is reaped and then enforces the ceiling",
     async () => {
-      // Runtime-agnostic fake extractor: it spawns a holder that inherits its stdio
-      // and writes `finished` 1.2 s later, so the extractor's `close` event can only
-      // fire once the holder exits. A fetch that rejects before awaiting `close`
-      // would observe `finished` missing.
+      // Inherited stdio delays close until the holder writes `finished` and exits.
       const started = join(fixtures, "started");
       const finished = join(fixtures, "finished");
       const script = join(fixtures, "fake-extractor.mjs");
@@ -307,7 +328,6 @@ describe("extension contract", () => {
       await expect(cancelled).rejects.toThrow(/web_fetch was cancelled/);
       expect(existsSync(finished)).toBe(true);
 
-      // Four gated calls prove the slot was released; the fifth must be rejected.
       const pending = Array.from({ length: MAX_CONCURRENT_OPERATIONS }, (_unused, index) =>
         fetchTool.execute(String(index), { url: `${origin}/plain` }),
       );

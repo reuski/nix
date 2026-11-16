@@ -1,10 +1,7 @@
-/**
- * HTTP, normalization, and extractor plumbing for the web tools. Imports no Pi
- * APIs so tests can exercise it directly; every request is bounded by a deadline
- * and a body byte ceiling, and every returned field is truncated.
- */
-
 import { spawn } from "node:child_process";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const SEARCH_TIMEOUT_MS = 15_000;
 const FETCH_TIMEOUT_MS = 20_000;
@@ -29,13 +26,9 @@ const MAX_WARNINGS = 10;
 
 export const MAX_CONCURRENT_OPERATIONS = 4;
 
-/** Deployment bindings supplied by the extension bootstrap. */
 export type WebConfig = {
-  /** Search endpoint of the deployed search service. */
   searchEndpoint: string;
-  /** Python interpreter that provides trafilatura. */
   python: string;
-  /** Path to extract.py. */
   extractScript: string;
 };
 
@@ -77,11 +70,12 @@ export type FetchOutput = {
   content: string;
   contentChars: number;
   truncated: boolean;
+  /** Full bounded extracted text, retained for selective follow-up reads. */
+  fullContentPath?: string;
   redirects: number;
 };
 
 export type OperationSlots = {
-  /** Reserve one of the fixed operation slots; throws when all are in use. */
   acquire(tool: string): () => void;
 };
 
@@ -104,11 +98,7 @@ export function createOperationSlots(): OperationSlots {
   };
 }
 
-/**
- * Run `task` under a deadline that also follows `parent`. Aborting only aborts the
- * signal the task observes, and the call settles after the task settles, so the
- * extractor is killed and reaped before the caller reports and releases its slot.
- */
+// Await cancellation cleanup before releasing the caller's operation slot.
 export async function runWithDeadline<T>(
   timeoutMs: number,
   parent: AbortSignal | undefined,
@@ -138,7 +128,6 @@ export async function runWithDeadline<T>(
   }
 }
 
-/** Validate an explicit http(s) URL and reject embedded credentials. */
 function validateHttpUrl(raw: string): URL {
   let url: URL;
   try {
@@ -343,7 +332,6 @@ function searchWarnings(engines: EngineTiming[], invalid: number, rawCount: numb
   return warnings;
 }
 
-/** Run one bounded search against the deployed search endpoint. */
 export async function webSearch(config: WebConfig, input: SearchInput, signal?: AbortSignal): Promise<SearchOutput> {
   const query = typeof input.query === "string" ? input.query.trim() : "";
   if (!query) throw new Error("query must not be empty");
@@ -393,7 +381,6 @@ export async function webSearch(config: WebConfig, input: SearchInput, signal?: 
   });
 }
 
-/** Run extract.py over HTML, bounded by a five-second ceiling and the caller's signal. */
 export async function runExtractor(
   config: WebConfig,
   html: string | Uint8Array,
@@ -412,8 +399,7 @@ export async function runExtractor(
       clearTimeout(timer);
       signal.removeEventListener("abort", onAbort);
     };
-    // A failure kills the child and settles only from its close event, so the
-    // extractor is reaped before the caller releases its operation slot.
+    // Settle on close, not kill: inherited stdio can outlive the child.
     const fail = (error: Error) => {
       if (failure || settled) return;
       failure = error;
@@ -464,7 +450,6 @@ export async function runExtractor(
   });
 }
 
-/** Fetch one explicit URL and return bounded Markdown, text, or extracted HTML. */
 export async function webFetch(config: WebConfig, input: FetchInput, signal?: AbortSignal): Promise<FetchOutput> {
   const requested = validateHttpUrl(input.url);
 
@@ -500,6 +485,20 @@ export async function webFetch(config: WebConfig, input: FetchInput, signal?: Ab
     }
 
     const clamped = truncateText(text, FETCH_CHARS);
+    let fullContentPath: string | undefined;
+    if (clamped.truncated) {
+      deadline.throwIfAborted();
+      // mkdtemp creates a private directory; retain successful artifacts for follow-up reads.
+      const directory = await mkdtemp(join(tmpdir(), "pi-web-fetch-"));
+      try {
+        fullContentPath = join(directory, "content.txt");
+        await writeFile(fullContentPath, text, { encoding: "utf8", mode: 0o600, flag: "wx", signal: deadline });
+        deadline.throwIfAborted();
+      } catch (error) {
+        await rm(directory, { recursive: true, force: true });
+        throw error;
+      }
+    }
     return {
       requestedUrl: requested.href,
       finalUrl: finalUrl.href,
@@ -508,6 +507,7 @@ export async function webFetch(config: WebConfig, input: FetchInput, signal?: Ab
       content: clamped.text,
       contentChars: clamped.totalChars,
       truncated: clamped.truncated,
+      ...(fullContentPath ? { fullContentPath } : {}),
       redirects,
     };
   });

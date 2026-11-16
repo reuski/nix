@@ -5,7 +5,9 @@ description: Delegate bounded work to a fresh detached Pi process when it saves 
 
 # Delegate
 
-Launch children, continue independent work, and collect results at integration points. The lead owns scope, approvals, integration, and verification. Children never delegate. One writer per worktree, including the lead; parallel writers need separate worktrees. Review moving files again after the writer finishes.
+Delegate bounded, context-heavy discovery, implementation, or independent review before loading the full exploration yourself. Tiny tasks stay local. Launch a fresh child, continue independent work, and collect results at integration points rather than repeatedly polling. The lead owns scope, constraints, decisions, approvals, integration, and verification; native compaction is a fallback, not the workflow.
+
+Children never delegate. One writer per worktree, including the lead; parallel writers require separately authorized worktrees. No automatic worktree creation or patch application. Review moving files again after the writer exits.
 
 | Role | Model | Thinking | Tools |
 | --- | --- | --- | --- |
@@ -24,11 +26,18 @@ umask 077
 run=$(mktemp -d "${TMPDIR:-/tmp}/pi-child.XXXXXX") || exit 1
 ```
 
-Write `$run/handoff.md`: absolute repo, task, acceptance criteria, evidence and decisions, allowed files plus existing changes, checks to run, and the output limit. No parent conversation is inherited, but repository context files still load. Write `$run/run.sh`:
+Write `$run/handoff.md` with:
+
+- Absolute repo/worktree, branch and HEAD, relevant base, and staged/unstaged/untracked work with ownership. Preserve existing changes; for read-only tasks allow no writes, including reports.
+- Bounded task, constraints and decisions, allowed files, relevant paths/evidence, acceptance checks, and required tools/skills. The child retrieves details; do not duplicate its reconnaissance in the lead.
+- A short output limit (e.g. 500 words): outcome, key findings with `path:line` evidence, changed/evidence paths, checks and results, blockers and approvals needed. Keep long logs in private artifacts and return their paths.
+
+No parent transcript is inherited; repository context files still load. Never send credentials. Write `$run/run.sh`:
 
 ```sh
 #!/bin/sh
 # $1 run dir, $2 repo, $3 model, $4 thinking, $5 tools, $6 budget
+umask 077
 run=$1; repo=$2; model=$3; thinking=$4; tools=$5; budget=$6
 status() { printf '%s\n' "$1" > "$run/status.tmp"; mv "$run/status.tmp" "$run/status"; }
 cd -- "$repo" || { status 1; exit 1; }
@@ -39,7 +48,7 @@ timeout --kill-after=10s "$budget" \
   --append-system-prompt 'Delegated child: never delegate. Follow the handoff and repository rules. Stay in scope. Report evidence, edits, checks, and blockers. Return approval requests to the lead.' \
   < "$run/handoff.md" > "$run/answer.md" 2> "$run/stderr" &
 child=$!
-printf '%s\n' "$child" > "$run/child.pid"
+printf '%s\n' "$child" > "$run/child.pid" # GNU timeout's managed PGID too; never use --foreground.
 rc=0
 wait "$child" || rc=$?
 if [ "$rc" -eq 0 ] && [ ! -s "$run/answer.md" ]; then rc=1; fi
@@ -56,7 +65,7 @@ printf '%s\n' "$!" > "$run/launcher.pid"
 printf 'run=%s\n' "$run"
 ```
 
-Record the run path. Poll `$run/status` at useful milestones, not in a blocking loop. Missing status means running or interrupted: inspect PIDs and `launcher.log`. Do not finish with a writer still running.
+Record the run path and writer ownership. Read `$run/status` at integration points, not in a blocking loop. Missing status means running or interrupted: inspect PIDs and `launcher.log`. Do not finish with a writer still running.
 
 Print mode has no progress trace. For diagnosis, replace `--print --mode text` with `--mode json` and capture events separately; success requires `agent_settled.aborted == false` and the last assistant `stopReason == "stop"`, not just exit zero.
 
@@ -64,9 +73,11 @@ Print mode has no progress trace. For diagnosis, replace `--print --mode text` w
 
 `--print` fails on error, abort, or truncation. Require status `0` and a nonempty answer. `124` means deadline; `137` may mean forced kill. Failed-run output is partial, not accepted.
 
-To cancel, inspect the process recorded in `child.pid`, then send it `TERM`: GNU `timeout` forwards the signal to its command group. Let the wrapper reap and publish status. After 10 seconds, escalate only against verified survivors, never broad `pkill`. Check surviving descendants and partial edits before releasing writer ownership or retrying.
+To cancel, verify the PID in `child.pid` still belongs to this run, then send it `TERM`: GNU `timeout` forwards the signal to its command group. Let the wrapper reap and publish status. After 10 seconds, escalate only against verified survivors, never broad `pkill`.
 
-Inspect answer, stderr, launcher log, status, actual diff, and check results before accepting. Run outstanding required checks. Child runs use separate sessions: do not claim their token or cost usage is aggregated into the lead's. Summarize evidence, never dump raw thinking or tool output.
+Status alone does not release writer ownership: even after success, verify the wrapper exited and the managed process group has no remaining members. Read `child.pid` into `child`, then inspect `ps -axo pid=,ppid=,pgid=,stat=,command=` filtered to PGID `$child` (e.g. `awk -v group="$child" '$3 == group'`). A failed inspection is not proof of exit. If members remain, retain ownership and investigate before retrying or editing. This does not contain descendants that detach into another group; children must not launch background services. Inspect partial edits after failure/cancellation.
+
+Require status `0`, a nonempty answer, and verified exit before accepting. Read the concise answer first; selectively retrieve evidence and diagnostic logs, not the whole investigation. Validate findings against the actual diff and check results; run outstanding required checks. Child sessions' token/cost usage is not aggregated into the lead's. Summarize evidence, never dump raw thinking or transcripts.
 
 ## Capability overrides
 

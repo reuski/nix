@@ -1,13 +1,13 @@
 ---
 name: review
-description: Review local branches, changes, or implementations for defects and useful cleanup; write findings to REVIEW.md. Use for code reviews, optionally with related PR context.
+description: Review local branches, changes, or implementations for defects and useful cleanup. Report in chat; write REVIEW.md only when requested. Use for code reviews, optionally with related PR context.
 ---
 
 # Review
 
 Usage: `/skill:review [scope] [base-ref] [related PR URL]`
 
-Review locally. Write only `REVIEW.md`; do not change code, branches, or anything remote.
+Review locally and report in chat by default. Write nothing unless the user requests a review artifact; then write only that report (`REVIEW.md` by default). Do not change code, branches, or anything remote.
 
 ## Set the scope
 
@@ -22,14 +22,15 @@ Review locally. Write only `REVIEW.md`; do not change code, branches, or anythin
 
 ## Review in depth
 
+- Delegate bounded discovery or an independent read-only review only when context savings or independent judgment justify it, before duplicating the exploration locally. Follow the delegate skill, provide the exact snapshot and dirty-work constraints, and request concise evidence, not an artifact. Tiny reviews stay local. Validate child findings yourself; the lead owns coverage and conclusions.
 - Cover the full selected diff and trace changed behavior through surrounding code, callers, configuration, and tests instead of stopping at the changed lines. Use the corresponding snapshot's version of each file.
 - Report bugs, security issues, data loss, and breaking changes to interfaces, behavior, configuration, or deployment. Diff reviews cover issues introduced by the selected change; implementation reviews cover existing issues in the requested scope. Trace a concrete failure and check existing code/tests before reporting.
 - Skip style, cosmetic nits, speculative edge cases, generic test requests, and unrelated refactors. No quotas, no duplicates.
 - List useful cleanup separately from defects: concrete dead code, duplication, or simpler reuse in the reviewed scope, with an identifiable benefit and bounded change. Never cosmetic or unrelated refactors.
 - Run safe, relevant checks when useful, and state whether each ran against the commit, index, or worktree plus any limitation. Do not execute untrusted PR code without authorization.
 
-## Write REVIEW.md
+## Report
 
-Write at the repository root. Inspect an existing report and any symlink first; preserve unrelated notes and do not write outside the repository without confirmation. Replace only a clearly marked section for the same target, otherwise append a new section.
+Report in chat unless an artifact was requested. For an opted-in report, write at the requested path or `REVIEW.md` at the repository root. Inspect an existing report and any symlink first; preserve unrelated notes and do not write outside the repository without confirmation. Replace only a clearly marked section for the same target, otherwise append a new section.
 
-State the reviewed snapshot, branch, base/head commits and related PR where applicable, and review limits. Order defects by impact, each with a short title, `path:lines` (changed lines for diff reviews), and when it fails and what breaks. Keep the language plain enough to paste as a review comment. Keep uncertain questions separate from confirmed defects, and say so honestly when nothing actionable turns up. Finish in chat with the report path and a brief outcome, not a copy of it.
+State the reviewed snapshot, branch, base/head commits and related PR where applicable, and review limits. Order defects by impact, each with a short title, `path:lines` (changed lines for diff reviews), and when it fails and what breaks. Keep the language plain enough to paste as a review comment. Keep uncertain questions separate from confirmed defects, and say so honestly when nothing actionable turns up. If writing an artifact, finish in chat with its path and a brief outcome, not a copy of it.

@@ -1,15 +1,4 @@
 #!/usr/bin/env python3
-"""Extract readable Markdown from fetched HTML.
-
-Called by core.ts as: python3 extract.py <final-url> < html. With an HTTP
-charset, core.ts delivers UTF-8; otherwise trafilatura detects the original
-encoding. Its decoder preserves valid UTF-8 before considering other encodings.
-The parser is pinned to UTF-8 so stale HTML/XML metadata cannot re-decode text.
-Relative links are resolved against the final URL (and <base href>) because
-trafilatura resolves them against the origin. Reads stdin, writes stdout; no network or filesystem access. Exit 0
-with text, 2 when no text was found, 1 on error.
-"""
-
 import sys
 from urllib.parse import urljoin
 
@@ -27,6 +16,7 @@ def fail(message: str, code: int) -> None:
 
 
 def absolutize_links(document, final_url: str) -> None:
+    # Trafilatura otherwise resolves relative links against the origin.
     base_url = final_url
     base_hrefs = document.xpath("//base[@href]/@href")
     if base_hrefs:
@@ -46,6 +36,7 @@ def main() -> int:
     if len(raw) > MAX_INPUT_BYTES:
         fail(f"html input exceeded {MAX_INPUT_BYTES} bytes", 1)
 
+    # Prevent stale HTML/XML metadata from re-decoding the detected text.
     parser = lxml_html.HTMLParser(encoding="utf-8")
     try:
         html = decode_file(raw, max_size=MAX_INPUT_BYTES)
@@ -66,7 +57,7 @@ def main() -> int:
             include_comments=False,
             deduplicate=False,
         )
-    except Exception as error:  # extraction failures must not crash the tool
+    except Exception as error:
         fail(f"extraction failed: {error}", 1)
 
     text = (extracted or "").strip()

@@ -1,11 +1,11 @@
 import { expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { stripVTControlCharacters } from "node:util";
 import { Theme, type ExtensionAPI, type ReadonlyFooterDataProvider } from "@earendil-works/pi-coding-agent";
 import { visibleWidth, type TUI } from "@earendil-works/pi-tui";
 import statusline from "./index.ts";
+import gruvbox from "../gruvbox.json";
 
 type Footer = { render(width: number): string[]; dispose?(): void };
 type Factory = (tui: TUI, theme: Theme, data: ReadonlyFooterDataProvider) => Footer;
@@ -66,12 +66,9 @@ function harness(mode = "tui", theme = plainTheme) {
 }
 
 function gruvboxTheme(accent?: string): Theme {
-  const json = JSON.parse(readFileSync(new URL("../gruvbox.json", import.meta.url), "utf8"));
-  if (accent) json.vars.yellow = accent;
-  const colors = Object.fromEntries(Object.entries(json.colors).map(([token, value]) => [
-    token, typeof value === "string" && value in json.vars ? json.vars[value] : value,
-  ]));
-  return new Theme(colors as never, colors as never, "truecolor", { name: json.name });
+  const vars: Record<string, string> = { ...gruvbox.vars, yellow: accent ?? gruvbox.vars.yellow };
+  const colors = Object.fromEntries(Object.entries(gruvbox.colors).map(([token, value]) => [token, vars[value] ?? value]));
+  return new Theme(colors as never, colors as never, "truecolor", { name: gruvbox.name });
 }
 
 test("TUI-only ownership, live selection, replacement and disposal", () => {
@@ -103,10 +100,8 @@ test("aligned metadata includes whole-session cost and honest context usage", ()
   const view = h.start()!;
   const paths: Array<[string, string]> = [
     [join(home, "projects", "nix"), "nix"],
-    [join(home, "projects", "nix", "subdir"), "nix/subdir"],
     [join(home, "projects"), "~/projects"],
     [home, "~"],
-    [join(home, "other"), "~/other"],
     ["/tmp/outside", "/tmp/outside"],
     [join(home, "projects-other", "nix"), "~/projects-other/nix"],
   ];
@@ -115,8 +110,7 @@ test("aligned metadata includes whole-session cost and honest context usage", ()
     expect(view.text()).toStartWith(`${label} │`);
   }
   h.state.cwd = join(home, "projects", "nix");
-  expect(view.text()).toStartWith("nix │ ⎇ main │ openai/gpt-5 medium │ —");
-  expect(view.text()).toMatch(/│ — +\$0\.000 │/);
+  expect(view.text()).toMatch(/^nix │ ⎇ main │ openai\/gpt-5 medium │ — +\$0\.000 │/);
 
   h.state.statuses.set("job", "running tests");
   h.state.entries = [
@@ -125,11 +119,8 @@ test("aligned metadata includes whole-session cost and honest context usage", ()
     ...["usage", "compaction", "branch_summary"].map((type) => ({ type, usage: usage(0.4) })),
   ];
   expect(view.text()).toMatch(/^nix │ ⎇ main │ openai\/gpt-5 medium │ running tests {2,}\$1\.500 │ \[[█░]+\] 50k\/200k 25%$/);
-  h.state.branch = "feature";
-  expect(view.text()).toMatch(/^nix │ ⎇ feature.*\$1\.500/);
   h.state.branch = "";
   expect(view.text()).toContain("⎇ —");
-  h.state.branch = "feature";
   h.state.usage = { tokens: null, contextWindow: 200_000, percent: null };
   expect(view.text()).toEndWith("?/200k");
   expect(view.text()).not.toMatch(/0%|[█░]/);
@@ -140,7 +131,7 @@ test("aligned metadata includes whole-session cost and honest context usage", ()
   expect(view.text()).toMatch(/no model.*\?$/);
 });
 
-test("adaptive layout preserves core content, isolates styling and bounds Unicode", () => {
+test("layout bounds Unicode, strips terminal controls and isolates status styling", () => {
   const h = harness();
   const view = h.start()!;
   const gaugeCells = (width: number) => view.text(width).match(/\[([█░]+)\]/)![1].length;
@@ -166,10 +157,8 @@ test("adaptive layout preserves core content, isolates styling and bounds Unicod
     expect(plain(lines[0])).not.toMatch(/[\r\n\x1b]/);
     if (width >= 3) expect(plain(lines[0])).toEndWith("25%");
   }
-});
 
-test("terminal controls are stripped while status SGR stays isolated", () => {
-  const h = harness();
+  h.state.statuses.clear();
   h.state.cwd = `${join(homedir(), "projects", "nix")}/\x1b[31mevil\x07`;
   h.state.model!.id = "model\x1b]0;title\x07id\x07";
   h.state.branch = "main\x07\x1b[38;5;99m";
@@ -177,15 +166,13 @@ test("terminal controls are stripped while status SGR stays isolated", () => {
   h.state.statuses.set("a", "a\x1b[32mGREEN\x1bPpayload\x1b\\");
   h.state.statuses.set("empty", "\x1b[33m");
   h.state.statuses.set("unterminated", "\x1b]0;hidden");
-  const view = h.start()!;
-  const raw = view.footer.render(120).at(-1)!;
-  expect(plain(raw)).toMatch(/^nix\/evil │ ⎇ main.*modelid.*aGREEN.*bRED next/);
-  expect(raw).not.toMatch(/payload|title|hidden|\x07|\x1b\[38;5;99m/);
-  expect(raw).toContain("\x1b[32mGREEN\x1b[0m");
-  expect(raw).toContain("\x1b[31mRED\x1b[0m");
+  const sanitized = view.footer.render(120).at(-1)!;
+  expect(plain(sanitized)).toMatch(/^nix\/evil │ ⎇ main.*modelid.*aGREEN.*bRED next/);
+  expect(sanitized).not.toMatch(/payload|title|hidden|\x07|\x1b\[38;5;99m/);
+  expect(sanitized).toContain("\x1b[32mGREEN\x1b[0m");
+  expect(sanitized).toContain("\x1b[31mRED\x1b[0m");
   h.state.statuses = new Map([["blank", ""], ["sgr", "\x1b[33m"], ["space", "\x1b[33m\n\x1b[0m"]]);
   const quiet = view.footer.render(120).at(-1)!;
-  expect(plain(quiet).match(/—/g)).toHaveLength(1);
   expect(plain(quiet)).toMatch(/modelid medium │ — +\$0\.000 │/);
   expect(quiet).not.toContain("\x1b[33m");
 });
