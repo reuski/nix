@@ -5,7 +5,7 @@ import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 
 const SEPARATOR = " │ ";
 const MIN_GAP = 2;
-const GAUGE_CELLS = 10;
+const GAUGE_CELLS = 16;
 
 const CONTROL_STRINGS = /(?:\x1b[\]PX^_]|[\x90\x98\x9d-\x9f])[\s\S]*?(?:\x07|\x1b\\|\x9c|$)/g;
 const CSI = /(?:\x1b\[|\x9b)[0-?]*[ -/]*[@-~]/g;
@@ -120,9 +120,9 @@ export default function statusline(pi: ExtensionAPI): void {
           const percentPart = theme.fg(color, percentLabel);
           const countsPart = theme.fg(color, rawTokens === null ? "?" : formatTokens(rawTokens))
             + (contextWindow > 0 ? theme.fg("dim", `/${formatTokens(contextWindow)}`) : "");
-          const filled = displayPercent === null ? 0 : Math.round(displayPercent / 100 * GAUGE_CELLS);
-          const gauge = displayPercent === null
-            ? theme.fg("dim", "[    ?     ]")
+          const filled = percent === null ? 0 : Math.ceil(percent / 100 * GAUGE_CELLS);
+          const gauge = percent === null
+            ? theme.fg("dim", "[       ?        ]")
             : theme.fg("dim", "[") + theme.fg(color, "▮".repeat(filled)) + theme.fg("dim", "▯".repeat(GAUGE_CELLS - filled) + "]");
 
           const model = ctx.model;

@@ -108,21 +108,24 @@ test("aligned metadata includes whole-session cost and honest context usage", ()
     expect(view.text()).toStartWith(`${label} │`);
   }
   h.state.cwd = join(home, "projects", "nix");
-  expect(view.text()).toMatch(/^nix │ ⎇ main │ gpt-5 medium {2,}\$0\.000 │ ctx \[▮{3}▯{7}\] 50k\/200k 25%$/);
+  expect(view.text()).toMatch(/^nix │ ⎇ main │ gpt-5 medium {2,}\$0\.000 │ ctx \[▮{4}▯{12}\] 50k\/200k 25%$/);
   expect(view.text()).not.toMatch(/—|[█░·]/);
   h.state.entries = [
     { type: "message", message: { role: "assistant", usage: usage(0.1) } },
     { type: "message", message: { role: "toolResult", usage: usage(0.2) } },
     ...["usage", "compaction", "branch_summary"].map((type) => ({ type, usage: usage(0.4) })),
   ];
-  expect(view.text()).toMatch(/^nix │ ⎇ main │ gpt-5 medium {2,}\$1\.500 │ ctx \[▮{3}▯{7}\] 50k\/200k 25%$/);
+  expect(view.text()).toMatch(/^nix │ ⎇ main │ gpt-5 medium {2,}\$1\.500 │ ctx \[▮{4}▯{12}\] 50k\/200k 25%$/);
   h.state.branch = "";
   expect(view.text()).toContain("⎇ —");
   for (const [tokens, percent, expected] of [
-    [0, 0, "ctx [▯▯▯▯▯▯▯▯▯▯] 0/200k 0%"],
+    [0, 0, "ctx [▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯] 0/200k 0%"],
+    [1, 0.0005, "ctx [▮▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯] 1/200k 0%"],
+    [12_500, 6.25, "ctx [▮▯▯▯▯▯▯▯▯▯▯▯▯▯▯▯] 13k/200k 6%"],
+    [12_501, 6.2505, "ctx [▮▮▯▯▯▯▯▯▯▯▯▯▯▯▯▯] 13k/200k 6%"],
     [null, null, "ctx —"],
-    [50_000, null, "ctx [    ?     ] 50k/200k ?"],
-    [250_000, 125, "ctx [▮▮▮▮▮▮▮▮▮▮] 250k/200k 100%"],
+    [50_000, null, "ctx [       ?        ] 50k/200k ?"],
+    [250_000, 125, "ctx [▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮▮] 250k/200k 100%"],
   ] as const) {
     h.state.usage = { tokens, contextWindow: 200_000, percent };
     expect(view.text()).toEndWith(expected);
@@ -148,15 +151,15 @@ test("narrow layouts shorten values without dropping fields and sanitize termina
   const narrow = view.text(80);
   expect(narrow).toStartWith("nix/");
   expect(narrow).toContain("│ ⎇ branch");
-  expect(narrow).toContain("$0.000 │ ctx [▮▮▮▯▯▯▯▯▯▯] 50k/200k 25%");
-  expect(view.text(60)).toEndWith("ctx [▮▮▮▯▯▯▯▯▯▯] 50k/200k 25%");
+  expect(narrow).toContain("$0.000 │ ctx [▮▮▮▮▯▯▯▯▯▯▯▯▯▯▯▯] 50k/200k 25%");
+  expect(view.text(60)).toEndWith("ctx [▮▮▮▮▯▯▯▯▯▯▯▯▯▯▯▯] 50k/200k 25%");
   expect(narrow).toContain("…");
 
   h.state.cwd = `${join(homedir(), "projects", "nix")}/\x1b[31mevil\x07`;
   h.state.model!.id = "model\x1b]0;title\x07id\x07";
   h.state.branch = "main\x07\x1b[38;5;99m";
   const raw = view.footer.render(120).at(-1)!;
-  expect(plain(raw)).toMatch(/^nix\/evil │ ⎇ main │ modelid medium +\$0\.000 │ ctx \[▮{3}▯{7}\] 50k\/200k 25%/);
+  expect(plain(raw)).toMatch(/^nix\/evil │ ⎇ main │ modelid medium +\$0\.000 │ ctx \[▮{4}▯{12}\] 50k\/200k 25%/);
   expect(raw).not.toMatch(/title|\x07|\x1b\[38;5;99m|\x1b\[31m/);
 });
 
@@ -188,16 +191,16 @@ test("context advisory colors preserve capacity scale and follow live theme chan
     const percent = tokens / contextWindow * 100;
     h.state.usage = { tokens, contextWindow, percent };
     const rendered = view.footer.render(120).at(-1)!;
-    const filled = Math.round(Math.round(percent) / 10);
+    const filled = Math.ceil(percent / 100 * 16);
     expect(rendered).toContain(current.fg(color, "▮".repeat(filled)));
     expect(rendered).toContain(current.fg(color, `${Math.round(tokens / 1000)}k`));
     expect(rendered).toContain(current.fg(color, `${Math.round(percent)}%`));
     expect(rendered).toContain(current.fg("dim", contextWindow === 1_000_000 ? "/1.0M" : "/64k"));
-    expect(plain(rendered)).toContain(`[${"▮".repeat(filled)}${"▯".repeat(10 - filled)}]`);
+    expect(plain(rendered)).toContain(`[${"▮".repeat(filled)}${"▯".repeat(16 - filled)}]`);
   }
   h.state.usage = { tokens: 200_000, contextWindow: 1_000_000, percent: null };
   expect(view.footer.render(120)[0]).toContain(current.fg("error", "200k"));
-  expect(view.text()).toEndWith("ctx [    ?     ] 200k/1.0M ?");
+  expect(view.text()).toEndWith("ctx [       ?        ] 200k/1.0M ?");
   h.state.usage = { tokens: null, contextWindow: 1_000_000, percent: null };
   expect(view.footer.render(120)[0]).toContain(current.fg("muted", "—"));
   expect(view.text()).toEndWith("ctx —");
