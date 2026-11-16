@@ -23,7 +23,6 @@ function harness(mode = "tui", theme = plainTheme) {
     entries: [] as unknown[],
     cwd: join(homedir(), "projects", "nix"),
     branch: "main",
-    statuses: new Map<string, string>(),
   };
   const handlers = new Map<string, (...args: any[]) => void>();
   let factory: Factory | undefined;
@@ -48,7 +47,6 @@ function harness(mode = "tui", theme = plainTheme) {
     let branchListener: (() => void) | undefined;
     const footer = factory({ requestRender: () => redraws++ } as unknown as TUI, theme, {
       getGitBranch: () => state.branch,
-      getExtensionStatuses: () => state.statuses,
       onBranchChange: (callback) => {
         branchListener = callback;
         return () => { unsubscribes++; branchListener = undefined; };
@@ -110,71 +108,56 @@ test("aligned metadata includes whole-session cost and honest context usage", ()
     expect(view.text()).toStartWith(`${label} │`);
   }
   h.state.cwd = join(home, "projects", "nix");
-  expect(view.text()).toMatch(/^nix │ ⎇ main │ openai\/gpt-5 medium │ — +\$0\.000 │/);
-
-  h.state.statuses.set("job", "running tests");
+  expect(view.text()).toMatch(/^nix │ ⎇ main │ gpt-5 medium {2,}\$0\.000 │ ctx \[▮{3}▯{7}\] 50k\/200k 25%$/);
+  expect(view.text()).not.toMatch(/—|[█░·]/);
   h.state.entries = [
     { type: "message", message: { role: "assistant", usage: usage(0.1) } },
     { type: "message", message: { role: "toolResult", usage: usage(0.2) } },
     ...["usage", "compaction", "branch_summary"].map((type) => ({ type, usage: usage(0.4) })),
   ];
-  expect(view.text()).toMatch(/^nix │ ⎇ main │ openai\/gpt-5 medium │ running tests {2,}\$1\.500 │ \[[█░]+\] 50k\/200k 25%$/);
+  expect(view.text()).toMatch(/^nix │ ⎇ main │ gpt-5 medium {2,}\$1\.500 │ ctx \[▮{3}▯{7}\] 50k\/200k 25%$/);
   h.state.branch = "";
   expect(view.text()).toContain("⎇ —");
-  h.state.usage = { tokens: null, contextWindow: 200_000, percent: null };
-  expect(view.text()).toEndWith("?/200k");
-  expect(view.text()).not.toMatch(/0%|[█░]/);
-  h.state.usage = { tokens: 250_000, contextWindow: 200_000, percent: 125 };
-  expect(view.text()).toContain("[████████████████████] 250k/200k 100%");
+  for (const [tokens, percent, expected] of [
+    [0, 0, "ctx [▯▯▯▯▯▯▯▯▯▯] 0/200k 0%"],
+    [null, null, "ctx —"],
+    [50_000, null, "ctx [    ?     ] 50k/200k ?"],
+    [250_000, 125, "ctx [▮▮▮▮▮▮▮▮▮▮] 250k/200k 100%"],
+  ] as const) {
+    h.state.usage = { tokens, contextWindow: 200_000, percent };
+    expect(view.text()).toEndWith(expected);
+  }
   h.state.usage = undefined;
   h.state.model = undefined;
-  expect(view.text()).toMatch(/no model.*\?$/);
+  expect(view.text()).toMatch(/no model.*ctx —$/);
 });
 
-test("layout bounds Unicode, strips terminal controls and isolates status styling", () => {
+test("narrow layouts shorten values without dropping fields and sanitize terminal controls", () => {
   const h = harness();
   const view = h.start()!;
-  const gaugeCells = (width: number) => view.text(width).match(/\[([█░]+)\]/)![1].length;
-  expect(gaugeCells(50)).toBe(8);
-  expect(gaugeCells(200)).toBe(20);
-  expect(view.text(20)).toMatch(/^gpt-5 medium {2,}25%$/);
-
   h.state.cwd = join(homedir(), "projects", "nix", "long-".repeat(20));
   h.state.branch = "branch".repeat(40);
-  h.state.statuses.set("job", `running tests \x1b[1;7;31m${"x".repeat(200)}`);
-  const raw = view.footer.render(80).at(-1)!;
-  expect(plain(raw)).toMatch(/^gpt-5 medium │ running.*25%$/);
-  expect(plain(raw)).not.toContain("long-");
-  const excerpt = plain(raw).split(" │ ")[1].split("[")[0].trimEnd();
-  expect(visibleWidth(excerpt)).toBeLessThanOrEqual(40);
-  expect(raw).toMatch(/…\x1b\[0m {2,}\$0\.000 │ \[/);
-
   h.state.model!.id = "漢字 👩‍💻 e\u0301";
-  for (const width of [0, 1, 20, 80, 200]) {
+  for (const width of [0, 1, 16, 40, 80, 200]) {
     const lines = view.footer.render(width);
     expect(lines).toHaveLength(1);
     expect(visibleWidth(lines[0])).toBe(width);
     expect(plain(lines[0])).not.toMatch(/[\r\n\x1b]/);
-    if (width >= 3) expect(plain(lines[0])).toEndWith("25%");
+    if (width >= 16) expect(plain(lines[0]).match(/│/g)).toHaveLength(3);
   }
+  const narrow = view.text(80);
+  expect(narrow).toStartWith("nix/");
+  expect(narrow).toContain("│ ⎇ branch");
+  expect(narrow).toContain("$0.000 │ ctx [▮▮▮▯▯▯▯▯▯▯] 50k/200k 25%");
+  expect(view.text(60)).toEndWith("ctx [▮▮▮▯▯▯▯▯▯▯] 50k/200k 25%");
+  expect(narrow).toContain("…");
 
-  h.state.statuses.clear();
   h.state.cwd = `${join(homedir(), "projects", "nix")}/\x1b[31mevil\x07`;
   h.state.model!.id = "model\x1b]0;title\x07id\x07";
   h.state.branch = "main\x07\x1b[38;5;99m";
-  h.state.statuses.set("b", "b\x1b[31mRED\x1b[0m\nnext\x07");
-  h.state.statuses.set("a", "a\x1b[32mGREEN\x1bPpayload\x1b\\");
-  h.state.statuses.set("empty", "\x1b[33m");
-  h.state.statuses.set("unterminated", "\x1b]0;hidden");
-  const sanitized = view.footer.render(120).at(-1)!;
-  expect(plain(sanitized)).toMatch(/^nix\/evil │ ⎇ main.*modelid.*aGREEN.*bRED next/);
-  expect(sanitized).not.toMatch(/payload|title|hidden|\x07|\x1b\[38;5;99m/);
-  expect(sanitized).toContain("\x1b[32mGREEN\x1b[0m");
-  expect(sanitized).toContain("\x1b[31mRED\x1b[0m");
-  h.state.statuses = new Map([["blank", ""], ["sgr", "\x1b[33m"], ["space", "\x1b[33m\n\x1b[0m"]]);
-  const quiet = view.footer.render(120).at(-1)!;
-  expect(plain(quiet)).toMatch(/modelid medium │ — +\$0\.000 │/);
-  expect(quiet).not.toContain("\x1b[33m");
+  const raw = view.footer.render(120).at(-1)!;
+  expect(plain(raw)).toMatch(/^nix\/evil │ ⎇ main │ modelid medium +\$0\.000 │ ctx \[▮{3}▯{7}\] 50k\/200k 25%/);
+  expect(raw).not.toMatch(/title|\x07|\x1b\[38;5;99m|\x1b\[31m/);
 });
 
 test("Gruvbox semantic colors follow live theme changes", () => {
@@ -182,7 +165,8 @@ test("Gruvbox semantic colors follow live theme changes", () => {
   const live = new Proxy({} as Theme, {
     get: (_target, prop) => (...args: any[]) => (current as any)[prop](...args),
   });
-  const view = harness("tui", live).start()!;
+  const h = harness("tui", live);
+  const view = h.start()!;
   const before = view.footer.render(120).at(-1)!;
   expect(before).toContain("\x1b[38;2;250;189;47m");
   current = gruvboxTheme("#010203");
@@ -190,4 +174,10 @@ test("Gruvbox semantic colors follow live theme changes", () => {
   expect(after).toContain("\x1b[38;2;1;2;3m");
   expect(after).not.toContain("\x1b[38;2;250;189;47m");
   expect(plain(after)).toBe(plain(before));
+  for (const [percent, color] of [[60, "warning"], [90, "error"]] as const) {
+    h.state.usage = { tokens: percent * 2000, contextWindow: 200_000, percent };
+    const rendered = view.footer.render(120).at(-1)!;
+    expect(rendered).toContain(current.fg(color, "▮".repeat(percent / 10)));
+    expect(rendered).toContain(current.fg(color, `${percent}%`));
+  }
 });
