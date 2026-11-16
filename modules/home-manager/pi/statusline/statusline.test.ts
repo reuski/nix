@@ -160,7 +160,7 @@ test("narrow layouts shorten values without dropping fields and sanitize termina
   expect(raw).not.toMatch(/title|\x07|\x1b\[38;5;99m|\x1b\[31m/);
 });
 
-test("Gruvbox semantic colors follow live theme changes", () => {
+test("context advisory colors preserve capacity scale and follow live theme changes", () => {
   let current = gruvboxTheme();
   const live = new Proxy({} as Theme, {
     get: (_target, prop) => (...args: any[]) => (current as any)[prop](...args),
@@ -174,10 +174,31 @@ test("Gruvbox semantic colors follow live theme changes", () => {
   expect(after).toContain("\x1b[38;2;1;2;3m");
   expect(after).not.toContain("\x1b[38;2;250;189;47m");
   expect(plain(after)).toBe(plain(before));
-  for (const [percent, color] of [[60, "warning"], [90, "error"]] as const) {
-    h.state.usage = { tokens: percent * 2000, contextWindow: 200_000, percent };
+  for (const [tokens, contextWindow, color] of [
+    [99_999, 1_000_000, "success"],
+    [100_000, 1_000_000, "warning"],
+    [199_999, 1_000_000, "warning"],
+    [200_000, 1_000_000, "error"],
+    [31_360, 64_000, "success"],
+    [32_000, 64_000, "warning"],
+    [50_560, 64_000, "warning"],
+    [51_200, 64_000, "error"],
+    [50_000, 1_000_000, "success"],
+  ] as const) {
+    const percent = tokens / contextWindow * 100;
+    h.state.usage = { tokens, contextWindow, percent };
     const rendered = view.footer.render(120).at(-1)!;
-    expect(rendered).toContain(current.fg(color, "▮".repeat(percent / 10)));
-    expect(rendered).toContain(current.fg(color, `${percent}%`));
+    const filled = Math.round(Math.round(percent) / 10);
+    expect(rendered).toContain(current.fg(color, "▮".repeat(filled)));
+    expect(rendered).toContain(current.fg(color, `${Math.round(tokens / 1000)}k`));
+    expect(rendered).toContain(current.fg(color, `${Math.round(percent)}%`));
+    expect(rendered).toContain(current.fg("dim", contextWindow === 1_000_000 ? "/1.0M" : "/64k"));
+    expect(plain(rendered)).toContain(`[${"▮".repeat(filled)}${"▯".repeat(10 - filled)}]`);
   }
+  h.state.usage = { tokens: 200_000, contextWindow: 1_000_000, percent: null };
+  expect(view.footer.render(120)[0]).toContain(current.fg("error", "200k"));
+  expect(view.text()).toEndWith("ctx [    ?     ] 200k/1.0M ?");
+  h.state.usage = { tokens: null, contextWindow: 1_000_000, percent: null };
+  expect(view.footer.render(120)[0]).toContain(current.fg("muted", "—"));
+  expect(view.text()).toEndWith("ctx —");
 });

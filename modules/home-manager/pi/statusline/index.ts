@@ -78,8 +78,10 @@ function clampPercent(value: number): number {
   return Math.min(100, Math.max(0, value));
 }
 
-function levelColor(percent: number): "muted" | "warning" | "error" {
-  return percent >= 80 ? "error" : percent >= 50 ? "warning" : "muted";
+function levelColor(tokens: number | null, percent: number | null): "success" | "warning" | "error" {
+  if ((tokens ?? 0) >= 200_000 || (percent ?? 0) >= 80) return "error";
+  if ((tokens ?? 0) >= 100_000 || (percent ?? 0) >= 50) return "warning";
+  return "success";
 }
 
 export default function statusline(pi: ExtensionAPI): void {
@@ -113,13 +115,11 @@ export default function statusline(pi: ExtensionAPI): void {
           const rawTokens = typeof usage?.tokens === "number" && Number.isFinite(usage.tokens) ? usage.tokens : null;
           const percent = rawPercent === null ? null : clampPercent(rawPercent);
           const displayPercent = percent === null ? null : Math.round(percent);
-          const color = displayPercent === null ? "muted" : levelColor(displayPercent);
+          const color = levelColor(rawTokens, displayPercent);
           const percentLabel = displayPercent === null ? "?" : `${displayPercent}%`;
           const percentPart = theme.fg(color, percentLabel);
-          const counts = contextWindow > 0
-            ? `${rawTokens === null ? "?" : formatTokens(rawTokens)}/${formatTokens(contextWindow)}`
-            : rawTokens === null ? "" : formatTokens(rawTokens);
-          const countsPart = theme.fg("muted", counts || "?");
+          const countsPart = theme.fg(color, rawTokens === null ? "?" : formatTokens(rawTokens))
+            + (contextWindow > 0 ? theme.fg("dim", `/${formatTokens(contextWindow)}`) : "");
           const filled = displayPercent === null ? 0 : Math.round(displayPercent / 100 * GAUGE_CELLS);
           const gauge = displayPercent === null
             ? theme.fg("dim", "[    ?     ]")
