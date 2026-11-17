@@ -1,13 +1,36 @@
 { ... }:
 {
   flake.modules.homeManager.zellij =
-    { config, pkgs, ... }:
+    {
+      config,
+      lib,
+      pkgs,
+      ...
+    }:
     let
       gruvbox = config.profile.colors.gruvbox;
       copyCommand = if pkgs.stdenv.hostPlatform.isDarwin then "pbcopy" else "wl-copy";
+      dataDir =
+        if pkgs.stdenv.hostPlatform.isDarwin then
+          "${config.home.homeDirectory}/Library/Application Support/org.Zellij-Contributors.Zellij"
+        else
+          "${config.xdg.dataHome}/zellij";
     in
     {
       home.packages = [ pkgs.zellij ];
+
+      home.activation.zellijSetup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        run mkdir -p ${lib.escapeShellArg dataDir}
+        if [[ ! -v DRY_RUN ]]; then
+          state=${lib.escapeShellArg "${dataDir}/desktop_integration.json"}
+          touch "$state"
+          temporary=$(mktemp "$state.XXXXXX")
+          ${lib.getExe pkgs.jq} -s '
+            (.[0] // {}) | .flags = ((.flags // []) + ["SetupNeverShow"] | unique)
+          ' "$state" > "$temporary"
+          mv "$temporary" "$state"
+        fi
+      '';
 
       xdg.configFile."zellij/plugins/zjstatus.wasm".source = pkgs.zellijPlugins.zjstatus;
 
