@@ -14,6 +14,8 @@
       "nosuid"
       "nodev"
       "nofail"
+      "x-systemd.automount"
+      "x-systemd.idle-timeout=0"
       "x-systemd.mount-timeout=10s"
     ];
   };
