@@ -3,16 +3,15 @@
     "skipPrompt": true
   },
   "collapseChangelog": true,
-  "defaultModel": "gpt-6.1-sol",
+  "defaultModel": "gpt-6.2-sol",
   "defaultProvider": "openai",
   "defaultTools": ["+codemode"],
   "enableInstallTelemetry": false,
   "hideThinkingBlock": true,
   "modelThinkingLevels": {
-    "openai/gpt-6-astra": "high",
-    "openai/gpt-6.1-sol": "medium",
-    "deepseek/deepseek-flash": "high",
-    "zai/glm-5.3-flash": "high"
+    "openai/gpt-6.2-astra": "high",
+    "openai/gpt-6.2-sol": "medium",
+    "deepseek/deepseek-flash": "high"
   },
   "quietStartup": true,
   "theme": "gruvbox",

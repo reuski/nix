@@ -49,8 +49,6 @@
         home.file.".pi/agent/extensions/statusline/index.ts".source = ./pi/statusline/index.ts;
 
         home.file.".pi/agent/settings.json".source = ./pi/settings.json;
-
-        home.file.".pi/agent/models.json".source = ./pi/models.json;
       };
     };
 }

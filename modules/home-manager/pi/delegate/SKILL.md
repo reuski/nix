@@ -11,9 +11,9 @@ Children never delegate. One writer per worktree, including the lead; parallel w
 
 | Role | Model | Thinking | Tools |
 | --- | --- | --- | --- |
-| Scout: read-only context | `zai/glm-5.3-flash` | `medium` | `read,grep,find,ls` |
+| Scout: read-only context | `openai/gpt-6.2-sol` | `medium` | `read,grep,find,ls` |
 | Worker: scoped implementation/checks | `deepseek/deepseek-flash` | `high` | `read,grep,find,ls,bash,edit,write` |
-| Planner: planning, second opinion | `openai/gpt-6-astra` | `high` | `read,grep,find,ls` |
+| Planner: planning, second opinion | `openai/gpt-6.2-astra` | `high` | `read,grep,find,ls` |
 
 Honor explicit model requests; report unavailable models rather than silently substituting. Before launch, confirm the exact `provider/id` with `pi --list-models <provider/id>` and require an exact provider/model row; never print credentials. Grant tools by task.
 
