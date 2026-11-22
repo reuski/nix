@@ -32,10 +32,7 @@ in
 
       services.tailscale = {
         useRoutingFeatures = "client";
-        extraSetFlags = [
-          "--ssh"
-          "--accept-routes=true"
-        ];
+        extraSetFlags = [ "--accept-routes=true" ];
       };
 
       systemd.network.networks."10-wan".networkConfig = {

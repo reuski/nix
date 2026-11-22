@@ -17,7 +17,6 @@ in
   services.tailscale = {
     useRoutingFeatures = "server";
     extraSetFlags = [
-      "--ssh"
       "--advertise-connector"
       "--advertise-exit-node"
     ];

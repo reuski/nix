@@ -64,10 +64,7 @@
           wantedBy = [ "multi-user.target" ];
           wants = [ "tailscaled.service" ];
           after = [ "tailscaled.service" ];
-          unitConfig = {
-            StartLimitIntervalSec = "5min";
-            StartLimitBurst = 5;
-          };
+          unitConfig.StartLimitIntervalSec = 0;
           serviceConfig = {
             Type = "oneshot";
             RemainAfterExit = true;
@@ -75,7 +72,7 @@
             ExecStart = pkgs.writeShellScript "tailnet-serve" (concatStringsSep "\n" serveLines);
             ExecStop = "${tailscale} serve reset";
             Restart = "on-failure";
-            RestartSec = "10s";
+            RestartSec = "1min";
           };
         };
       };
