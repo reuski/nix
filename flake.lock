@@ -40,11 +40,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793418699,
-        "narHash": "sha256-+RpTlcdh9KqZ+ZiLkNSTvibQWm935EcIdBzRPCTFsrQ=",
+        "lastModified": 1795309925,
+        "narHash": "sha256-xpgrKyUvEMz0yCb+zklEpOFd0VnHyH0oBYce4Umj4e8=",
         "owner": "nix-darwin",
         "repo": "nix-darwin",
-        "rev": "ff0e21a414d4547183396da1b44a66f2577b65e9",
+        "rev": "f673885103fa92c1c5b1d16b8bf2b858906809e2",
         "type": "github"
       },
       "original": {
@@ -123,11 +123,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1795177496,
-        "narHash": "sha256-/AYSqToIPpUFfn7uUr/RkNEnTGGgrxXR5+rlRPT9XnQ=",
+        "lastModified": 1795349550,
+        "narHash": "sha256-pSFlxW5nCBfVgypI/gPpmwmVSwFE0fymlllhnhJXg3k=",
         "owner": "reuski",
         "repo": "heimdash",
-        "rev": "8ae8af4b3fd7df9e961b7f5a48ef967e81419d23",
+        "rev": "1b72ba5df55eaf3755dbcf33f742d45ae5833f2d",
         "type": "github"
       },
       "original": {
@@ -143,11 +143,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795268568,
-        "narHash": "sha256-1RJm4DEu7YHJv94sjSY7sjqT+kHx/AUwmtUN4dtFBUo=",
+        "lastModified": 1795340038,
+        "narHash": "sha256-RtgZbV+4BDtJqMImbiPJri3fmVDbCbrz/B0cuPQUJQY=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "6857c7f7c338ad181729c52071386b0d3afa24bc",
+        "rev": "03885bcd0b477bdecebebc57b213b0f8f0826d51",
         "type": "github"
       },
       "original": {
@@ -195,11 +195,11 @@
     "juttu": {
       "flake": false,
       "locked": {
-        "lastModified": 1794746277,
-        "narHash": "sha256-V90Mhi5kEsgR+9rQbY0nkL8cpKmGknF8C9CSQi6f2gE=",
+        "lastModified": 1795350892,
+        "narHash": "sha256-OsW/hqPkjFGOjJGW304fosA3KnEDNkpjIyX44kBnyP0=",
         "ref": "refs/heads/main",
-        "rev": "f5a400cbae86432e64c5465d5c7e57d6455101d2",
-        "revCount": 64,
+        "rev": "e039e8e6df1cb479e86c6f0e844881a2c51ea269",
+        "revCount": 65,
         "type": "git",
         "url": "ssh://git@github.com/reuski/juttu"
       },
@@ -248,11 +248,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1795085501,
-        "narHash": "sha256-S5keGWzaKpuXo9MNoIC2FfTIuTyTnx8P4NhYJMEsTLI=",
+        "lastModified": 1795234589,
+        "narHash": "sha256-f/VVvxf5RsQgWVhUtefoca5ktVg0DA2bnkMOcmSnozo=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
+        "rev": "2786a2a72088ecf32aea5b3ec52099e6a7cff78f",
         "type": "github"
       },
       "original": {
